@@ -24,6 +24,8 @@
         <mat-list-item
           *ngFor="let el of elementTypes"
           class="palette-item"
+          draggable="true"
+          (dragstart)="onPaletteDragStart($event, el.type)"
           (click)="addElement(el.type)"
         >
           <mat-icon matListItemIcon>{{ el.icon }}</mat-icon>
@@ -59,7 +61,13 @@
           {{ 'common.save' | translate }}
         </button>
       </mat-toolbar>
-      <div id="konva-container" class="konva-container"></div>
+      <div
+        #konvaContainer
+        id="konva-container"
+        class="konva-container"
+        (dragover)="onCanvasDragOver($event)"
+        (drop)="onCanvasDrop($event)"
+      ></div>
 
       <div class="import-panel" *ngIf="showImportPanel">
         <h4>Import Cheque</h4>
@@ -183,7 +191,7 @@
             <input matInput type="number" [value]="selectedElement.data['x_mm']" />
           </mat-form-field>
           <mat-form-field appearance="outline">
-            <mat-label>Y (mm)</mat-label>
+            <mat-label>Y (mm)</matlabel>
             <input matInput type="number" [value]="selectedElement.data['y_mm']" />
           </mat-form-field>
         </div>
