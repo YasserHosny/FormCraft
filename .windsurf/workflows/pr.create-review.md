@@ -23,31 +23,29 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Address any critical issues found during review
 
 3. **Execute Git Workflow**:
-   - Create a new branch with proper naming convention
-   - Commit changes with suitable description
-   - Push changes to remote
+   - Commit changes with suitable description on the feature branch
+   - Push changes to remote (branch created once via GitHub API in step 6)
 
 4. **Create Pull Request**:
    - Create PR from current source branch to specified TARGET_BRANCH
-   - Add comment "@codex" to the PR
+   - Include "@codex" in the PR description (no separate comment step)
 
 5. **Generate Tasks**: Create the following task structure:
 
 ```markdown
 - [ ] T001 Run @[/review] on current changes
 - [ ] T002 Address any critical issues found during review
-- [ ] T003 Create branch "[BRANCH_NAME]" from current branch
-- [ ] T004 Commit changes with suitable description
-- [ ] T005 Push changes to remote
-- [ ] T006 Create PR to merge [BRANCH_NAME] → [TARGET_BRANCH]
-- [ ] T007 Add comment "@codex" to PR
+- [ ] T003 Commit changes with suitable description
+- [ ] T004 Push changes to remote (branch is created once via API in step 6)
+- [ ] T005 Create PR to merge [BRANCH_NAME] → [TARGET_BRANCH]
+- [ ] T006 Include "@codex" in PR description
 ```
 
 6. **Execute GitHub Operations**:
    - Use review workflow to analyze changes
-   - Use `mcp3_create_branch` to create the feature branch
+   - Use `mcp3_create_branch` to create the feature branch (single creation point; do not recreate after pushing)
    - Use `mcp3_create_pull_request` to create the PR
-   - Use `mcp3_add_issue_comment` to add the "@codex" comment
+   - Ensure PR body contains "@codex" mention; no separate PR comment is required
 
 7. **Report**: Output:
    - Review results and any issues addressed
@@ -75,7 +73,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 **Natural language**:
 ```
-Create a PR from current changes to main branch with review and @codex comment
+Create a PR from current changes to main branch with review and @codex mention in description
 ```
 
 ## Auto-generation Rules
@@ -106,6 +104,6 @@ Auto-generated commit messages follow:
 - Workflow starts with @[/review] to ensure code quality
 - Branch is created from current source branch (not always main)
 - PR targets the specified TARGET_BRANCH parameter
-- Always adds "@codex" comment to PR
+- PR description includes "@codex" mention (no additional comment)
 - Critical review issues are addressed before commit
 - All GitHub operations are performed using the MCP GitHub server
