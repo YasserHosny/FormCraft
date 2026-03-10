@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { TemplateService } from '../../../core/services/template.service';
@@ -24,10 +24,17 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
           [disableClose]="palettePinned"
           position="start"
           class="palette-sidenav"
+          [class.floating-sidenav]="!palettePinned"
+          [ngStyle]="!palettePinned ? { left: palettePosition.x + 'px', top: palettePosition.y + 'px', transform: 'none' } : null"
           (openedChange)="paletteOpen = $event"
         >
-          <div class="palette-header">
-            <h3>{{ 'designer.elements.text' | translate }}</h3>
+          <div class="palette-header" [class.draggable]="!palettePinned" (mousedown)="startPaletteDrag($event)">
+            <div class="header-title">
+              <h3>{{ 'designer.elements.text' | translate }}</h3>
+            </div>
+            <button mat-icon-button (click)="togglePalettePin($event)" matTooltip="{{ palettePinned ? 'Float palette' : 'Dock palette' }}">
+              <mat-icon>{{ palettePinned ? 'open_in_new' : 'push_pin' }}</mat-icon>
+            </button>
           </div>
           <mat-list>
             <mat-list-item
@@ -99,7 +106,7 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
             *ngIf="showDetectionsPanel"
             [class.docked]="detectionsDocked"
             [class.floating]="!detectionsDocked"
-            [ngStyle]="!detectionsDocked ? { 'left.px': detectionsPosition.x, 'top.px': detectionsPosition.y } : null"
+            [ngStyle]="!detectionsDocked ? { 'left.px': detectionsPosition.x, 'top.px': detectionsPosition.y } : { 'right.px': (propertyPinned || propertyOpen) ? 324 : 24 }"
           >
             <div
               class="detections-header"
@@ -161,10 +168,17 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
           [disableClose]="propertyPinned"
           position="end"
           class="property-sidenav"
+          [class.floating-sidenav]="!propertyPinned"
+          [ngStyle]="!propertyPinned ? { right: propertyPosition.x + 'px', top: propertyPosition.y + 'px', transform: 'none' } : null"
           (openedChange)="propertyOpen = $event"
         >
-          <div class="property-header">
-            <h3>{{ 'designer.properties.title' | translate }}</h3>
+          <div class="property-header" [class.draggable]="!propertyPinned" (mousedown)="startPropertyDrag($event)">
+            <div class="header-title">
+              <h3>{{ 'designer.properties.title' | translate }}</h3>
+            </div>
+            <button mat-icon-button (click)="togglePropertyPin($event)" matTooltip="{{ propertyPinned ? 'Float properties' : 'Dock properties' }}">
+              <mat-icon>{{ propertyPinned ? 'open_in_new' : 'push_pin' }}</mat-icon>
+            </button>
           </div>
           <div *ngIf="selectedElement; else noSelection" class="property-form">
             <mat-form-field appearance="outline" class="full-width">
@@ -223,12 +237,22 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
     .canvas-area { background: #e0e0e0; overflow: auto; }
     .konva-container { display: flex; justify-content: center; padding: 24px; min-height: calc(100vh - 128px); }
     .spacer { flex: 1 1 auto; }
-    .palette-header, .property-header { padding: 16px; border-bottom: 1px solid #e0e0e0; }
+    .palette-header, .property-header { padding: 16px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .header-title { display: flex; align-items: center; gap: 8px; }
+    .floating-sidenav {
+      position: fixed !important;
+      top: 96px;
+      z-index: 205;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      border-radius: 12px;
+    }
+    .palette-sidenav.floating-sidenav { width: 260px; }
+    .property-sidenav.floating-sidenav { width: 320px; z-index: 210; }
     .palette-item { cursor: pointer; }
     .palette-item:hover { background: #f5f5f5; }
     .palette-en { font-size: 11px; color: #999; }
     .canvas-toolbar { position: sticky; top: 0; z-index: 10; }
-    .canvas-area.detections-docked { padding-right: 380px; }
+    .canvas-area.detections-docked { padding-right: 440px; }
     .property-form { padding: 16px; }
     .full-width { width: 100%; }
     .prop-row { display: flex; gap: 8px; }
@@ -326,6 +350,8 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
   `],
 })
 export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('paletteSidenav', { read: ElementRef }) paletteSidenavEl?: ElementRef<HTMLElement>;
+  @ViewChild('propertySidenav', { read: ElementRef }) propertySidenavEl?: ElementRef<HTMLElement>;
   templateId = '';
   templateName = 'Loading...';
   pageId = '';
@@ -346,8 +372,14 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   propertyPinned = true;
   paletteOpen = false;
   propertyOpen = false;
+  palettePosition = { x: 16, y: 96 };
+  propertyPosition = { x: 16, y: 96 };
   private isDraggingDetections = false;
   private detectionsDragOffset = { x: 0, y: 0 };
+  private isDraggingPalette = false;
+  private paletteDragOffset = { x: 0, y: 0 };
+  private isDraggingProperty = false;
+  private propertyDragOffset = { x: 0, y: 0 };
   get devLocalImportEnabled(): boolean {
     return getDevLocalImportEnabled();
   }
@@ -415,12 +447,14 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showImportPanel = false;
   }
 
-  togglePalettePin(): void {
+  togglePalettePin(event?: Event): void {
+    event?.stopPropagation();
     this.palettePinned = !this.palettePinned;
     this.paletteOpen = this.palettePinned;
   }
 
-  togglePropertyPin(): void {
+  togglePropertyPin(event?: Event): void {
+    event?.stopPropagation();
     this.propertyPinned = !this.propertyPinned;
     this.propertyOpen = this.propertyPinned;
   }
@@ -435,6 +469,76 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
       };
     }
   }
+
+  startPaletteDrag(event: MouseEvent, panel?: HTMLElement): void {
+    if (this.palettePinned) return;
+    const target = event.target as HTMLElement;
+    if (target.closest('button')) return;
+    const el = panel ?? this.paletteSidenavEl?.nativeElement;
+    if (!el) return;
+    event.preventDefault();
+    this.isDraggingPalette = true;
+    const rect = el.getBoundingClientRect();
+    this.paletteDragOffset = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    };
+    document.addEventListener('mousemove', this.onPaletteDragMove);
+    document.addEventListener('mouseup', this.onPaletteDragEnd);
+  }
+
+  private onPaletteDragMove = (event: MouseEvent): void => {
+    if (!this.isDraggingPalette) return;
+    const maxX = window.innerWidth - 200;
+    const maxY = window.innerHeight - 120;
+    const nextX = event.clientX - this.paletteDragOffset.x;
+    const nextY = event.clientY - this.paletteDragOffset.y;
+    this.palettePosition = {
+      x: Math.min(Math.max(8, nextX), maxX),
+      y: Math.min(Math.max(64, nextY), maxY),
+    };
+  };
+
+  private onPaletteDragEnd = (): void => {
+    this.isDraggingPalette = false;
+    document.removeEventListener('mousemove', this.onPaletteDragMove);
+    document.removeEventListener('mouseup', this.onPaletteDragEnd);
+  };
+
+  startPropertyDrag(event: MouseEvent, panel?: HTMLElement): void {
+    if (this.propertyPinned) return;
+    const target = event.target as HTMLElement;
+    if (target.closest('button')) return;
+    const el = panel ?? this.propertySidenavEl?.nativeElement;
+    if (!el) return;
+    event.preventDefault();
+    this.isDraggingProperty = true;
+    const rect = el.getBoundingClientRect();
+    this.propertyDragOffset = {
+      x: event.clientX - rect.right,
+      y: event.clientY - rect.top,
+    };
+    document.addEventListener('mousemove', this.onPropertyDragMove);
+    document.addEventListener('mouseup', this.onPropertyDragEnd);
+  }
+
+  private onPropertyDragMove = (event: MouseEvent): void => {
+    if (!this.isDraggingProperty) return;
+    const maxX = window.innerWidth - 200;
+    const maxY = window.innerHeight - 120;
+    const nextX = window.innerWidth - event.clientX - this.propertyDragOffset.x;
+    const nextY = event.clientY - this.propertyDragOffset.y;
+    this.propertyPosition = {
+      x: Math.min(Math.max(8, nextX), maxX),
+      y: Math.min(Math.max(64, nextY), maxY),
+    };
+  };
+
+  private onPropertyDragEnd = (): void => {
+    this.isDraggingProperty = false;
+    document.removeEventListener('mousemove', this.onPropertyDragMove);
+    document.removeEventListener('mouseup', this.onPropertyDragEnd);
+  };
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
