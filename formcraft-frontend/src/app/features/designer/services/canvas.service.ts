@@ -192,8 +192,10 @@ export class CanvasService implements OnDestroy {
     img.src = imageUrl;
   }
 
-  setDetections(detections: { bbox: { x: number; y: number; width: number; height: number }; suggested_type?: string }[]): void {
-    this.detections = detections.map((d) => ({ bbox: d.bbox, type: d.suggested_type }));
+  setDetections(
+    detections: { bbox: { x: number; y: number; width: number; height: number }; suggested_type?: string; type_override?: string }[]
+  ): void {
+    this.detections = detections.map((d) => ({ bbox: d.bbox, type: d.type_override || d.suggested_type }));
     this.renderDetections();
   }
 

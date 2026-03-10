@@ -140,5 +140,5 @@ T04-090-093 (undo/redo, after all element operations)
 - [ ] **T04-133** P2 S8 — Create endpoint GET /api/forms/submissions/{id} — Retrieve saved submission
 - [ ] **T04-134** P2 S8 — Implement two-way binding: field entry form ↔ canvas preview updates in real-time
 - [ ] **T04-135** P2 S8 — Implement validation in fill mode: highlight invalid fields, prevent export until valid
-  - [ ] **T04-136** P1 S8 — Extend detection accept endpoint to accept optional `type_override` per detection index and persist overridden types
-  - [ ] **T04-137** P1 S8 — Frontend: send edited detection types in Accept/Accept All payloads
+- [ ] **T04-136** P1 S8 — Extend detection accept endpoint to accept optional `type_override` per detection index and persist overridden types
+- [ ] **T04-137** P1 S8 — Frontend: send edited detection types in Accept/Accept All payloads
