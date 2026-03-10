@@ -106,7 +106,7 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
             *ngIf="showDetectionsPanel"
             [class.docked]="detectionsDocked"
             [class.floating]="!detectionsDocked"
-            [ngStyle]="!detectionsDocked ? { 'left.px': detectionsPosition.x, 'top.px': detectionsPosition.y } : { 'right.px': (propertyPinned || propertyOpen) ? 324 : 24 }"
+            [ngStyle]="!detectionsDocked ? { 'left.px': detectionsPosition.x, 'top.px': detectionsPosition.y } : { 'right.px': propertyPinned || propertyOpen ? 324 : 24 }"
           >
             <div
               class="detections-header"
@@ -331,12 +331,6 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
       width: 360px;
       max-height: 70vh;
       overflow: auto;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-      z-index: 200;
-      padding: 16px;
-    }
     .detection-card { border: 1px solid #eee; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
     .detection-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .detection-meta { font-size: 11px; color: #777; }
