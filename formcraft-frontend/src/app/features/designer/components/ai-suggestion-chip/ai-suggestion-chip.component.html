@@ -1,0 +1,24 @@
+<div class="suggestion-chip" *ngIf="suggestion">
+  <div class="suggestion-header">
+    <mat-icon class="ai-icon">auto_awesome</mat-icon>
+    <span class="suggestion-label">{{ 'ai.suggestion' | translate }}</span>
+    <span class="confidence-badge" [class.high]="suggestion.confidence >= 0.8" [class.low]="suggestion.confidence < 0.5">
+      {{ (suggestion.confidence * 100) | number:'1.0-0' }}%
+    </span>
+  </div>
+  <div class="suggestion-body">
+    <mat-chip-listbox>
+      <mat-chip>{{ suggestion.control_type }}</mat-chip>
+    </mat-chip-listbox>
+    <span class="source-tag">{{ suggestion.source }}</span>
+  </div>
+  <div class="suggestion-actions">
+    <button mat-stroked-button color="primary" (click)="accept.emit(suggestion)">
+      <mat-icon>check</mat-icon>
+      {{ 'ai.accept' | translate }}
+    </button>
+    <button mat-stroked-button (click)="dismiss.emit()">
+      {{ 'ai.dismiss' | translate }}
+    </button>
+  </div>
+</div>

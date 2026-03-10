@@ -1,0 +1,12 @@
+.full-width { width: 100%; }
+mat-form-field { margin-bottom: 8px; }
+.row {
+  display: flex;
+  gap: 16px;
+}
+.row mat-form-field { flex: 1; }
+.error-message {
+  color: #f44336;
+  margin-bottom: 12px;
+  font-size: 14px;
+}

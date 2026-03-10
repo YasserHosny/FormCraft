@@ -1,0 +1,24 @@
+<mat-toolbar color="primary">
+  <span>{{ 'templates.title' | translate }}</span>
+  <span class="spacer"></span>
+  <button mat-raised-button (click)="createTemplate()">
+    {{ 'templates.create' | translate }}
+  </button>
+</mat-toolbar>
+
+<div class="template-grid">
+  <mat-card *ngFor="let template of templates" class="template-card">
+    <mat-card-header>
+      <mat-card-title>{{ template.name }}</mat-card-title>
+      <mat-card-subtitle>{{ template.status }} &middot; v{{ template.version }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <p>{{ template.description }}</p>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-button [routerLink]="['/designer', template.id]">
+        {{ 'designer.title' | translate }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

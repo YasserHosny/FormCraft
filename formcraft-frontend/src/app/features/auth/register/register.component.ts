@@ -9,78 +9,8 @@ import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'fc-register',
   standalone: false,
-  template: `
-    <div class="register-container">
-      <mat-card class="register-card">
-        <mat-card-header>
-          <mat-card-title>{{ 'auth.register' | translate }}</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>{{ 'auth.email' | translate }}</mat-label>
-              <input matInput type="email" formControlName="email" />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>{{ 'auth.password' | translate }}</mat-label>
-              <input matInput type="password" formControlName="password" />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Display Name</mat-label>
-              <input matInput formControlName="display_name" fcAutoDir />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>{{ 'auth.role' | translate }}</mat-label>
-              <mat-select formControlName="role">
-                <mat-option value="admin">{{ 'roles.admin' | translate }}</mat-option>
-                <mat-option value="designer">{{ 'roles.designer' | translate }}</mat-option>
-                <mat-option value="operator">{{ 'roles.operator' | translate }}</mat-option>
-                <mat-option value="viewer">{{ 'roles.viewer' | translate }}</mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
-
-            <button
-              mat-raised-button
-              color="primary"
-              type="submit"
-              class="full-width"
-              [disabled]="registerForm.invalid || loading"
-            >
-              <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
-              <span *ngIf="!loading">{{ 'auth.register' | translate }}</span>
-            </button>
-          </form>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  `,
-  styles: [`
-    .register-container {
-      display: flex;
-      justify-content: center;
-      padding: 48px 24px;
-    }
-    .register-card {
-      width: 480px;
-      padding: 24px;
-    }
-    .full-width {
-      width: 100%;
-    }
-    mat-form-field {
-      margin-bottom: 16px;
-    }
-    .error-message {
-      color: #f44336;
-      margin-bottom: 16px;
-      font-size: 14px;
-    }
-  `],
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.scss'],
 })
 export class RegisterComponent {
   registerForm: FormGroup;

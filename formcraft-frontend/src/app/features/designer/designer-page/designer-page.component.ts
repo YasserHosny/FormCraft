@@ -13,335 +13,8 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
   selector: 'fc-designer-page',
   standalone: false,
   providers: [CanvasService],
-  template: `
-    <div class="designer-layout">
-      <mat-sidenav-container class="designer-container">
-        <!-- Left: Element Palette -->
-        <mat-sidenav
-          #paletteSidenav
-          [mode]="palettePinned ? 'side' : 'over'"
-          [opened]="palettePinned || paletteOpen"
-          [disableClose]="palettePinned"
-          position="start"
-          class="palette-sidenav"
-          [class.floating-sidenav]="!palettePinned"
-          [ngStyle]="!palettePinned ? { left: palettePosition.x + 'px', top: palettePosition.y + 'px', transform: 'none' } : null"
-          (openedChange)="paletteOpen = $event"
-        >
-          <div class="palette-header" [class.draggable]="!palettePinned" (mousedown)="startPaletteDrag($event)">
-            <div class="header-title">
-              <h3>{{ 'designer.elements.text' | translate }}</h3>
-            </div>
-            <button mat-icon-button (click)="togglePalettePin($event)" matTooltip="{{ palettePinned ? 'Float palette' : 'Dock palette' }}">
-              <mat-icon>{{ palettePinned ? 'open_in_new' : 'push_pin' }}</mat-icon>
-            </button>
-          </div>
-          <mat-list>
-            <mat-list-item
-              *ngFor="let el of elementTypes"
-              class="palette-item"
-              (click)="addElement(el.type)"
-            >
-              <mat-icon matListItemIcon>{{ el.icon }}</mat-icon>
-              <span matListItemTitle>{{ el.label_ar }}</span>
-              <span matListItemLine class="palette-en">{{ el.label_en }}</span>
-            </mat-list-item>
-          </mat-list>
-        </mat-sidenav>
-
-        <!-- Center: Canvas -->
-        <mat-sidenav-content class="canvas-area" [class.detections-docked]="showDetectionsPanel && detectionsDocked">
-          <mat-toolbar class="canvas-toolbar">
-            <span>{{ templateName }}</span>
-            <span class="spacer"></span>
-            <button mat-icon-button (click)="togglePalettePin()" matTooltip="{{ palettePinned ? 'Auto-hide palette' : 'Pin palette' }}">
-              <mat-icon>{{ palettePinned ? 'chevron_left' : 'push_pin' }}</mat-icon>
-            </button>
-            <button mat-icon-button (click)="togglePropertyPin()" matTooltip="{{ propertyPinned ? 'Auto-hide properties' : 'Pin properties' }}">
-              <mat-icon>{{ propertyPinned ? 'chevron_right' : 'push_pin' }}</mat-icon>
-            </button>
-            <button mat-stroked-button color="primary" (click)="openImport()">
-              <mat-icon>upload_file</mat-icon>
-              Import Cheque
-            </button>
-            <button mat-icon-button (click)="canvasService.zoomIn()" matTooltip="Zoom In"><mat-icon>zoom_in</mat-icon></button>
-            <button mat-icon-button (click)="canvasService.zoomOut()" matTooltip="Zoom Out"><mat-icon>zoom_out</mat-icon></button>
-            <button mat-icon-button (click)="canvasService.toggleSnap()" matTooltip="Snap"><mat-icon>grid_on</mat-icon></button>
-            <mat-divider vertical="true"></mat-divider>
-            <button mat-icon-button (click)="canvasService.undo()" matTooltip="Undo"><mat-icon>undo</mat-icon></button>
-            <button mat-icon-button (click)="canvasService.redo()" matTooltip="Redo"><mat-icon>redo</mat-icon></button>
-            <mat-divider vertical="true"></mat-divider>
-            <button mat-raised-button color="primary" (click)="save()" [disabled]="!isDirty">
-              {{ 'common.save' | translate }}
-            </button>
-          </mat-toolbar>
-          <div id="konva-container" class="konva-container"></div>
-
-          <div class="import-panel" *ngIf="showImportPanel">
-            <h4>Import Cheque</h4>
-            <div class="file-drop" (click)="fileInput.click()">
-              <mat-icon>cloud_upload</mat-icon>
-              <div class="file-meta">
-                <div class="file-title">{{ importFile?.name || 'Choose an image' }}</div>
-                <div class="file-subtitle">JPG or PNG • Click to browse</div>
-              </div>
-              <button mat-stroked-button color="primary" type="button">
-                Browse
-              </button>
-            </div>
-            <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" hidden />
-            <div class="actions">
-              <button mat-flat-button color="primary" (click)="runDetection()" [disabled]="!importFile || loadingDetections">
-                <mat-icon>auto_fix_high</mat-icon>
-                Detect
-              </button>
-              <button mat-button (click)="closeImport()">Cancel</button>
-            </div>
-            <mat-progress-spinner *ngIf="loadingDetections" mode="indeterminate" diameter="28"></mat-progress-spinner>
-          </div>
-
-          <div
-            class="detections-panel"
-            #detectionsPanel
-            *ngIf="showDetectionsPanel"
-            [class.docked]="detectionsDocked"
-            [class.floating]="!detectionsDocked"
-            [ngStyle]="!detectionsDocked ? { 'left.px': detectionsPosition.x, 'top.px': detectionsPosition.y } : { 'inset-inline-end': propertyPinned || propertyOpen ? '324px' : '24px' }"
-          >
-            <div
-              class="detections-header"
-              [class.draggable]="!detectionsDocked"
-              (mousedown)="startDetectionsDrag($event, detectionsPanel)"
-            >
-              <div class="detections-title">
-                <mat-icon class="drag-icon">drag_indicator</mat-icon>
-                <h4>Detections ({{ detections.length }})</h4>
-              </div>
-              <button mat-icon-button (click)="toggleDetectionsDock($event)" matTooltip="{{ detectionsDocked ? 'Undock' : 'Dock' }}">
-                <mat-icon>{{ detectionsDocked ? 'open_in_new' : 'push_pin' }}</mat-icon>
-              </button>
-            </div>
-            <div class="actions">
-              <button mat-flat-button color="primary" (click)="acceptAll()">Accept All</button>
-              <button mat-button color="warn" (click)="rejectAll()">Reject All</button>
-            </div>
-            <div *ngFor="let d of detections; let i = index" class="detection-card">
-              <div class="detection-row">
-                <div>
-                  <strong>{{ d.text || 'Untitled' }}</strong>
-                  <div class="detection-meta">{{ d.bbox.x | number:'1.0-2' }} , {{ d.bbox.y | number:'1.0-2' }} mm</div>
-                </div>
-                <span class="badge">{{ d.suggested_type }}</span>
-              </div>
-              <div class="detection-meta">Confidence: {{ d.confidence | percent:'1.0-0' }}</div>
-              <div class="actions" style="margin-top: 8px;">
-                <button mat-stroked-button color="primary" (click)="acceptSingle(i)">Accept</button>
-                <button mat-button color="warn" (click)="rejectSingle(i)">Reject</button>
-              </div>
-            </div>
-          </div>
-        </mat-sidenav-content>
-
-        <div
-          *ngIf="!palettePinned && !paletteOpen"
-          class="rail-button left"
-          (click)="paletteOpen = true"
-        >
-          <mat-icon>menu</mat-icon>
-          <span>Palette</span>
-        </div>
-
-        <div
-          *ngIf="!propertyPinned && !propertyOpen"
-          class="rail-button right"
-          (click)="propertyOpen = true"
-        >
-          <mat-icon>settings</mat-icon>
-          <span>Properties</span>
-        </div>
-
-        <!-- Right: Property Panel -->
-        <mat-sidenav
-          #propertySidenav
-          [mode]="propertyPinned ? 'side' : 'over'"
-          [opened]="propertyPinned || propertyOpen"
-          [disableClose]="propertyPinned"
-          position="end"
-          class="property-sidenav"
-          [class.floating-sidenav]="!propertyPinned"
-          [ngStyle]="!propertyPinned ? { right: propertyPosition.x + 'px', top: propertyPosition.y + 'px', transform: 'none' } : null"
-          (openedChange)="propertyOpen = $event"
-        >
-          <div class="property-header" [class.draggable]="!propertyPinned" (mousedown)="startPropertyDrag($event)">
-            <div class="header-title">
-              <h3>{{ 'designer.properties.title' | translate }}</h3>
-            </div>
-            <button mat-icon-button (click)="togglePropertyPin($event)" matTooltip="{{ propertyPinned ? 'Float properties' : 'Dock properties' }}">
-              <mat-icon>{{ propertyPinned ? 'open_in_new' : 'push_pin' }}</mat-icon>
-            </button>
-          </div>
-          <div *ngIf="selectedElement; else noSelection" class="property-form">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>{{ 'designer.properties.key' | translate }}</mat-label>
-              <input matInput [value]="selectedElement.data['key']" readonly />
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>{{ 'designer.properties.label_ar' | translate }}</mat-label>
-              <input matInput [value]="selectedElement.data['label_ar']" fcAutoDir />
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>{{ 'designer.properties.label_en' | translate }}</mat-label>
-              <input matInput [value]="selectedElement.data['label_en']" />
-            </mat-form-field>
-            <div class="prop-row">
-              <mat-form-field appearance="outline">
-                <mat-label>X (mm)</mat-label>
-                <input matInput type="number" [value]="selectedElement.data['x_mm']" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Y (mm)</mat-label>
-                <input matInput type="number" [value]="selectedElement.data['y_mm']" />
-              </mat-form-field>
-            </div>
-            <div class="prop-row">
-              <mat-form-field appearance="outline">
-                <mat-label>W (mm)</mat-label>
-                <input matInput type="number" [value]="selectedElement.data['width_mm']" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>H (mm)</mat-label>
-                <input matInput type="number" [value]="selectedElement.data['height_mm']" />
-              </mat-form-field>
-            </div>
-            <mat-slide-toggle [checked]="!!selectedElement.data['required']">
-              {{ 'designer.properties.required' | translate }}
-            </mat-slide-toggle>
-            <button mat-button color="warn" (click)="deleteSelected()" style="margin-top: 16px; width: 100%;">
-              <mat-icon>delete</mat-icon> {{ 'common.delete' | translate }}
-            </button>
-          </div>
-          <ng-template #noSelection>
-            <p style="padding: 16px; color: #999;">
-              Select an element to edit properties
-            </p>
-          </ng-template>
-        </mat-sidenav>
-      </mat-sidenav-container>
-    </div>
-  `,
-  styles: [`
-    .designer-layout { height: 100vh; display: flex; flex-direction: column; }
-    .designer-container { flex: 1; }
-    .palette-sidenav { width: 240px; }
-    .property-sidenav { width: 300px; }
-    .canvas-area { background: #e0e0e0; overflow: auto; }
-    .konva-container { display: flex; justify-content: center; padding: 24px; min-height: calc(100vh - 128px); }
-    .spacer { flex: 1 1 auto; }
-    .palette-header, .property-header { padding: 16px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .header-title { display: flex; align-items: center; gap: 8px; }
-    .floating-sidenav {
-      position: fixed !important;
-      top: 96px;
-      z-index: 205;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-      border-radius: 12px;
-    }
-    .palette-sidenav.floating-sidenav { width: 260px; }
-    .property-sidenav.floating-sidenav { width: 320px; z-index: 210; }
-    .palette-item { cursor: pointer; }
-    .palette-item:hover { background: #f5f5f5; }
-    .palette-en { font-size: 11px; color: #999; }
-    .canvas-toolbar { position: sticky; top: 0; z-index: 10; }
-    .canvas-area.detections-docked { padding-inline-end: 440px; }
-    .property-form { padding: 16px; }
-    .full-width { width: 100%; }
-    .prop-row { display: flex; gap: 8px; }
-    .prop-row mat-form-field { flex: 1; }
-    .rail-button {
-      position: fixed;
-      top: 96px;
-      z-index: 210;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: #fff;
-      border: 1px solid #e0e0e0;
-      border-radius: 999px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-      padding: 6px 10px;
-      cursor: pointer;
-    }
-    .rail-button.left { left: 8px; }
-    .rail-button.right { right: 8px; }
-    .import-panel {
-      position: fixed;
-      right: calc(300px + 24px);
-      top: 90px;
-      width: 320px;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-      z-index: 200;
-      padding: 16px;
-    }
-    .detections-panel.docked { /* right position controlled by ngStyle */ }
-    .detections-panel.floating { right: auto; }
-    .detections-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 8px;
-      cursor: default;
-    }
-    .detections-header.draggable { cursor: grab; }
-    .detections-title {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .detections-title h4 { margin: 0; }
-    .drag-icon { font-size: 18px; color: #8a8a8a; }
-    .import-panel h4 { margin: 0 0 12px; }
-    .file-drop {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      border: 1px dashed #c7c7c7;
-      border-radius: 10px;
-      background: #fafafa;
-      cursor: pointer;
-    }
-    .file-drop mat-icon { color: #6b6b6b; }
-    .file-meta { flex: 1; min-width: 0; }
-    .file-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: #333;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .file-subtitle { font-size: 11px; color: #888; }
-    .import-panel .actions { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
-    .detections-panel {
-      position: fixed;
-      top: 90px;
-      width: 360px;
-      max-height: 70vh;
-      overflow: auto;
-    .detection-card { border: 1px solid #eee; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
-    .detection-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .detection-meta { font-size: 11px; color: #777; }
-    .badge { font-size: 10px; padding: 2px 6px; background: #f2f2f2; border-radius: 999px; }
-    @media (max-width: 1200px) {
-      .import-panel,
-      .detections-panel {
-        right: 24px;
-      }
-    }
-  `],
+  templateUrl: './designer-page.component.html',
+  styleUrls: ['./designer-page.component.scss'],
 })
 export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('paletteSidenav', { read: ElementRef }) paletteSidenavEl?: ElementRef<HTMLElement>;
@@ -361,7 +34,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   loadingDetections = false;
   importPreviewUrl: string | null = null;
   detectionsDocked = false;
-  detectionsPosition = { x: 0, y: 0 };
+  detectionsPosition = { x: 320, y: 130 };
   palettePinned = true;
   propertyPinned = true;
   paletteOpen = false;
@@ -374,6 +47,10 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private paletteDragOffset = { x: 0, y: 0 };
   private isDraggingProperty = false;
   private propertyDragOffset = { x: 0, y: 0 };
+  private readonly propertyPinnedWidth = 300;
+  private readonly propertyFloatingWidth = 320;
+  private readonly panelGap = 24;
+  private readonly defaultFloatingTop = 120;
   get devLocalImportEnabled(): boolean {
     return getDevLocalImportEnabled();
   }
@@ -637,6 +314,27 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
     document.removeEventListener('mousemove', this.onDetectionsDragMove);
     document.removeEventListener('mouseup', this.onDetectionsDragEnd);
   };
+
+  getDockedDetectionsStyle(): { [key: string]: number } {
+    if (this.propertyPinned) {
+      return { 'right.px': this.propertyPinnedWidth + this.panelGap };
+    }
+
+    if (this.propertyOpen) {
+      return {
+        'right.px': this.propertyPosition.x + this.propertyFloatingWidth + this.panelGap,
+      };
+    }
+
+    return { 'right.px': this.panelGap };
+  }
+
+  getFloatingDetectionsStyle(): { [key: string]: number } {
+    return {
+      'left.px': this.detectionsPosition.x || this.panelGap,
+      'top.px': this.detectionsPosition.y || this.defaultFloatingTop,
+    };
+  }
 
   acceptAll(): void {
     if (!this.templateId || !this.detectionId) return;
