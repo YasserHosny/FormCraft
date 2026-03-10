@@ -21,6 +21,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 2. **Execute Review Workflow**:
    - Run @[/review] on current changes to identify potential bugs and improvements
    - Address any critical issues found during review
+   - Capture test/review status to include in PR body (e.g., "Tests: not run" or summary of executed checks)
 
 3. **Execute Git Workflow**:
    - Commit changes with suitable description on the feature branch
@@ -35,17 +36,18 @@ You **MUST** consider the user input before proceeding (if not empty).
 ```markdown
 - [ ] T001 Run @[/review] on current changes
 - [ ] T002 Address any critical issues found during review
-- [ ] T003 Commit changes with suitable description
-- [ ] T004 Push changes to remote (branch is created once via API in step 6)
-- [ ] T005 Create PR to merge [BRANCH_NAME] → [TARGET_BRANCH]
-- [ ] T006 Include "@codex" in PR description
+- [ ] T003 Record test/review status note for PR (e.g., "Tests: not run" or executed suite)
+- [ ] T004 Commit changes with suitable description
+- [ ] T005 Push changes to remote (branch is created once via API in step 6)
+- [ ] T006 Create PR to merge [BRANCH_NAME] → [TARGET_BRANCH]
+- [ ] T007 Include "@codex" and test/review status in PR description
 ```
 
 6. **Execute GitHub Operations**:
    - Use review workflow to analyze changes
    - Use `mcp3_create_branch` to create the feature branch (single creation point; do not recreate after pushing)
    - Use `mcp3_create_pull_request` to create the PR
-   - Ensure PR body contains "@codex" mention; no separate PR comment is required
+   - Ensure PR body contains "@codex" mention and a test/review status note; no separate PR comment is required
 
 7. **Report**: Output:
    - Review results and any issues addressed
