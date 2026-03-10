@@ -36,6 +36,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   importPreviewUrl: string | null = null;
   detectionsDocked = false;
   detectionsPosition = { x: 320, y: 130 };
+  detectionTypes: string[] = ['text', 'date', 'currency', 'number', 'signature', 'checkbox'];
   palettePinned = true;
   propertyPinned = true;
   paletteOpen = false;
@@ -54,6 +55,26 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly defaultFloatingTop = 120;
   get devLocalImportEnabled(): boolean {
     return getDevLocalImportEnabled();
+  }
+
+  onDetectionTypeChange(index: number, newType: string): void {
+    const detection = this.detections[index];
+    if (!detection) return;
+    detection.type_override = newType;
+    this.canvasService.setDetections(this.detections);
+  }
+
+  private buildTypeOverrides(indices: number[]): Record<number, string> | undefined {
+    const overrides: Record<number, string> = {};
+    for (const idx of indices) {
+      const det = this.detections[idx];
+      if (!det) continue;
+      const chosen = det.type_override || det.suggested_type;
+      if (chosen && chosen !== det.suggested_type) {
+        overrides[idx] = chosen;
+      }
+    }
+    return Object.keys(overrides).length > 0 ? overrides : undefined;
   }
 
   private subs: Subscription[] = [];
@@ -340,7 +361,8 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   acceptAll(): void {
     if (!this.templateId || !this.detectionId) return;
     const ids = this.detections.map((_, idx) => idx);
-    this.formDetectionService.acceptDetections(this.templateId, this.detectionId, ids).subscribe({
+    const overrides = this.buildTypeOverrides(ids);
+    this.formDetectionService.acceptDetections(this.templateId, this.detectionId, ids, overrides).subscribe({
       next: () => {
         this.showDetectionsPanel = false;
         this.detections = [];
@@ -363,8 +385,9 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   acceptSingle(index: number): void {
     if (!this.templateId || !this.detectionId) return;
+    const overrides = this.buildTypeOverrides([index]);
     this.formDetectionService
-      .acceptDetections(this.templateId, this.detectionId, [index])
+      .acceptDetections(this.templateId, this.detectionId, [index], overrides)
       .subscribe({
         next: () => {
           this.detections.splice(index, 1);

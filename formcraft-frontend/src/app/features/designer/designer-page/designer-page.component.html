@@ -123,7 +123,12 @@
               <strong>{{ d.text || 'Untitled' }}</strong>
               <div class="detection-meta">{{ d.bbox.x | number:'1.0-2' }} , {{ d.bbox.y | number:'1.0-2' }} mm</div>
             </div>
-            <span class="badge">{{ d.suggested_type }}</span>
+            <mat-form-field appearance="fill" class="type-select">
+              <mat-label>Type</mat-label>
+              <mat-select [value]="d.type_override || d.suggested_type" (selectionChange)="onDetectionTypeChange(i, $event.value)">
+                <mat-option *ngFor="let t of detectionTypes" [value]="t">{{ t }}</mat-option>
+              </mat-select>
+            </mat-form-field>
           </div>
           <div class="detection-meta">Confidence: {{ d.confidence | percent:'1.0-0' }}</div>
           <div class="actions" style="margin-top: 8px;">
