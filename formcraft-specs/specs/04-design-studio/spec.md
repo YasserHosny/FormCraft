@@ -157,6 +157,7 @@ A Designer can upload a scanned form (cheque, government form, shipping label) a
 3. **Given** a detection overlay shows 12 detected fields, **When** the Designer clicks "Accept All", **Then** all 12 fields are converted to FormCraft elements at their detected positions.
 4. **Given** a detection is incorrect, **When** the Designer clicks "Reject", **Then** the detection is removed without creating an element.
 5. **Given** a detection has wrong type, **When** the Designer changes type from "text" to "date" and accepts, **Then** a date element is created instead.
+6. **Given** a detection type was manually changed, **When** the user clicks "Accept All", **Then** the overridden types are respected for element creation.
 6. **Given** OCR misses a field, **When** the Designer drags an element from the palette, **Then** manual element creation works as normal.
 7. **Given** form dimensions are ambiguous, **When** the system detects the background image, **Then** it auto-detects page size from EXIF metadata or prompts the user to specify dimensions.
 
@@ -207,6 +208,7 @@ A Designer can upload a scanned form (cheque, government form, shipping label) a
 - **FR-031**: Detection results MUST persist until template is saved (not time-limited).
 - **FR-032**: System MUST allow panels (Toolbox, Properties, Detections) to toggle between pinned, auto-hidden, and floating states.
 - **FR-033**: Toolbox and Properties panels MUST default to pinned; Detections MUST default to auto-hidden or floating.
+- **FR-034**: System MUST allow editing a detection's suggested type before acceptance, and the overridden type MUST be used when creating elements (including bulk "Accept All").
 
 ### Key Entities
 

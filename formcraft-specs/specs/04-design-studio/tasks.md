@@ -128,7 +128,7 @@ T04-090-093 (undo/redo, after all element operations)
 - [ ] **T04-121** P1 S8 — Create `src/app/features/designer/models/detected-field.model.ts` — TypeScript interface for DetectedField
 - [ ] **T04-122** P1 S8 — Create `import-form/import-form-dialog.component.ts` — File upload dialog with drag-drop, preview, page size selector
 - [ ] **T04-123** P1 S8 — Create `import-form/detection-review.component.ts` — Overlay component rendering colored bounding boxes on canvas
-- [ ] **T04-124** P1 S8 — Implement detection card UI — Show text, suggested type dropdown, confidence %, accept/reject buttons
+- [ ] **T04-124** P1 S8 — Implement detection card UI — Show text, suggested type dropdown (editable), confidence %, accept/reject buttons
 - [ ] **T04-125** P1 S8 — Implement "Accept All" / "Reject All" buttons — Bulk operations on all detections
 - [ ] **T04-126** P1 S8 — Bind detection overlay to canvas zoom/pan — Detections scale and move with canvas transformations
 - [ ] **T04-127** P1 S8 — Add keyboard shortcuts: A (accept selected), R (reject selected), arrow keys (navigate detections)
@@ -140,3 +140,5 @@ T04-090-093 (undo/redo, after all element operations)
 - [ ] **T04-133** P2 S8 — Create endpoint GET /api/forms/submissions/{id} — Retrieve saved submission
 - [ ] **T04-134** P2 S8 — Implement two-way binding: field entry form ↔ canvas preview updates in real-time
 - [ ] **T04-135** P2 S8 — Implement validation in fill mode: highlight invalid fields, prevent export until valid
+- [ ] **T04-136** P1 S8 — Extend detection accept endpoint to accept optional `type_override` per detection index and persist overridden types
+- [ ] **T04-137** P1 S8 — Frontend: send edited detection types in Accept/Accept All payloads
