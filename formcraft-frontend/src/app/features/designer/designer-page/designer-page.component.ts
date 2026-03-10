@@ -186,7 +186,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isDraggingProperty = true;
     const rect = el.getBoundingClientRect();
     this.propertyDragOffset = {
-      x: event.clientX - rect.right,
+      x: rect.right - event.clientX,
       y: event.clientY - rect.top,
     };
     document.addEventListener('mousemove', this.onPropertyDragMove);
@@ -445,6 +445,10 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     document.removeEventListener('mousemove', this.onDetectionsDragMove);
     document.removeEventListener('mouseup', this.onDetectionsDragEnd);
+    document.removeEventListener('mousemove', this.onPaletteDragMove);
+    document.removeEventListener('mouseup', this.onPaletteDragEnd);
+    document.removeEventListener('mousemove', this.onPropertyDragMove);
+    document.removeEventListener('mouseup', this.onPropertyDragEnd);
     this.subs.forEach((s) => s.unsubscribe());
     this.canvasService.destroy();
   }
