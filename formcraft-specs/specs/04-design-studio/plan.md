@@ -27,7 +27,7 @@ Build a Konva.js-based canvas editor inside an Angular component with mm-coordin
 
 ### Frontend (formcraft-frontend)
 
-```text
+```
 src/app/features/designer/
 ├── designer.module.ts
 ├── designer-routing.module.ts
@@ -136,6 +136,12 @@ Element change → push to UndoStack
                 → on failure: retry 3x with exponential backoff
                 → on final failure: show warning toast, keep changes in memory
 ```
+
+### Detection Type Override
+
+- Detection cards show a type dropdown (defaults to suggested type) so designers can correct misclassifications before accepting.
+- Accept / Accept All must pass the overridden type to element creation.
+- Backend accept endpoint must allow an optional `type_override` per detection index.
 
 ## Research Notes
 
