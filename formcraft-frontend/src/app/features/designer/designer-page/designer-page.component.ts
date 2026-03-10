@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import { TemplateService } from '../../../core/services/template.service';
 import { environment, getDevLocalImportEnabled } from '../../../../environments/environment';
 import { CanvasService, CanvasElement } from '../services/canvas.service';
-import { ELEMENT_DEFAULTS } from '../../../models/element-defaults';
+import { ELEMENT_DEFAULTS, ElementDefault } from '../../../models/element-defaults';
 import { ElementType } from '../../../models/template.model';
 import { FormDetectionService } from '../../../core/services/form-detection.service';
 import { DetectionResponse, DetectedField } from '../models/detected-field.model';
@@ -19,6 +19,7 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
 export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('paletteSidenav', { read: ElementRef }) paletteSidenavEl?: ElementRef<HTMLElement>;
   @ViewChild('propertySidenav', { read: ElementRef }) propertySidenavEl?: ElementRef<HTMLElement>;
+  @ViewChild('konvaContainer', { read: ElementRef }) konvaContainerEl?: ElementRef<HTMLElement>;
   templateId = '';
   templateName = 'Loading...';
   pageId = '';
@@ -35,6 +36,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   importPreviewUrl: string | null = null;
   detectionsDocked = false;
   detectionsPosition = { x: 320, y: 130 };
+  detectionTypes: string[] = ['text', 'date', 'currency', 'number', 'signature', 'checkbox'];
   palettePinned = true;
   propertyPinned = true;
   paletteOpen = false;
@@ -53,6 +55,26 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly defaultFloatingTop = 120;
   get devLocalImportEnabled(): boolean {
     return getDevLocalImportEnabled();
+  }
+
+  onDetectionTypeChange(index: number, newType: string): void {
+    const detection = this.detections[index];
+    if (!detection) return;
+    detection.type_override = newType;
+    this.canvasService.setDetections(this.detections);
+  }
+
+  private buildTypeOverrides(indices: number[]): Record<number, string> | undefined {
+    const overrides: Record<number, string> = {};
+    for (const idx of indices) {
+      const det = this.detections[idx];
+      if (!det) continue;
+      const chosen = det.type_override || det.suggested_type;
+      if (chosen && chosen !== det.suggested_type) {
+        overrides[idx] = chosen;
+      }
+    }
+    return Object.keys(overrides).length > 0 ? overrides : undefined;
   }
 
   private subs: Subscription[] = [];
@@ -339,7 +361,8 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   acceptAll(): void {
     if (!this.templateId || !this.detectionId) return;
     const ids = this.detections.map((_, idx) => idx);
-    this.formDetectionService.acceptDetections(this.templateId, this.detectionId, ids).subscribe({
+    const overrides = this.buildTypeOverrides(ids);
+    this.formDetectionService.acceptDetections(this.templateId, this.detectionId, ids, overrides).subscribe({
       next: () => {
         this.showDetectionsPanel = false;
         this.detections = [];
@@ -362,8 +385,9 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   acceptSingle(index: number): void {
     if (!this.templateId || !this.detectionId) return;
+    const overrides = this.buildTypeOverrides([index]);
     this.formDetectionService
-      .acceptDetections(this.templateId, this.detectionId, [index])
+      .acceptDetections(this.templateId, this.detectionId, [index], overrides)
       .subscribe({
         next: () => {
           this.detections.splice(index, 1);
@@ -428,6 +452,56 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
       validation: {},
       formatting: {},
     });
+  }
+
+  onPaletteDragStart(event: DragEvent, type: ElementType): void {
+    event.dataTransfer?.setData('text/plain', type);
+    event.dataTransfer?.setDragImage(new Image(), 0, 0);
+  }
+
+  onCanvasDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  onCanvasDrop(event: DragEvent): void {
+    event.preventDefault();
+    const type = (event.dataTransfer?.getData('text/plain') as ElementType) || null;
+    if (!type) return;
+    const defaults = ELEMENT_DEFAULTS[type] as ElementDefault;
+    const drop = this.getDropPositionMm(event, defaults);
+    if (!drop) return;
+
+    this.elementCounter++;
+    this.canvasService.addElement({
+      type,
+      key: `${type}_${this.elementCounter}`,
+      label_ar: defaults.label_ar,
+      label_en: defaults.label_en,
+      x_mm: drop.x_mm,
+      y_mm: drop.y_mm,
+      width_mm: defaults.width_mm,
+      height_mm: defaults.height_mm,
+      required: false,
+      direction: 'auto',
+      validation: {},
+      formatting: {},
+    });
+  }
+
+  private getDropPositionMm(event: DragEvent, defaults: ElementDefault): { x_mm: number; y_mm: number } | null {
+    const host = this.konvaContainerEl?.nativeElement;
+    if (!host) return null;
+    const rect = host.getBoundingClientRect();
+    const offsetX = event.clientX - rect.left;
+    const offsetY = event.clientY - rect.top;
+    const zoom = this.canvasService.getZoom();
+    const pageOffset = this.canvasService.getPageOffsetPx();
+    const xPx = offsetX - pageOffset;
+    const yPx = offsetY - pageOffset;
+    const xMmRaw = this.canvasService.toMm(xPx);
+    const yMmRaw = this.canvasService.toMm(yPx);
+    const { x_mm, y_mm } = this.canvasService.clampToPage(xMmRaw, yMmRaw, defaults.width_mm, defaults.height_mm);
+    return { x_mm, y_mm };
   }
 
   deleteSelected(): void {

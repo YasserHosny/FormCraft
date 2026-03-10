@@ -39,11 +39,18 @@ export class FormDetectionService {
   acceptDetections(
     templateId: string,
     detectionId: string,
-    detectionIds: number[]
+    detectionIds: number[],
+    typeOverrides?: Record<number, string>
   ): Observable<{ message: string; created_elements: number }> {
+    const body: { detection_ids: number[]; type_overrides?: Record<number, string> } = {
+      detection_ids: detectionIds,
+    };
+    if (typeOverrides && Object.keys(typeOverrides).length > 0) {
+      body.type_overrides = typeOverrides;
+    }
     return this.http.post<{ message: string; created_elements: number }>(
       `${this.baseUrl}/${templateId}/detections/${detectionId}/accept`,
-      { detection_ids: detectionIds }
+      body
     );
   }
 
