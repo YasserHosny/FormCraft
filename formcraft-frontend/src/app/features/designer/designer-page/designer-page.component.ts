@@ -284,7 +284,7 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
       z-index: 200;
       padding: 16px;
     }
-    .detections-panel.docked { right: calc(300px + 24px); }
+    .detections-panel.docked { /* right position controlled by ngStyle */ }
     .detections-panel.floating { right: auto; }
     .detections-header {
       display: flex;
