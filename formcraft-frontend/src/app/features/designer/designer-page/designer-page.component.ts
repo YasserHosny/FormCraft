@@ -17,7 +17,15 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
     <div class="designer-layout">
       <mat-sidenav-container class="designer-container">
         <!-- Left: Element Palette -->
-        <mat-sidenav mode="side" opened position="start" class="palette-sidenav">
+        <mat-sidenav
+          #paletteSidenav
+          [mode]="palettePinned ? 'side' : 'over'"
+          [opened]="palettePinned || paletteOpen"
+          [disableClose]="palettePinned"
+          position="start"
+          class="palette-sidenav"
+          (openedChange)="paletteOpen = $event"
+        >
           <div class="palette-header">
             <h3>{{ 'designer.elements.text' | translate }}</h3>
           </div>
@@ -39,6 +47,12 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
           <mat-toolbar class="canvas-toolbar">
             <span>{{ templateName }}</span>
             <span class="spacer"></span>
+            <button mat-icon-button (click)="togglePalettePin()" matTooltip="{{ palettePinned ? 'Auto-hide palette' : 'Pin palette' }}">
+              <mat-icon>{{ palettePinned ? 'chevron_left' : 'push_pin' }}</mat-icon>
+            </button>
+            <button mat-icon-button (click)="togglePropertyPin()" matTooltip="{{ propertyPinned ? 'Auto-hide properties' : 'Pin properties' }}">
+              <mat-icon>{{ propertyPinned ? 'chevron_right' : 'push_pin' }}</mat-icon>
+            </button>
             <button mat-stroked-button color="primary" (click)="openImport()">
               <mat-icon>upload_file</mat-icon>
               Import Cheque
@@ -121,8 +135,34 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
           </div>
         </mat-sidenav-content>
 
+        <div
+          *ngIf="!palettePinned && !paletteOpen"
+          class="rail-button left"
+          (click)="paletteOpen = true"
+        >
+          <mat-icon>menu</mat-icon>
+          <span>Palette</span>
+        </div>
+
+        <div
+          *ngIf="!propertyPinned && !propertyOpen"
+          class="rail-button right"
+          (click)="propertyOpen = true"
+        >
+          <mat-icon>settings</mat-icon>
+          <span>Properties</span>
+        </div>
+
         <!-- Right: Property Panel -->
-        <mat-sidenav mode="side" opened position="end" class="property-sidenav">
+        <mat-sidenav
+          #propertySidenav
+          [mode]="propertyPinned ? 'side' : 'over'"
+          [opened]="propertyPinned || propertyOpen"
+          [disableClose]="propertyPinned"
+          position="end"
+          class="property-sidenav"
+          (openedChange)="propertyOpen = $event"
+        >
           <div class="property-header">
             <h3>{{ 'designer.properties.title' | translate }}</h3>
           </div>
@@ -193,6 +233,22 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
     .full-width { width: 100%; }
     .prop-row { display: flex; gap: 8px; }
     .prop-row mat-form-field { flex: 1; }
+    .rail-button {
+      position: fixed;
+      top: 96px;
+      z-index: 210;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 999px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    .rail-button.left { left: 8px; }
+    .rail-button.right { right: 8px; }
     .import-panel {
       position: fixed;
       right: calc(300px + 24px);
@@ -284,8 +340,12 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   detectionId = '';
   loadingDetections = false;
   importPreviewUrl: string | null = null;
-  detectionsDocked = true;
+  detectionsDocked = false;
   detectionsPosition = { x: 0, y: 0 };
+  palettePinned = true;
+  propertyPinned = true;
+  paletteOpen = false;
+  propertyOpen = false;
   private isDraggingDetections = false;
   private detectionsDragOffset = { x: 0, y: 0 };
   get devLocalImportEnabled(): boolean {
@@ -353,6 +413,16 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   closeImport(): void {
     this.showImportPanel = false;
+  }
+
+  togglePalettePin(): void {
+    this.palettePinned = !this.palettePinned;
+    this.paletteOpen = this.palettePinned;
+  }
+
+  togglePropertyPin(): void {
+    this.propertyPinned = !this.propertyPinned;
+    this.propertyOpen = this.propertyPinned;
   }
 
   toggleDetectionsDock(event?: Event): void {
