@@ -10,68 +10,8 @@ import { HttpClient } from '@angular/common/http';
 @Component({
   selector: 'fc-profile',
   standalone: false,
-  template: `
-    <div class="profile-container">
-      <mat-card class="profile-card">
-        <mat-card-header>
-          <mat-card-title>{{ 'auth.profile' | translate }}</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <form [formGroup]="profileForm" (ngSubmit)="onSave()">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>{{ 'auth.email' | translate }}</mat-label>
-              <input matInput formControlName="email" readonly />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>{{ 'auth.role' | translate }}</mat-label>
-              <input matInput [value]="roleName" readonly />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Display Name</mat-label>
-              <input matInput formControlName="display_name" fcAutoDir />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>{{ 'auth.language' | translate }}</mat-label>
-              <mat-select formControlName="language">
-                <mat-option value="ar">العربية</mat-option>
-                <mat-option value="en">English</mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <button
-              mat-raised-button
-              color="primary"
-              type="submit"
-              class="full-width"
-              [disabled]="profileForm.pristine || saving"
-            >
-              {{ 'common.save' | translate }}
-            </button>
-          </form>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  `,
-  styles: [`
-    .profile-container {
-      display: flex;
-      justify-content: center;
-      padding: 48px 24px;
-    }
-    .profile-card {
-      width: 480px;
-      padding: 24px;
-    }
-    .full-width {
-      width: 100%;
-    }
-    mat-form-field {
-      margin-bottom: 16px;
-    }
-  `],
+  templateUrl: './profile.component.html',
+  styleUrls: ['./profile.component.scss'],
 })
 export class ProfileComponent implements OnInit {
   profileForm!: FormGroup;
