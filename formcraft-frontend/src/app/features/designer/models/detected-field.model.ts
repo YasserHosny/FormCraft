@@ -8,6 +8,7 @@ export interface DetectedField {
   };
   confidence: number;
   suggested_type: string;
+  type_override?: string;
   status: 'pending' | 'accepted' | 'rejected';
 }
 

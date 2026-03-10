@@ -137,6 +137,12 @@ Element change → push to UndoStack
                 → on final failure: show warning toast, keep changes in memory
 ```
 
+### Detection Type Override
+
+- Detection cards show a type dropdown (defaults to suggested type) so designers can correct misclassifications before accepting.
+- Accept / Accept All must pass the overridden type to element creation.
+- Backend accept endpoint must allow an optional `type_override` per detection index.
+
 ## Research Notes
 
 - **Pure Konva.js** over ngx-konva: ngx-konva is a thin wrapper with limited maintenance. Direct Konva.js integration gives full control and avoids a dependency risk.
