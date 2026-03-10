@@ -4,7 +4,7 @@
 
 ## Summary
 
-Build a Konva.js-based canvas editor inside an Angular component with mm-coordinate system, element palette, drag-to-canvas, select/move/resize, property panel with Angular Material, grid/snap, layer management, multi-page navigation, and undo/redo.
+Build a Konva.js-based canvas editor inside an Angular component with mm-coordinate system, element palette, drag-to-canvas, select/move/resize, property panel with Angular Material, grid/snap, layer management, multi-page navigation, and undo/redo. Add panel docking/pinning states (pinned, auto-hide, floating) with Toolbox/Properties default pinned and Detections default auto-hide or floating.
 
 ## Technical Context
 
@@ -87,7 +87,7 @@ export function pxToMm(px: number, dpi: number = 96, zoom: number = 1): number {
 
 ```
 DesignerPageComponent (host)
-├── PaletteComponent (left sidebar)
+├── PaletteComponent (left sidebar; supports pin/auto-hide/float)
 │   └── draggable element types
 ├── CanvasComponent (center)
 │   └── Konva.Stage
@@ -95,9 +95,10 @@ DesignerPageComponent (host)
 │       └── Konva.Layer (elements)
 │       └── Konva.Layer (grid overlay)
 │       └── Konva.Transformer (selection handles)
-├── PropertyPanelComponent (right sidebar)
+├── PropertyPanelComponent (right sidebar; supports pin/auto-hide/float)
 │   └── bound to selected element
 ├── LayersPanelComponent (right sidebar tab)
+├── DetectionsPanelComponent (floating or docked panel; pin/auto-hide)
 │   └── z-order list
 └── PageNavigatorComponent (bottom)
     └── page thumbnails

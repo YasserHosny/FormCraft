@@ -75,6 +75,23 @@ When an element is selected, a right panel shows its editable properties: labels
 
 ---
 
+### User Story 4b - Panel Docking & Pinning (Priority: P2)
+
+The Designer can pin, auto-hide, or float panels (Toolbox, Properties, Detections) to manage workspace layout. By default, Toolbox and Properties are pinned; Detections starts auto-hidden or floating to avoid overlap.
+
+**Why this priority**: Panel layout controls improve usability in dense layouts without blocking core canvas actions.
+
+**Independent Test**: Can be tested by toggling pin states and verifying layout space reservation or floating behavior.
+
+**Acceptance Scenarios**:
+
+1. **Given** the Toolbox panel is pinned, **When** the Designer toggles it to auto-hide, **Then** the canvas expands and the panel collapses to an icon rail.
+2. **Given** the Detections panel is floating, **When** the Designer drags its header, **Then** the panel moves without resizing the canvas.
+3. **Given** a floating panel is dragged near the edge, **When** the Designer chooses "Dock", **Then** the panel pins and reserves layout space.
+4. **Given** the Properties panel is pinned by default, **When** the Designer toggles auto-hide, **Then** it collapses and restores on hover/click.
+
+---
+
 ### User Story 5 - Layer Management (Priority: P2)
 
 A layers panel shows all elements on the current page in z-order. The Designer can reorder layers (bring to front, send to back, move up, move down), toggle element visibility, and lock elements to prevent accidental editing.
@@ -188,6 +205,8 @@ A Designer can upload a scanned form (cheque, government form, shipping label) a
 - **FR-029**: System MUST support "Accept All" and "Reject All" bulk operations for detections.
 - **FR-030**: System MUST auto-detect page dimensions from image EXIF metadata or prompt for manual input.
 - **FR-031**: Detection results MUST persist until template is saved (not time-limited).
+- **FR-032**: System MUST allow panels (Toolbox, Properties, Detections) to toggle between pinned, auto-hidden, and floating states.
+- **FR-033**: Toolbox and Properties panels MUST default to pinned; Detections MUST default to auto-hidden or floating.
 
 ### Key Entities
 
