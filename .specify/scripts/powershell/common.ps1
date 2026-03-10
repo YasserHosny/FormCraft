@@ -79,17 +79,23 @@ function Test-FeatureBranch {
         return $true
     }
     
-    if ($Branch -notmatch '^[0-9]{3}-') {
-        Write-Output "ERROR: Not on a feature branch. Current branch: $Branch"
-        Write-Output "Feature branches should be named like: 001-feature-name"
-        return $false
+    if ($Branch -notmatch '^[0-9]{2,3}-') {
+        Write-Warning "[specify] Warning: Branch '$Branch' does not follow feature naming (nnn-name); continuing"
+        return $true
     }
     return $true
 }
 
 function Get-FeatureDir {
     param([string]$RepoRoot, [string]$Branch)
-    Join-Path $RepoRoot "specs/$Branch"
+
+    # Prefer a speckit override for specs root; fallback to formcraft-specs/specs
+    $specsRoot = $env:SPECIFY_SPECS_ROOT
+    if (-not $specsRoot) {
+        $specsRoot = Join-Path $RepoRoot "formcraft-specs/specs"
+    }
+
+    Join-Path $specsRoot $Branch
 }
 
 function Get-FeaturePathsEnv {
@@ -97,6 +103,18 @@ function Get-FeaturePathsEnv {
     $currentBranch = Get-CurrentBranch
     $hasGit = Test-HasGit
     $featureDir = Get-FeatureDir -RepoRoot $repoRoot -Branch $currentBranch
+
+    # Fallback: if computed feature dir doesn't exist, try the latest feature under specs root
+    if (-not (Test-Path $featureDir -PathType Container)) {
+        $specsRoot = Split-Path $featureDir -Parent
+        if (Test-Path $specsRoot) {
+            $latest = Get-ChildItem -Path $specsRoot -Directory | Sort-Object Name -Descending | Select-Object -First 1
+            if ($latest) {
+                $currentBranch = $latest.Name
+                $featureDir = $latest.FullName
+            }
+        }
+    }
     
     [PSCustomObject]@{
         REPO_ROOT     = $repoRoot

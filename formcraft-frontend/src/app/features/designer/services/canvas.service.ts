@@ -9,6 +9,14 @@ export interface CanvasElement {
   data: Record<string, unknown>;
 }
 
+interface AddElementOptions {
+  recordUndo?: boolean;
+}
+
+interface RemoveElementOptions {
+  recordUndo?: boolean;
+}
+
 export interface UndoEntry {
   type: 'add' | 'remove' | 'move' | 'resize' | 'update';
   elementId: string;
@@ -46,6 +54,36 @@ export class CanvasService implements OnDestroy {
   private pageWidthMm = 210;
   private pageHeightMm = 297;
   private detections: { bbox: { x: number; y: number; width: number; height: number }; type?: string }[] = [];
+  private readonly pageOffsetPx = 20;
+
+  getZoom(): number {
+    return this._zoom.value;
+  }
+
+  getPageWidthMm(): number {
+    return this.pageWidthMm;
+  }
+
+  getPageHeightMm(): number {
+    return this.pageHeightMm;
+  }
+
+  toMm(px: number): number {
+    return pxToMm(px, this.dpi, this._zoom.value);
+  }
+
+  clampToPage(xMm: number, yMm: number, wMm: number, hMm: number): { x_mm: number; y_mm: number } {
+    const maxX = Math.max(0, this.pageWidthMm - wMm);
+    const maxY = Math.max(0, this.pageHeightMm - hMm);
+    return {
+      x_mm: clamp(xMm, 0, maxX),
+      y_mm: clamp(yMm, 0, maxY),
+    };
+  }
+
+  getPageOffsetPx(): number {
+    return this.pageOffsetPx;
+  }
 
   reset(containerId: string, widthMm: number, heightMm: number): void {
     this.stage?.destroy();
@@ -165,105 +203,25 @@ export class CanvasService implements OnDestroy {
   }
 
   addElement(data: Record<string, unknown>): CanvasElement {
-    if (!this.layer) throw new Error('Canvas not initialized');
-
-    const zoom = this._zoom.value;
-    const x = mmToPx(data['x_mm'] as number, this.dpi, zoom) + 20;
-    const y = mmToPx(data['y_mm'] as number, this.dpi, zoom) + 20;
-    const w = mmToPx(data['width_mm'] as number, this.dpi, zoom);
-    const h = mmToPx(data['height_mm'] as number, this.dpi, zoom);
-
-    const group = new Konva.Group({ x, y, draggable: true });
-
-    // Element box
-    const rect = new Konva.Rect({
-      width: w,
-      height: h,
-      fill: '#f8f9fa',
-      stroke: '#90caf9',
-      strokeWidth: 1,
-      cornerRadius: 2,
-    });
-    group.add(rect);
-
-    // Label text
-    const label = (data['label_ar'] as string) || (data['label_en'] as string) || (data['key'] as string) || '';
-    const text = new Konva.Text({
-      text: label,
-      width: w,
-      height: h,
-      align: 'center',
-      verticalAlign: 'middle',
-      fontSize: 12,
-      fontFamily: 'Noto Naskh Arabic, Noto Sans, sans-serif',
-      fill: '#333',
-      listening: false,
-    });
-    group.add(text);
-
-    // Type badge
-    const typeBadge = new Konva.Text({
-      text: (data['type'] as string || '').toUpperCase(),
-      x: 2,
-      y: 2,
-      fontSize: 8,
-      fontFamily: 'sans-serif',
-      fill: '#999',
-      listening: false,
-    });
-    group.add(typeBadge);
-
-    const element: CanvasElement = {
-      id: data['id'] as string || `elem_${Date.now()}`,
-      konvaNode: group,
-      data: { ...data },
-    };
-    this.elements.set(element.id, element);
-
-    // Click to select
-    group.on('click tap', () => this.selectElement(element.id));
-
-    // Drag events with snap
-    group.on('dragmove', () => {
-      if (this.snapEnabled) {
-        const gridPx = mmToPx(this.gridSizeMm, this.dpi, this._zoom.value);
-        group.x(snapToGrid(group.x() - 20, gridPx) + 20);
-        group.y(snapToGrid(group.y() - 20, gridPx) + 20);
-      }
-    });
-
-    group.on('dragend', () => {
-      const newXMm = pxToMm(group.x() - 20, this.dpi, this._zoom.value);
-      const newYMm = pxToMm(group.y() - 20, this.dpi, this._zoom.value);
-      this.pushUndo({
-        type: 'move',
-        elementId: element.id,
-        before: { x_mm: element.data['x_mm'], y_mm: element.data['y_mm'] },
-        after: { x_mm: newXMm, y_mm: newYMm },
-      });
-      element.data['x_mm'] = newXMm;
-      element.data['y_mm'] = newYMm;
-      this._dirty.next(true);
-    });
-
-    this.layer.add(group);
-    this.transformer!.moveToTop();
-    this.layer.draw();
-    this._dirty.next(true);
-
-    return element;
+    return this.addElementInternal(data, { recordUndo: true });
   }
 
-  removeElement(id: string): void {
+  removeElement(id: string, options?: RemoveElementOptions): void {
     const el = this.elements.get(id);
     if (!el) return;
+    const recordUndo = options?.recordUndo ?? true;
+    if (recordUndo) {
+      this.pushUndo({ type: 'remove', elementId: id, before: { ...el.data }, after: {} });
+    }
     el.konvaNode.destroy();
     this.elements.delete(id);
     if (this._selectedElement.value?.id === id) {
       this.deselectAll();
     }
     this.layer?.draw();
-    this._dirty.next(true);
+    if (recordUndo) {
+      this._dirty.next(true);
+    }
   }
 
   selectElement(id: string): void {
@@ -349,7 +307,7 @@ export class CanvasService implements OnDestroy {
   undo(): void {
     const entry = this.undoStack.pop();
     if (!entry) return;
-    this.applyState(entry.elementId, entry.before);
+    this.applyUndoEntry(entry, 'undo');
     this.redoStack.push(entry);
     this._dirty.next(true);
   }
@@ -357,7 +315,7 @@ export class CanvasService implements OnDestroy {
   redo(): void {
     const entry = this.redoStack.pop();
     if (!entry) return;
-    this.applyState(entry.elementId, entry.after);
+    this.applyUndoEntry(entry, 'redo');
     this.undoStack.push(entry);
     this._dirty.next(true);
   }
@@ -423,23 +381,204 @@ export class CanvasService implements OnDestroy {
     }
   }
 
+  private applyUndoEntry(entry: UndoEntry, direction: 'undo' | 'redo'): void {
+    const targetState = direction === 'undo' ? entry.before : entry.after;
+    switch (entry.type) {
+      case 'add': {
+        if (direction === 'undo') {
+          this.removeElement(entry.elementId, { recordUndo: false });
+        } else {
+          this.addElementInternal(targetState, { recordUndo: false });
+        }
+        break;
+      }
+      case 'remove': {
+        if (direction === 'undo') {
+          this.addElementInternal(entry.before, { recordUndo: false });
+        } else {
+          this.removeElement(entry.elementId, { recordUndo: false });
+        }
+        break;
+      }
+      case 'move':
+      case 'resize':
+      case 'update': {
+        this.applyState(entry.elementId, targetState);
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  private addElementInternal(data: Record<string, unknown>, options?: AddElementOptions): CanvasElement {
+    if (!this.layer) throw new Error('Canvas not initialized');
+
+    const recordUndo = options?.recordUndo ?? true;
+    const zoom = this._zoom.value;
+    const x = mmToPx(data['x_mm'] as number, this.dpi, zoom) + this.pageOffsetPx;
+    const y = mmToPx(data['y_mm'] as number, this.dpi, zoom) + this.pageOffsetPx;
+    const w = mmToPx(data['width_mm'] as number, this.dpi, zoom);
+    const h = mmToPx(data['height_mm'] as number, this.dpi, zoom);
+
+    const group = new Konva.Group({ x, y, draggable: true, name: 'element-group' });
+
+    // Element box
+    const rect = new Konva.Rect({
+      name: 'box',
+      width: w,
+      height: h,
+      fill: '#f8f9fa',
+      stroke: '#90caf9',
+      strokeWidth: 1,
+      cornerRadius: 2,
+    });
+    group.add(rect);
+
+    // Label text
+    const label = (data['label_ar'] as string) || (data['label_en'] as string) || (data['key'] as string) || '';
+    const text = new Konva.Text({
+      name: 'label',
+      text: label,
+      width: w,
+      height: h,
+      align: 'center',
+      verticalAlign: 'middle',
+      fontSize: 12,
+      fontFamily: 'Noto Naskh Arabic, Noto Sans, sans-serif',
+      fill: '#333',
+      listening: false,
+    });
+    group.add(text);
+
+    // Type badge
+    const typeBadge = new Konva.Text({
+      name: 'badge',
+      text: (data['type'] as string || '').toUpperCase(),
+      x: 2,
+      y: 2,
+      fontSize: 8,
+      fontFamily: 'sans-serif',
+      fill: '#999',
+      listening: false,
+    });
+    group.add(typeBadge);
+
+    const element: CanvasElement = {
+      id: (data['id'] as string) || `elem_${Date.now()}`,
+      konvaNode: group,
+      data: { ...data },
+    };
+    this.elements.set(element.id, element);
+
+    // Click to select
+    group.on('click tap', () => this.selectElement(element.id));
+
+    // Drag events with snap
+    group.on('dragmove', () => {
+      if (this.snapEnabled) {
+        const gridPx = mmToPx(this.gridSizeMm, this.dpi, this._zoom.value);
+        group.x(snapToGrid(group.x() - this.pageOffsetPx, gridPx) + this.pageOffsetPx);
+        group.y(snapToGrid(group.y() - this.pageOffsetPx, gridPx) + this.pageOffsetPx);
+      }
+    });
+
+    group.on('dragend', () => {
+      const newXMm = pxToMm(group.x() - this.pageOffsetPx, this.dpi, this._zoom.value);
+      const newYMm = pxToMm(group.y() - this.pageOffsetPx, this.dpi, this._zoom.value);
+      const clamped = this.clampToPage(newXMm, newYMm, element.data['width_mm'] as number, element.data['height_mm'] as number);
+      this.pushUndo({
+        type: 'move',
+        elementId: element.id,
+        before: { x_mm: element.data['x_mm'], y_mm: element.data['y_mm'] },
+        after: { x_mm: clamped.x_mm, y_mm: clamped.y_mm },
+      });
+      element.data['x_mm'] = clamped.x_mm;
+      element.data['y_mm'] = clamped.y_mm;
+      group.x(mmToPx(clamped.x_mm, this.dpi, this._zoom.value) + this.pageOffsetPx);
+      group.y(mmToPx(clamped.y_mm, this.dpi, this._zoom.value) + this.pageOffsetPx);
+      this._dirty.next(true);
+    });
+
+    group.on('transformend', () => {
+      const rectNode = group.findOne<Konva.Rect>('Rect');
+      if (!rectNode) return;
+      const scaleX = group.scaleX();
+      const scaleY = group.scaleY();
+      const newWidthPx = Math.max(rectNode.width() * scaleX, mmToPx(MIN_ELEMENT_SIZE_MM, this.dpi, this._zoom.value));
+      const newHeightPx = Math.max(rectNode.height() * scaleY, mmToPx(MIN_ELEMENT_SIZE_MM, this.dpi, this._zoom.value));
+      group.scale({ x: 1, y: 1 });
+      const before = { width_mm: element.data['width_mm'], height_mm: element.data['height_mm'] };
+      const widthMm = pxToMm(newWidthPx, this.dpi, this._zoom.value);
+      const heightMm = pxToMm(newHeightPx, this.dpi, this._zoom.value);
+      const clampedPos = this.clampToPage(
+        pxToMm(group.x() - this.pageOffsetPx, this.dpi, this._zoom.value),
+        pxToMm(group.y() - this.pageOffsetPx, this.dpi, this._zoom.value),
+        widthMm,
+        heightMm,
+      );
+      element.data['width_mm'] = widthMm;
+      element.data['height_mm'] = heightMm;
+      element.data['x_mm'] = clampedPos.x_mm;
+      element.data['y_mm'] = clampedPos.y_mm;
+      this.updateElementVisual(element);
+      this.pushUndo({ type: 'resize', elementId: element.id, before, after: { width_mm: widthMm, height_mm: heightMm } });
+      this._dirty.next(true);
+    });
+
+    this.layer.add(group);
+    this.transformer!.moveToTop();
+    this.layer.draw();
+    if (recordUndo) {
+      this.pushUndo({ type: 'add', elementId: element.id, before: {}, after: { ...element.data } });
+      this._dirty.next(true);
+    }
+
+    return element;
+  }
+
+  private updateElementVisual(el: CanvasElement): void {
+    const group = el.konvaNode;
+    const rect = group.findOne<Konva.Rect>('.box') || group.findOne<Konva.Rect>('Rect');
+    const text = group.findOne<Konva.Text>('.label') || group.findOne<Konva.Text>('Text');
+    const widthPx = mmToPx(el.data['width_mm'] as number, this.dpi, this._zoom.value);
+    const heightPx = mmToPx(el.data['height_mm'] as number, this.dpi, this._zoom.value);
+    if (rect) {
+      rect.width(widthPx);
+      rect.height(heightPx);
+    }
+    if (text) {
+      text.width(widthPx);
+      text.height(heightPx);
+    }
+    group.x(mmToPx(el.data['x_mm'] as number, this.dpi, this._zoom.value) + this.pageOffsetPx);
+    group.y(mmToPx(el.data['y_mm'] as number, this.dpi, this._zoom.value) + this.pageOffsetPx);
+    this.layer?.draw();
+  }
+
   private applyState(elementId: string, state: Record<string, unknown>): void {
     const el = this.elements.get(elementId);
     if (!el) return;
 
     if ('x_mm' in state || 'y_mm' in state) {
-      const zoom = this._zoom.value;
       if ('x_mm' in state) {
-        el.konvaNode.x(mmToPx(state['x_mm'] as number, this.dpi, zoom) + 20);
         el.data['x_mm'] = state['x_mm'];
       }
       if ('y_mm' in state) {
-        el.konvaNode.y(mmToPx(state['y_mm'] as number, this.dpi, zoom) + 20);
         el.data['y_mm'] = state['y_mm'];
       }
     }
 
+    if ('width_mm' in state || 'height_mm' in state) {
+      if ('width_mm' in state) {
+        el.data['width_mm'] = state['width_mm'];
+      }
+      if ('height_mm' in state) {
+        el.data['height_mm'] = state['height_mm'];
+      }
+    }
+
     Object.assign(el.data, state);
-    this.layer?.draw();
+    this.updateElementVisual(el);
   }
 }
