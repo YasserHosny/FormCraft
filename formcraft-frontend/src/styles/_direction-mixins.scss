@@ -1,0 +1,41 @@
+/// Directional SCSS mixins for RTL/LTR support
+
+@mixin margin-start($value) {
+  [dir="ltr"] & { margin-left: $value; }
+  [dir="rtl"] & { margin-right: $value; }
+}
+
+@mixin margin-end($value) {
+  [dir="ltr"] & { margin-right: $value; }
+  [dir="rtl"] & { margin-left: $value; }
+}
+
+@mixin padding-start($value) {
+  [dir="ltr"] & { padding-left: $value; }
+  [dir="rtl"] & { padding-right: $value; }
+}
+
+@mixin padding-end($value) {
+  [dir="ltr"] & { padding-right: $value; }
+  [dir="rtl"] & { padding-left: $value; }
+}
+
+@mixin float-start {
+  [dir="ltr"] & { float: left; }
+  [dir="rtl"] & { float: right; }
+}
+
+@mixin float-end {
+  [dir="ltr"] & { float: right; }
+  [dir="rtl"] & { float: left; }
+}
+
+@mixin border-start($value) {
+  [dir="ltr"] & { border-left: $value; }
+  [dir="rtl"] & { border-right: $value; }
+}
+
+@mixin border-end($value) {
+  [dir="ltr"] & { border-right: $value; }
+  [dir="rtl"] & { border-left: $value; }
+}

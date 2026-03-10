@@ -1,0 +1,126 @@
+{
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "confirm": "تأكيد",
+    "loading": "جاري التحميل...",
+    "search": "بحث",
+    "filter": "تصفية",
+    "actions": "إجراءات",
+    "yes": "نعم",
+    "no": "لا",
+    "close": "إغلاق",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "register": "تسجيل مستخدم جديد",
+    "profile": "الملف الشخصي",
+    "language": "اللغة",
+    "role": "الدور"
+  },
+  "roles": {
+    "admin": "مدير",
+    "designer": "مصمم",
+    "operator": "مشغل",
+    "viewer": "مشاهد"
+  },
+  "templates": {
+    "title": "القوالب",
+    "create": "إنشاء قالب جديد",
+    "name": "اسم القالب",
+    "description": "الوصف",
+    "category": "التصنيف",
+    "status": "الحالة",
+    "country": "الدولة",
+    "language": "اللغة",
+    "version": "الإصدار",
+    "actions": {
+      "save": "حفظ القالب",
+      "publish": "نشر",
+      "preview": "معاينة",
+      "delete": "حذف القالب",
+      "duplicate": "نسخ القالب"
+    },
+    "statuses": {
+      "draft": "مسودة",
+      "published": "منشور"
+    }
+  },
+  "designer": {
+    "title": "استوديو التصميم",
+    "elements": {
+      "text": "نص",
+      "number": "رقم",
+      "date": "تاريخ",
+      "currency": "عملة",
+      "dropdown": "قائمة منسدلة",
+      "radio": "اختيار فردي",
+      "checkbox": "مربع اختيار",
+      "image": "صورة",
+      "qr": "رمز QR",
+      "barcode": "باركود"
+    },
+    "properties": {
+      "title": "الخصائص",
+      "position": "الموضع",
+      "size": "الحجم",
+      "label_ar": "التسمية (عربي)",
+      "label_en": "التسمية (إنجليزي)",
+      "key": "المفتاح",
+      "required": "مطلوب",
+      "direction": "الاتجاه",
+      "validation": "التحقق",
+      "formatting": "التنسيق"
+    },
+    "layers": {
+      "title": "الطبقات",
+      "bring_front": "نقل للأمام",
+      "send_back": "نقل للخلف",
+      "lock": "قفل",
+      "unlock": "فك القفل",
+      "visible": "مرئي",
+      "hidden": "مخفي"
+    },
+    "pages": {
+      "add": "إضافة صفحة",
+      "delete": "حذف الصفحة",
+      "page_of": "صفحة {current} من {total}"
+    },
+    "toolbar": {
+      "zoom_in": "تكبير",
+      "zoom_out": "تصغير",
+      "undo": "تراجع",
+      "redo": "إعادة",
+      "grid": "الشبكة",
+      "snap": "محاذاة",
+      "export_pdf": "تصدير PDF",
+      "preview": "معاينة"
+    }
+  },
+  "ai": {
+    "suggestion": "اقتراح ذكي",
+    "accept": "قبول",
+    "dismiss": "رفض",
+    "confidence": "الثقة",
+    "loading": "جاري التحليل..."
+  },
+  "countries": {
+    "EG": "مصر",
+    "SA": "المملكة العربية السعودية",
+    "AE": "الإمارات العربية المتحدة"
+  },
+  "errors": {
+    "generic": "حدث خطأ غير متوقع",
+    "network": "خطأ في الاتصال بالخادم",
+    "unauthorized": "غير مصرح",
+    "forbidden": "غير مسموح",
+    "not_found": "غير موجود"
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "search": "Search",
+    "filter": "Filter",
+    "actions": "Actions",
+    "yes": "Yes",
+    "no": "No",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "auth": {
+    "login": "Sign In",
+    "logout": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "register": "Register New User",
+    "profile": "Profile",
+    "language": "Language",
+    "role": "Role"
+  },
+  "roles": {
+    "admin": "Admin",
+    "designer": "Designer",
+    "operator": "Operator",
+    "viewer": "Viewer"
+  },
+  "templates": {
+    "title": "Templates",
+    "create": "Create New Template",
+    "name": "Template Name",
+    "description": "Description",
+    "category": "Category",
+    "status": "Status",
+    "country": "Country",
+    "language": "Language",
+    "version": "Version",
+    "actions": {
+      "save": "Save Template",
+      "publish": "Publish",
+      "preview": "Preview",
+      "delete": "Delete Template",
+      "duplicate": "Duplicate Template"
+    },
+    "statuses": {
+      "draft": "Draft",
+      "published": "Published"
+    }
+  },
+  "designer": {
+    "title": "Design Studio",
+    "elements": {
+      "text": "Text",
+      "number": "Number",
+      "date": "Date",
+      "currency": "Currency",
+      "dropdown": "Dropdown",
+      "radio": "Radio",
+      "checkbox": "Checkbox",
+      "image": "Image",
+      "qr": "QR Code",
+      "barcode": "Barcode"
+    },
+    "properties": {
+      "title": "Properties",
+      "position": "Position",
+      "size": "Size",
+      "label_ar": "Label (Arabic)",
+      "label_en": "Label (English)",
+      "key": "Key",
+      "required": "Required",
+      "direction": "Direction",
+      "validation": "Validation",
+      "formatting": "Formatting"
+    },
+    "layers": {
+      "title": "Layers",
+      "bring_front": "Bring to Front",
+      "send_back": "Send to Back",
+      "lock": "Lock",
+      "unlock": "Unlock",
+      "visible": "Visible",
+      "hidden": "Hidden"
+    },
+    "pages": {
+      "add": "Add Page",
+      "delete": "Delete Page",
+      "page_of": "Page {current} of {total}"
+    },
+    "toolbar": {
+      "zoom_in": "Zoom In",
+      "zoom_out": "Zoom Out",
+      "undo": "Undo",
+      "redo": "Redo",
+      "grid": "Grid",
+      "snap": "Snap",
+      "export_pdf": "Export PDF",
+      "preview": "Preview"
+    }
+  },
+  "ai": {
+    "suggestion": "Smart Suggestion",
+    "accept": "Accept",
+    "dismiss": "Dismiss",
+    "confidence": "Confidence",
+    "loading": "Analyzing..."
+  },
+  "countries": {
+    "EG": "Egypt",
+    "SA": "Saudi Arabia",
+    "AE": "United Arab Emirates"
+  },
+  "errors": {
+    "generic": "An unexpected error occurred",
+    "network": "Server connection error",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "not_found": "Not found"
+  }
+}

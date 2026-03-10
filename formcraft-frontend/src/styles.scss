@@ -1,0 +1,27 @@
+@use 'styles/direction-mixins';
+@use 'styles/rtl';
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Noto Naskh Arabic', 'Noto Sans', Roboto, sans-serif;
+}
+
+body {
+  direction: rtl;
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}

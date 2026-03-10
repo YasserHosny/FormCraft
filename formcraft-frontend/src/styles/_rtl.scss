@@ -1,0 +1,12 @@
+/// RTL-specific global overrides
+
+// Angular Material RTL fixes (if needed)
+[dir="rtl"] {
+  .mat-mdc-form-field {
+    text-align: right;
+  }
+
+  .mat-mdc-snack-bar-container {
+    direction: rtl;
+  }
+}

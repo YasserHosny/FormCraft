@@ -1,0 +1,13 @@
+/formcraft-specs
+/formcraft-frontend/node_modules
+/formcraft-frontend/dist
+/formcraft-frontend/.angular
+/formcraft-backend/.venv
+/formcraft-backend/__pycache__
+/formcraft-backend/.pytest_cache
+**/__pycache__
+**/.DS_Store
+**/.env
+**/.env.*
+**/.venv
+**/venv

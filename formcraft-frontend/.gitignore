@@ -1,0 +1,24 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Build
+/dist
+/out-tsc
+/tmp
+/bazel-out
+
+# IDE
+/.idea
+/.vscode
+*.swp
+*.swo
+
+# Misc
+/.angular/cache
+.env
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
