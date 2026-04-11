@@ -1,8 +1,11 @@
-name: Build & Deploy Frontend
+name: Deploy Frontend
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'formcraft-frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
   workflow_dispatch:
 
 env:
@@ -42,7 +45,7 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./formcraft-frontend
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
