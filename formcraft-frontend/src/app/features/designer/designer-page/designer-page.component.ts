@@ -82,6 +82,8 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private elementCounter = 0;
   private lastSavedElementIds: string[] = [];
   private saveSubject$ = new Subject<void>();
+  private saveInProgress = false;
+  private snapshotElementIds: string[] = [];
   isSaving = false;
 
   constructor(
@@ -158,6 +160,8 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
           for (const el of page?.elements || []) {
             this.canvasService.addElement(el);
           }
+          // Initialize lastSavedElementIds with existing elements for deletion tracking
+          this.lastSavedElementIds = (page?.elements || []).map((el: any) => el.id);
           this.canvasService.markClean();
         },
       });
@@ -550,34 +554,33 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   save(): void {
-    if (!this.pageId || this.isSaving) return;
+    if (!this.pageId) return;
+    
+    // Allow concurrent saves but track them individually
+    this.saveInProgress = true;
     this.isSaving = true;
     
-    // Store current element IDs to detect deletions
+    // Take snapshot of current state to detect changes during save
     const currentElementIds = this.canvasService.getElementIds();
     const elements = this.canvasService.getElementsData();
-    
-    // Track original element IDs before save to detect what was created
-    const originalElementIds = new Set(
-      elements.filter(el => el['id'] && !(el['id'] as string).startsWith('elem_'))
-        .map(el => el['id'] as string)
-    );
+    this.snapshotElementIds = [...currentElementIds];
     
     const updates: Array<{ id: string; data: Record<string, unknown> }> = [];
-    const creates: Array<Record<string, unknown>> = [];
+    const creates: Array<{ element: Record<string, unknown>; tempId: string }> = [];
     const deletions: string[] = [];
 
-    // Process current elements
+    // Process current elements and track temp IDs for new elements
     for (const el of elements) {
       if (el['id'] && !(el['id'] as string).startsWith('elem_')) {
         updates.push({ id: el['id'] as string, data: el });
       } else {
-        creates.push(el);
+        // Store temp ID for mapping after creation
+        const tempId = (el['id'] as string) || `temp_${Date.now()}_${Math.random()}`;
+        creates.push({ element: el, tempId });
       }
     }
 
-    // Detect deletions by comparing with last known state
-    // (This is a simplified approach - in production you'd want to track last saved state)
+    // Detect deletions by comparing with last saved state
     const lastSavedIds = new Set(this.lastSavedElementIds || []);
     for (const id of lastSavedIds) {
       if (!currentElementIds.includes(id)) {
@@ -600,20 +603,19 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     );
 
-    const createCalls = creates.map((el, index) =>
+    const createCalls = creates.map(({ element, tempId }) =>
       this.templateService.addElement(this.pageId, {
-        type: el['type'],
-        label_ar: el['label_ar'],
-        label_en: el['label_en'],
-        x_mm: el['x_mm'],
-        y_mm: el['y_mm'],
-        width_mm: el['width_mm'],
-        height_mm: el['height_mm'],
-        required: el['required'],
-        direction: el['direction'],
+        type: element['type'],
+        label_ar: element['label_ar'],
+        label_en: element['label_en'],
+        x_mm: element['x_mm'],
+        y_mm: element['y_mm'],
+        width_mm: element['width_mm'],
+        height_mm: element['height_mm'],
+        required: element['required'],
+        direction: element['direction'],
       }).pipe(
-        // Store the mapping to update the element ID after creation
-        map((response: any) => ({ response, originalId: el['id'] as string, index }))
+        map((response: any) => ({ response, tempId }))
       )
     );
 
@@ -626,26 +628,43 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
         ...updateCalls.map((obs) => obs.pipe(take(1))),
         ...createCalls,
         ...deleteCalls.map((obs) => obs.pipe(take(1))),
-      ] as any) as any; // Type assertion for forkJoin result
+      ] as any) as any;
 
       (createCalls.length === 0 && updateCalls.length === 0 && deleteCalls.length === 0 ? of([]) : all$).subscribe({
         next: (results: any[]) => {
           // Update newly created element IDs in the canvas service
           const createResults = results.slice(updates.length, updates.length + createCalls.length);
           createResults.forEach((result: any) => {
-            if (result && result.originalId && result.response && result.response.id) {
-              this.canvasService.updateElementId(result.originalId, result.response.id);
+            if (result && result.tempId && result.response && result.response.id) {
+              this.canvasService.updateElementId(result.tempId, result.response.id);
             }
           });
 
-          // Store current element IDs for next save cycle
+          // Update last saved element IDs with current state
           this.lastSavedElementIds = this.canvasService.getElementIds();
           
-          this.canvasService.markClean();
+          // Only mark clean if no changes occurred during save
+          const currentIdsAfterSave = this.canvasService.getElementIds();
+          const noChangesDuringSave = 
+            JSON.stringify(currentIdsAfterSave.sort()) === JSON.stringify(this.snapshotElementIds.sort());
+          
+          if (noChangesDuringSave) {
+            this.canvasService.markClean();
+          } else {
+            // Changes occurred during save, trigger another save
+            setTimeout(() => {
+              if (!this.saveInProgress) {
+                this.save();
+              }
+            }, 100);
+          }
+          
           this.isSaving = false;
+          this.saveInProgress = false;
         },
         error: () => {
           this.isSaving = false;
+          this.saveInProgress = false;
         },
       });
     });
