@@ -239,15 +239,29 @@ class TemplateService:
         ).execute()
 
     async def reorder_pages(self, template_id: UUID, page_ids: list[UUID]) -> None:
-        # Validate that all pages are included to prevent partial reorders
+        # Validate that all pages are included exactly once to prevent partial reorders
         template = await self.get_template(template_id)
         existing_page_ids = {page["id"] for page in template.get("pages", [])}
-        requested_page_ids = set(str(pid) for pid in page_ids)
+        requested_page_ids = [str(pid) for pid in page_ids]
         
-        if existing_page_ids != requested_page_ids:
+        # Check for exact match (not just set equality) to prevent duplicates
+        if len(existing_page_ids) != len(requested_page_ids):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
                 "Page reorder must include all existing pages exactly once"
+            )
+        
+        if set(existing_page_ids) != set(requested_page_ids):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Page reorder must include all existing pages exactly once"
+            )
+        
+        # Check for duplicates in the request
+        if len(requested_page_ids) != len(set(requested_page_ids)):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Page reorder cannot contain duplicate page IDs"
             )
         
         # Reset all sort orders first to prevent collisions

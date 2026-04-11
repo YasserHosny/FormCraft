@@ -560,23 +560,23 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.saveInProgress = true;
     this.isSaving = true;
     
-    // Take snapshot of current state to detect changes during save
+    // Take snapshot of current full element state to detect changes during save
     const currentElementIds = this.canvasService.getElementIds();
-    const elements = this.canvasService.getElementsData();
-    this.snapshotElementIds = [...currentElementIds];
+    const elementsWithIds = this.canvasService.getElementsDataWithIds();
+    const snapshotState = JSON.stringify(elementsWithIds);
     
     const updates: Array<{ id: string; data: Record<string, unknown> }> = [];
-    const creates: Array<{ element: Record<string, unknown>; tempId: string }> = [];
+    const creates: Array<{ element: Record<string, unknown>; canvasId: string }> = [];
     const deletions: string[] = [];
 
-    // Process current elements and track temp IDs for new elements
-    for (const el of elements) {
-      if (el['id'] && !(el['id'] as string).startsWith('elem_')) {
-        updates.push({ id: el['id'] as string, data: el });
+    // Process current elements using canvas element IDs
+    for (const elementInfo of elementsWithIds) {
+      const { id, data } = elementInfo;
+      if (id && !(id as string).startsWith('elem_')) {
+        updates.push({ id: id as string, data });
       } else {
-        // Store temp ID for mapping after creation
-        const tempId = (el['id'] as string) || `temp_${Date.now()}_${Math.random()}`;
-        creates.push({ element: el, tempId });
+        // Use actual canvas element ID for mapping
+        creates.push({ element: data, canvasId: id });
       }
     }
 
@@ -603,7 +603,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     );
 
-    const createCalls = creates.map(({ element, tempId }) =>
+    const createCalls = creates.map(({ element, canvasId }) =>
       this.templateService.addElement(this.pageId, {
         type: element['type'],
         label_ar: element['label_ar'],
@@ -615,7 +615,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
         required: element['required'],
         direction: element['direction'],
       }).pipe(
-        map((response: any) => ({ response, tempId }))
+        map((response: any) => ({ response, canvasId }))
       )
     );
 
@@ -632,21 +632,20 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
       (createCalls.length === 0 && updateCalls.length === 0 && deleteCalls.length === 0 ? of([]) : all$).subscribe({
         next: (results: any[]) => {
-          // Update newly created element IDs in the canvas service
+          // Update newly created element IDs in the canvas service using actual canvas IDs
           const createResults = results.slice(updates.length, updates.length + createCalls.length);
           createResults.forEach((result: any) => {
-            if (result && result.tempId && result.response && result.response.id) {
-              this.canvasService.updateElementId(result.tempId, result.response.id);
+            if (result && result.canvasId && result.response && result.response.id) {
+              this.canvasService.updateElementId(result.canvasId, result.response.id);
             }
           });
 
           // Update last saved element IDs with current state
           this.lastSavedElementIds = this.canvasService.getElementIds();
           
-          // Only mark clean if no changes occurred during save
-          const currentIdsAfterSave = this.canvasService.getElementIds();
-          const noChangesDuringSave = 
-            JSON.stringify(currentIdsAfterSave.sort()) === JSON.stringify(this.snapshotElementIds.sort());
+          // Compare full element state before marking clean
+          const currentStateAfterSave = JSON.stringify(this.canvasService.getElementsDataWithIds());
+          const noChangesDuringSave = currentStateAfterSave === snapshotState;
           
           if (noChangesDuringSave) {
             this.canvasService.markClean();

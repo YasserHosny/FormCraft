@@ -323,7 +323,17 @@ export class CanvasService implements OnDestroy {
   }
 
   getElementsData(): Record<string, unknown>[] {
-    return Array.from(this.elements.values()).map((el) => ({ ...el.data }));
+    return Array.from(this.elements.values()).map((el) => ({ 
+      ...el.data, 
+      id: el.id // Ensure element ID is included in the data
+    }));
+  }
+
+  getElementsDataWithIds(): Array<{ id: string; data: Record<string, unknown> }> {
+    return Array.from(this.elements.values()).map((el) => ({
+      id: el.id,
+      data: { ...el.data, id: el.id }
+    }));
   }
 
   markClean(): void {
