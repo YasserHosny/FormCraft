@@ -634,8 +634,11 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
         next: (results: any[]) => {
           // Update newly created element IDs in the canvas service using actual canvas IDs
           const createResults = results.slice(updates.length, updates.length + createCalls.length);
+          const idMappings: Array<{ oldId: string; newId: string }> = [];
+          
           createResults.forEach((result: any) => {
             if (result && result.canvasId && result.response && result.response.id) {
+              idMappings.push({ oldId: result.canvasId, newId: result.response.id });
               this.canvasService.updateElementId(result.canvasId, result.response.id);
             }
           });
@@ -643,9 +646,9 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
           // Update last saved element IDs with current state
           this.lastSavedElementIds = this.canvasService.getElementIds();
           
-          // Compare full element state before marking clean
-          const currentStateAfterSave = JSON.stringify(this.canvasService.getElementsDataWithIds());
-          const noChangesDuringSave = currentStateAfterSave === snapshotState;
+          // Compare element state excluding expected ID remaps
+          const currentStateAfterSave = this.canvasService.getElementsDataWithIds();
+          const noChangesDuringSave = this.compareElementStates(snapshotState, currentStateAfterSave, idMappings);
           
           if (noChangesDuringSave) {
             this.canvasService.markClean();
@@ -667,6 +670,37 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
         },
       });
     });
+  }
+
+  private compareElementStates(
+    snapshotState: string, 
+    currentState: Array<{ id: string; data: Record<string, unknown> }>,
+    idMappings: Array<{ oldId: string; newId: string }>
+  ): boolean {
+    // Parse snapshot state to get original elements
+    const snapshotElements = JSON.parse(snapshotState) as Array<{ id: string; data: Record<string, unknown> }>;
+    
+    // Create a map of expected ID changes
+    const idChangeMap = new Map<string, string>();
+    idMappings.forEach(mapping => {
+      idChangeMap.set(mapping.oldId, mapping.newId);
+    });
+    
+    // Normalize snapshot state by applying expected ID changes
+    const normalizedSnapshot = snapshotElements.map(element => {
+      const newId = idChangeMap.get(element.id);
+      if (newId) {
+        return { ...element, id: newId, data: { ...element.data, id: newId } };
+      }
+      return element;
+    });
+    
+    // Sort both arrays for consistent comparison
+    const sortedSnapshot = normalizedSnapshot.sort((a, b) => a.id.localeCompare(b.id));
+    const sortedCurrent = currentState.sort((a, b) => a.id.localeCompare(b.id));
+    
+    // Compare the sorted arrays
+    return JSON.stringify(sortedSnapshot) === JSON.stringify(sortedCurrent);
   }
 
   private clipboard: Record<string, unknown> | null = null;
