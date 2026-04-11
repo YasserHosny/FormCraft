@@ -79,4 +79,16 @@ export class TemplateService {
   deleteElement(elementId: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/elements/${elementId}`);
   }
+
+  reorderPages(templateId: string, pageIds: string[]): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/${templateId}/pages/reorder`, { page_ids: pageIds });
+  }
+
+  reorderElements(pageId: string, elementIds: string[]): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/pages/${pageId}/elements/reorder`, { element_ids: elementIds });
+  }
+
+  createNewVersion(templateId: string): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/${templateId}/version`, {});
+  }
 }

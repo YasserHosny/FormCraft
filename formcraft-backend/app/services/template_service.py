@@ -237,3 +237,68 @@ class TemplateService:
         self.client.table("elements").delete().eq(
             "id", str(element_id)
         ).execute()
+
+    async def reorder_pages(self, template_id: UUID, page_ids: list[UUID]) -> None:
+        for order, page_id in enumerate(page_ids):
+            self.client.table("pages").update({"sort_order": order}).eq(
+                "id", str(page_id)
+            ).eq("template_id", str(template_id)).execute()
+
+    async def reorder_elements(self, page_id: UUID, element_ids: list[UUID]) -> None:
+        for order, element_id in enumerate(element_ids):
+            self.client.table("elements").update({"sort_order": order}).eq(
+                "id", str(element_id)
+            ).eq("page_id", str(page_id)).execute()
+
+    async def create_new_version(self, template_id: UUID, user_id: UUID) -> dict:
+        source = await self.get_template(template_id)
+        if source.get("status") != "published":
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Only published templates can be versioned.",
+            )
+        new_version = source["version"] + 1
+        new_template_data = {
+            "name": source["name"],
+            "description": source.get("description", ""),
+            "category": source.get("category", ""),
+            "language": source.get("language", "ar"),
+            "country": source.get("country", "EG"),
+            "status": "draft",
+            "version": new_version,
+            "created_by": str(user_id),
+        }
+        result = self.client.table("templates").insert(new_template_data).execute()
+        new_template = result.data[0]
+
+        for page in source.get("pages", []):
+            page_data = {
+                "template_id": new_template["id"],
+                "width_mm": page["width_mm"],
+                "height_mm": page["height_mm"],
+                "background_asset": page.get("background_asset"),
+                "sort_order": page["sort_order"],
+            }
+            page_result = self.client.table("pages").insert(page_data).execute()
+            new_page = page_result.data[0]
+
+            for element in page.get("elements", []):
+                element_data = {
+                    "page_id": new_page["id"],
+                    "type": element["type"],
+                    "key": element["key"],
+                    "label_ar": element["label_ar"],
+                    "label_en": element["label_en"],
+                    "x_mm": element["x_mm"],
+                    "y_mm": element["y_mm"],
+                    "width_mm": element["width_mm"],
+                    "height_mm": element["height_mm"],
+                    "validation": element.get("validation", {}),
+                    "formatting": element.get("formatting", {}),
+                    "required": element.get("required", False),
+                    "direction": element.get("direction", "auto"),
+                    "sort_order": element["sort_order"],
+                }
+                self.client.table("elements").insert(element_data).execute()
+
+        return await self.get_template(new_template["id"])

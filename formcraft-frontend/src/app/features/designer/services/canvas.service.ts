@@ -330,6 +330,13 @@ export class CanvasService implements OnDestroy {
     this._dirty.next(false);
   }
 
+  selectAll(): void {
+    if (!this.transformer) return;
+    const nodes = Array.from(this.elements.values()).map((el) => el.konvaNode);
+    this.transformer.nodes(nodes);
+    this.layer?.draw();
+  }
+
   destroy(): void {
     this.stage?.destroy();
     this.stage = null;

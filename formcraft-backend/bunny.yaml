@@ -1,0 +1,23 @@
+name: formcraft-backend
+region: de
+instances: 1
+port: 8000
+dockerfile: Dockerfile
+healthcheck:
+  path: /api/health
+  interval: 30
+  timeout: 5
+env:
+  - SUPABASE_URL
+  - SUPABASE_ANON_KEY
+  - SUPABASE_SERVICE_KEY
+  - SUPABASE_JWT_SECRET
+  - AWS_REGION
+  - AWS_BEDROCK_MODEL_ID
+  - AWS_ACCESS_KEY_ID
+  - AWS_SECRET_ACCESS_KEY
+  - AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT
+  - AZURE_DOCUMENT_INTELLIGENCE_KEY
+  - CORS_ORIGINS
+  - LOG_LEVEL
+  - APP_VERSION

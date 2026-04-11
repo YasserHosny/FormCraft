@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, HostListener } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, switchMap, take } from 'rxjs/operators';
 import { TemplateService } from '../../../core/services/template.service';
 import { environment, getDevLocalImportEnabled } from '../../../../environments/environment';
 import { CanvasService, CanvasElement } from '../services/canvas.service';
@@ -79,23 +80,60 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private subs: Subscription[] = [];
   private elementCounter = 0;
+  private saveSubject$ = new Subject<void>();
+  isSaving = false;
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private templateService: TemplateService,
     public canvasService: CanvasService,
     private formDetectionService: FormDetectionService
   ) {}
 
+  @HostListener('document:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || (active as HTMLElement).isContentEditable)) {
+      return;
+    }
+    const ctrl = event.ctrlKey || event.metaKey;
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+      this.deleteSelected();
+    } else if (ctrl && event.key === 'z') {
+      event.preventDefault();
+      this.canvasService.undo();
+    } else if (ctrl && (event.key === 'y' || (event.shiftKey && event.key === 'z'))) {
+      event.preventDefault();
+      this.canvasService.redo();
+    } else if (ctrl && event.key === 'c') {
+      this.copySelected();
+    } else if (ctrl && event.key === 'v') {
+      this.pasteElement();
+    } else if (ctrl && event.key === 'a') {
+      event.preventDefault();
+      this.canvasService.selectAll();
+    }
+  }
+
   ngOnInit(): void {
     this.templateId = this.route.snapshot.paramMap.get('templateId') || '';
 
+    // Auto-save: debounce dirty changes by 2 seconds
     this.subs.push(
+      this.saveSubject$.pipe(debounceTime(2000)).subscribe(() => {
+        if (this.isDirty) {
+          this.save();
+        }
+      }),
       this.canvasService.selectedElement$.subscribe((el) => {
         this.selectedElement = el;
       }),
       this.canvasService.dirty$.subscribe((d) => {
         this.isDirty = d;
+        if (d) {
+          this.saveSubject$.next();
+        }
       })
     );
   }
@@ -511,9 +549,86 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   save(): void {
+    if (!this.pageId || this.isSaving) return;
+    this.isSaving = true;
     const elements = this.canvasService.getElementsData();
-    // TODO: batch update elements via API
-    this.canvasService.markClean();
+    const updates: Array<{ id: string; data: Record<string, unknown> }> = [];
+    const creates: Array<Record<string, unknown>> = [];
+
+    for (const el of elements) {
+      if (el['id'] && !(el['id'] as string).startsWith('elem_')) {
+        updates.push({ id: el['id'] as string, data: el });
+      } else {
+        creates.push(el);
+      }
+    }
+
+    const updateCalls = updates.map(({ id, data }) =>
+      this.templateService.updateElement(id, {
+        label_ar: data['label_ar'],
+        label_en: data['label_en'],
+        x_mm: data['x_mm'],
+        y_mm: data['y_mm'],
+        width_mm: data['width_mm'],
+        height_mm: data['height_mm'],
+        required: data['required'],
+        direction: data['direction'],
+        validation: data['validation'],
+        formatting: data['formatting'],
+      })
+    );
+
+    const createCalls = creates.map((el) =>
+      this.templateService.addElement(this.pageId, {
+        type: el['type'],
+        label_ar: el['label_ar'],
+        label_en: el['label_en'],
+        x_mm: el['x_mm'],
+        y_mm: el['y_mm'],
+        width_mm: el['width_mm'],
+        height_mm: el['height_mm'],
+        required: el['required'],
+        direction: el['direction'],
+      })
+    );
+
+    import('rxjs').then(({ forkJoin, of }) => {
+      const all$ = forkJoin([
+        ...updateCalls.map((obs) => obs.pipe(take(1))),
+        ...createCalls.map((obs) => obs.pipe(take(1))),
+      ] as any);
+
+      (createCalls.length === 0 && updateCalls.length === 0 ? of([]) : all$).subscribe({
+        next: () => {
+          this.canvasService.markClean();
+          this.isSaving = false;
+        },
+        error: () => {
+          this.isSaving = false;
+        },
+      });
+    });
+  }
+
+  private clipboard: Record<string, unknown> | null = null;
+
+  copySelected(): void {
+    if (this.selectedElement) {
+      this.clipboard = { ...this.selectedElement.data };
+    }
+  }
+
+  pasteElement(): void {
+    if (!this.clipboard) return;
+    this.elementCounter++;
+    const offsetMm = 5;
+    this.canvasService.addElement({
+      ...this.clipboard,
+      id: undefined,
+      key: `${this.clipboard['type']}_${this.elementCounter}`,
+      x_mm: (this.clipboard['x_mm'] as number) + offsetMm,
+      y_mm: (this.clipboard['y_mm'] as number) + offsetMm,
+    });
   }
 
   ngOnDestroy(): void {

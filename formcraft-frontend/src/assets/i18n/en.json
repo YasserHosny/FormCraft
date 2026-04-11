@@ -51,7 +51,9 @@
     "statuses": {
       "draft": "Draft",
       "published": "Published"
-    }
+    },
+    "publish": "Publish",
+    "newVersion": "Create New Version"
   },
   "designer": {
     "title": "Design Studio",

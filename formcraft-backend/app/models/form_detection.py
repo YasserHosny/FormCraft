@@ -49,3 +49,7 @@ class AcceptDetectionRequest(BaseModel):
     detection_ids: list[int] = Field(
         description="Indices of detections to accept from the detected_fields array"
     )
+    type_overrides: dict[int, str] = Field(
+        default_factory=dict,
+        description="Map of detection index → overridden element type (only indices where user changed the type)",
+    )
