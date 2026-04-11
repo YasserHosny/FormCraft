@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
-import { debounceTime, switchMap, take } from 'rxjs/operators';
+import { debounceTime, switchMap, take, map } from 'rxjs/operators';
 import { TemplateService } from '../../../core/services/template.service';
 import { environment, getDevLocalImportEnabled } from '../../../../environments/environment';
 import { CanvasService, CanvasElement } from '../services/canvas.service';
@@ -80,6 +80,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private subs: Subscription[] = [];
   private elementCounter = 0;
+  private lastSavedElementIds: string[] = [];
   private saveSubject$ = new Subject<void>();
   isSaving = false;
 
@@ -551,15 +552,36 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   save(): void {
     if (!this.pageId || this.isSaving) return;
     this.isSaving = true;
+    
+    // Store current element IDs to detect deletions
+    const currentElementIds = this.canvasService.getElementIds();
     const elements = this.canvasService.getElementsData();
+    
+    // Track original element IDs before save to detect what was created
+    const originalElementIds = new Set(
+      elements.filter(el => el['id'] && !(el['id'] as string).startsWith('elem_'))
+        .map(el => el['id'] as string)
+    );
+    
     const updates: Array<{ id: string; data: Record<string, unknown> }> = [];
     const creates: Array<Record<string, unknown>> = [];
+    const deletions: string[] = [];
 
+    // Process current elements
     for (const el of elements) {
       if (el['id'] && !(el['id'] as string).startsWith('elem_')) {
         updates.push({ id: el['id'] as string, data: el });
       } else {
         creates.push(el);
+      }
+    }
+
+    // Detect deletions by comparing with last known state
+    // (This is a simplified approach - in production you'd want to track last saved state)
+    const lastSavedIds = new Set(this.lastSavedElementIds || []);
+    for (const id of lastSavedIds) {
+      if (!currentElementIds.includes(id)) {
+        deletions.push(id);
       }
     }
 
@@ -578,7 +600,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     );
 
-    const createCalls = creates.map((el) =>
+    const createCalls = creates.map((el, index) =>
       this.templateService.addElement(this.pageId, {
         type: el['type'],
         label_ar: el['label_ar'],
@@ -589,17 +611,36 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
         height_mm: el['height_mm'],
         required: el['required'],
         direction: el['direction'],
-      })
+      }).pipe(
+        // Store the mapping to update the element ID after creation
+        map((response: any) => ({ response, originalId: el['id'] as string, index }))
+      )
     );
 
-    import('rxjs').then(({ forkJoin, of }) => {
+    const deleteCalls = deletions.map(id =>
+      this.templateService.deleteElement(id)
+    );
+
+    import('rxjs').then(({ forkJoin, of, map }) => {
       const all$ = forkJoin([
         ...updateCalls.map((obs) => obs.pipe(take(1))),
-        ...createCalls.map((obs) => obs.pipe(take(1))),
-      ] as any);
+        ...createCalls,
+        ...deleteCalls.map((obs) => obs.pipe(take(1))),
+      ] as any) as any; // Type assertion for forkJoin result
 
-      (createCalls.length === 0 && updateCalls.length === 0 ? of([]) : all$).subscribe({
-        next: () => {
+      (createCalls.length === 0 && updateCalls.length === 0 && deleteCalls.length === 0 ? of([]) : all$).subscribe({
+        next: (results: any[]) => {
+          // Update newly created element IDs in the canvas service
+          const createResults = results.slice(updates.length, updates.length + createCalls.length);
+          createResults.forEach((result: any) => {
+            if (result && result.originalId && result.response && result.response.id) {
+              this.canvasService.updateElementId(result.originalId, result.response.id);
+            }
+          });
+
+          // Store current element IDs for next save cycle
+          this.lastSavedElementIds = this.canvasService.getElementIds();
+          
           this.canvasService.markClean();
           this.isSaving = false;
         },

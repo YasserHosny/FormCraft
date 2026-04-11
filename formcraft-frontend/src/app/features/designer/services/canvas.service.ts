@@ -330,6 +330,20 @@ export class CanvasService implements OnDestroy {
     this._dirty.next(false);
   }
 
+  updateElementId(oldId: string, newId: string): void {
+    const element = this.elements.get(oldId);
+    if (element) {
+      element.id = newId;
+      element.data['id'] = newId;
+      this.elements.delete(oldId);
+      this.elements.set(newId, element);
+    }
+  }
+
+  getElementIds(): string[] {
+    return Array.from(this.elements.keys());
+  }
+
   selectAll(): void {
     if (!this.transformer) return;
     const nodes = Array.from(this.elements.values()).map((el) => el.konvaNode);

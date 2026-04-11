@@ -1,9 +1,0 @@
-name: formcraft-frontend
-region: de
-instances: 1
-port: 80
-dockerfile: Dockerfile
-healthcheck:
-  path: /index.html
-  interval: 30
-  timeout: 5
