@@ -51,7 +51,9 @@
     "statuses": {
       "draft": "مسودة",
       "published": "منشور"
-    }
+    },
+    "publish": "نشر",
+    "newVersion": "إنشاء إصدار جديد"
   },
   "designer": {
     "title": "استوديو التصميم",

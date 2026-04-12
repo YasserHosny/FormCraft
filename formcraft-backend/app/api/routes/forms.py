@@ -326,8 +326,9 @@ async def accept_detections(
     created = []
     for idx in request.detection_ids:
         field = detected_fields[idx]
+        resolved_type = request.type_overrides.get(idx) or field.get("suggested_type", "text")
         element_data = {
-            "type": map_type(field.get("suggested_type", "text")),
+            "type": map_type(resolved_type),
             "label_ar": field.get("text", ""),
             "label_en": field.get("text", ""),
             "x_mm": field.get("bbox", {}).get("x", 0),

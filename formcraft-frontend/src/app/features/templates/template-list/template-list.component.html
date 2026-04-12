@@ -19,6 +19,19 @@
       <button mat-button [routerLink]="['/designer', template.id]">
         {{ 'designer.title' | translate }}
       </button>
+      <ng-container *ngIf="template.status === 'draft'">
+        <button mat-button color="accent" (click)="publish(template)">
+          {{ 'templates.publish' | translate }}
+        </button>
+      </ng-container>
+      <ng-container *ngIf="template.status === 'published'">
+        <button mat-button color="primary" (click)="createNewVersion(template)">
+          {{ 'templates.newVersion' | translate }}
+        </button>
+      </ng-container>
+      <button mat-icon-button color="warn" (click)="deleteTemplate(template)" [matTooltip]="'common.delete' | translate">
+        <mat-icon>delete</mat-icon>
+      </button>
     </mat-card-actions>
   </mat-card>
 </div>

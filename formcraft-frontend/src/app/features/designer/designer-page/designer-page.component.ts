@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, HostListener } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, switchMap, take, map } from 'rxjs/operators';
 import { TemplateService } from '../../../core/services/template.service';
 import { environment, getDevLocalImportEnabled } from '../../../../environments/environment';
 import { CanvasService, CanvasElement } from '../services/canvas.service';
@@ -79,23 +80,63 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private subs: Subscription[] = [];
   private elementCounter = 0;
+  private lastSavedElementIds: string[] = [];
+  private saveSubject$ = new Subject<void>();
+  private saveInProgress = false;
+  private snapshotElementIds: string[] = [];
+  isSaving = false;
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private templateService: TemplateService,
     public canvasService: CanvasService,
     private formDetectionService: FormDetectionService
   ) {}
 
+  @HostListener('document:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || (active as HTMLElement).isContentEditable)) {
+      return;
+    }
+    const ctrl = event.ctrlKey || event.metaKey;
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+      this.deleteSelected();
+    } else if (ctrl && event.key === 'z') {
+      event.preventDefault();
+      this.canvasService.undo();
+    } else if (ctrl && (event.key === 'y' || (event.shiftKey && event.key === 'z'))) {
+      event.preventDefault();
+      this.canvasService.redo();
+    } else if (ctrl && event.key === 'c') {
+      this.copySelected();
+    } else if (ctrl && event.key === 'v') {
+      this.pasteElement();
+    } else if (ctrl && event.key === 'a') {
+      event.preventDefault();
+      this.canvasService.selectAll();
+    }
+  }
+
   ngOnInit(): void {
     this.templateId = this.route.snapshot.paramMap.get('templateId') || '';
 
+    // Auto-save: debounce dirty changes by 2 seconds
     this.subs.push(
+      this.saveSubject$.pipe(debounceTime(2000)).subscribe(() => {
+        if (this.isDirty) {
+          this.save();
+        }
+      }),
       this.canvasService.selectedElement$.subscribe((el) => {
         this.selectedElement = el;
       }),
       this.canvasService.dirty$.subscribe((d) => {
         this.isDirty = d;
+        if (d) {
+          this.saveSubject$.next();
+        }
       })
     );
   }
@@ -119,6 +160,8 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
           for (const el of page?.elements || []) {
             this.canvasService.addElement(el);
           }
+          // Initialize lastSavedElementIds with existing elements for deletion tracking
+          this.lastSavedElementIds = (page?.elements || []).map((el: any) => el.id);
           this.canvasService.markClean();
         },
       });
@@ -511,9 +554,174 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   save(): void {
-    const elements = this.canvasService.getElementsData();
-    // TODO: batch update elements via API
-    this.canvasService.markClean();
+    if (!this.pageId) return;
+    
+    // Allow concurrent saves but track them individually
+    this.saveInProgress = true;
+    this.isSaving = true;
+    
+    // Take snapshot of current full element state to detect changes during save
+    const currentElementIds = this.canvasService.getElementIds();
+    const elementsWithIds = this.canvasService.getElementsDataWithIds();
+    const snapshotState = JSON.stringify(elementsWithIds);
+    
+    const updates: Array<{ id: string; data: Record<string, unknown> }> = [];
+    const creates: Array<{ element: Record<string, unknown>; canvasId: string }> = [];
+    const deletions: string[] = [];
+
+    // Process current elements using canvas element IDs
+    for (const elementInfo of elementsWithIds) {
+      const { id, data } = elementInfo;
+      if (id && !(id as string).startsWith('elem_')) {
+        updates.push({ id: id as string, data });
+      } else {
+        // Use actual canvas element ID for mapping
+        creates.push({ element: data, canvasId: id });
+      }
+    }
+
+    // Detect deletions by comparing with last saved state
+    const lastSavedIds = new Set(this.lastSavedElementIds || []);
+    for (const id of lastSavedIds) {
+      if (!currentElementIds.includes(id)) {
+        deletions.push(id);
+      }
+    }
+
+    const updateCalls = updates.map(({ id, data }) =>
+      this.templateService.updateElement(id, {
+        label_ar: data['label_ar'],
+        label_en: data['label_en'],
+        x_mm: data['x_mm'],
+        y_mm: data['y_mm'],
+        width_mm: data['width_mm'],
+        height_mm: data['height_mm'],
+        required: data['required'],
+        direction: data['direction'],
+        validation: data['validation'],
+        formatting: data['formatting'],
+      })
+    );
+
+    const createCalls = creates.map(({ element, canvasId }) =>
+      this.templateService.addElement(this.pageId, {
+        type: element['type'],
+        label_ar: element['label_ar'],
+        label_en: element['label_en'],
+        x_mm: element['x_mm'],
+        y_mm: element['y_mm'],
+        width_mm: element['width_mm'],
+        height_mm: element['height_mm'],
+        required: element['required'],
+        direction: element['direction'],
+      }).pipe(
+        map((response: any) => ({ response, canvasId }))
+      )
+    );
+
+    const deleteCalls = deletions.map(id =>
+      this.templateService.deleteElement(id)
+    );
+
+    import('rxjs').then(({ forkJoin, of, map }) => {
+      const all$ = forkJoin([
+        ...updateCalls.map((obs) => obs.pipe(take(1))),
+        ...createCalls,
+        ...deleteCalls.map((obs) => obs.pipe(take(1))),
+      ] as any) as any;
+
+      (createCalls.length === 0 && updateCalls.length === 0 && deleteCalls.length === 0 ? of([]) : all$).subscribe({
+        next: (results: any[]) => {
+          // Update newly created element IDs in the canvas service using actual canvas IDs
+          const createResults = results.slice(updates.length, updates.length + createCalls.length);
+          const idMappings: Array<{ oldId: string; newId: string }> = [];
+          
+          createResults.forEach((result: any) => {
+            if (result && result.canvasId && result.response && result.response.id) {
+              idMappings.push({ oldId: result.canvasId, newId: result.response.id });
+              this.canvasService.updateElementId(result.canvasId, result.response.id);
+            }
+          });
+
+          // Update last saved element IDs with current state
+          this.lastSavedElementIds = this.canvasService.getElementIds();
+          
+          // Compare element state excluding expected ID remaps
+          const currentStateAfterSave = this.canvasService.getElementsDataWithIds();
+          const noChangesDuringSave = this.compareElementStates(snapshotState, currentStateAfterSave, idMappings);
+          
+          if (noChangesDuringSave) {
+            this.canvasService.markClean();
+          } else {
+            // Changes occurred during save, trigger another save
+            setTimeout(() => {
+              if (!this.saveInProgress) {
+                this.save();
+              }
+            }, 100);
+          }
+          
+          this.isSaving = false;
+          this.saveInProgress = false;
+        },
+        error: () => {
+          this.isSaving = false;
+          this.saveInProgress = false;
+        },
+      });
+    });
+  }
+
+  private compareElementStates(
+    snapshotState: string, 
+    currentState: Array<{ id: string; data: Record<string, unknown> }>,
+    idMappings: Array<{ oldId: string; newId: string }>
+  ): boolean {
+    // Parse snapshot state to get original elements
+    const snapshotElements = JSON.parse(snapshotState) as Array<{ id: string; data: Record<string, unknown> }>;
+    
+    // Create a map of expected ID changes
+    const idChangeMap = new Map<string, string>();
+    idMappings.forEach(mapping => {
+      idChangeMap.set(mapping.oldId, mapping.newId);
+    });
+    
+    // Normalize snapshot state by applying expected ID changes
+    const normalizedSnapshot = snapshotElements.map(element => {
+      const newId = idChangeMap.get(element.id);
+      if (newId) {
+        return { ...element, id: newId, data: { ...element.data, id: newId } };
+      }
+      return element;
+    });
+    
+    // Sort both arrays for consistent comparison
+    const sortedSnapshot = normalizedSnapshot.sort((a, b) => a.id.localeCompare(b.id));
+    const sortedCurrent = currentState.sort((a, b) => a.id.localeCompare(b.id));
+    
+    // Compare the sorted arrays
+    return JSON.stringify(sortedSnapshot) === JSON.stringify(sortedCurrent);
+  }
+
+  private clipboard: Record<string, unknown> | null = null;
+
+  copySelected(): void {
+    if (this.selectedElement) {
+      this.clipboard = { ...this.selectedElement.data };
+    }
+  }
+
+  pasteElement(): void {
+    if (!this.clipboard) return;
+    this.elementCounter++;
+    const offsetMm = 5;
+    this.canvasService.addElement({
+      ...this.clipboard,
+      id: undefined,
+      key: `${this.clipboard['type']}_${this.elementCounter}`,
+      x_mm: (this.clipboard['x_mm'] as number) + offsetMm,
+      y_mm: (this.clipboard['y_mm'] as number) + offsetMm,
+    });
   }
 
   ngOnDestroy(): void {
