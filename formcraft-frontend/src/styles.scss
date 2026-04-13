@@ -1,9 +1,6 @@
 @use 'styles/direction-mixins';
 @use 'styles/rtl';
 
-// Import Material Icons
-@import '~material-icons/iconfont/material-icons.css';
-
 // Override ALL Angular Material MDC typography tokens to use Arabic font stack
 // (indigo-pink.css sets these to Roboto; we override since styles.scss loads after it)
 $arabic-font: 'Noto Naskh Arabic', 'Noto Sans', Roboto, sans-serif;
