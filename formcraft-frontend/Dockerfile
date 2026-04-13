@@ -3,7 +3,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build -- --configuration=production
+ARG BUILD_ENV=production
+RUN npm run build -- --configuration=${BUILD_ENV}
 
 FROM nginx:alpine
 COPY --from=build /app/dist/formcraft-frontend/browser /usr/share/nginx/html

@@ -1,6 +1,73 @@
 @use 'styles/direction-mixins';
 @use 'styles/rtl';
 
+// Override ALL Angular Material MDC typography tokens to use Arabic font stack
+// (indigo-pink.css sets these to Roboto; we override since styles.scss loads after it)
+$arabic-font: 'Noto Naskh Arabic', 'Noto Sans', Roboto, sans-serif;
+
+:root {
+  --mdc-typography-font-family: #{$arabic-font};
+  // Options & selects
+  --mat-option-label-text-font: #{$arabic-font};
+  --mat-optgroup-label-text-font: #{$arabic-font};
+  --mat-select-trigger-text-font: #{$arabic-font};
+  // Cards
+  --mat-card-title-text-font: #{$arabic-font};
+  --mat-card-subtitle-text-font: #{$arabic-font};
+  // Tooltips
+  --mdc-plain-tooltip-supporting-text-font: #{$arabic-font};
+  // Form fields / inputs
+  --mdc-filled-text-field-label-text-font: #{$arabic-font};
+  --mdc-outlined-text-field-label-text-font: #{$arabic-font};
+  --mat-form-field-container-text-font: #{$arabic-font};
+  --mat-form-field-subscript-text-font: #{$arabic-font};
+  // Dialogs
+  --mdc-dialog-subhead-font: #{$arabic-font};
+  --mdc-dialog-supporting-text-font: #{$arabic-font};
+  // Chips
+  --mdc-chip-label-text-font: #{$arabic-font};
+  // Toggle / radio / checkbox / switch
+  --mat-switch-label-text-font: #{$arabic-font};
+  --mat-radio-label-text-font: #{$arabic-font};
+  --mat-checkbox-label-text-font: #{$arabic-font};
+  --mat-legacy-button-toggle-label-text-font: #{$arabic-font};
+  --mat-standard-button-toggle-label-text-font: #{$arabic-font};
+  // Slider
+  --mdc-slider-label-label-text-font: #{$arabic-font};
+  // Menu & list
+  --mat-menu-item-label-text-font: #{$arabic-font};
+  --mdc-list-list-item-label-text-font: #{$arabic-font};
+  --mdc-list-list-item-supporting-text-font: #{$arabic-font};
+  --mdc-list-list-item-trailing-supporting-text-font: #{$arabic-font};
+  // Paginator & tabs
+  --mat-paginator-container-text-font: #{$arabic-font};
+  --mat-tab-header-label-text-font: #{$arabic-font};
+  // Buttons
+  --mdc-text-button-label-text-font: #{$arabic-font};
+  --mdc-filled-button-label-text-font: #{$arabic-font};
+  --mdc-protected-button-label-text-font: #{$arabic-font};
+  --mdc-outlined-button-label-text-font: #{$arabic-font};
+  --mdc-extended-fab-label-text-font: #{$arabic-font};
+  // Snackbar
+  --mdc-snackbar-supporting-text-font: #{$arabic-font};
+  // Table
+  --mat-table-header-headline-font: #{$arabic-font};
+  --mat-table-row-item-label-text-font: #{$arabic-font};
+  --mat-table-footer-supporting-text-font: #{$arabic-font};
+  // Badge & bottom sheet
+  --mat-badge-text-font: #{$arabic-font};
+  --mat-bottom-sheet-container-text-font: #{$arabic-font};
+  // Datepicker & expansion & stepper
+  --mat-datepicker-calendar-text-font: #{$arabic-font};
+  --mat-expansion-header-text-font: #{$arabic-font};
+  --mat-expansion-container-text-font: #{$arabic-font};
+  --mat-stepper-container-text-font: #{$arabic-font};
+  --mat-stepper-header-label-text-font: #{$arabic-font};
+  // Toolbar & tree
+  --mat-toolbar-title-text-font: #{$arabic-font};
+  --mat-tree-node-text-font: #{$arabic-font};
+}
+
 html, body {
   height: 100%;
   margin: 0;
