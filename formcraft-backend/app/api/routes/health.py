@@ -16,8 +16,12 @@ async def health_check():
     # Check Supabase connectivity
     try:
         client = get_supabase_client()
-        client.table("profiles").select("id").limit(1).execute()
-        checks["supabase"] = "healthy"
+        result = client.table("profiles").select("id").limit(1).execute()
+        if result.data is not None:
+            checks["supabase"] = "healthy"
+        else:
+            checks["supabase"] = "unreachable"
+            status = "degraded"
     except Exception:
         checks["supabase"] = "unreachable"
         status = "degraded"

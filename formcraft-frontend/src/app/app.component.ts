@@ -26,12 +26,19 @@ export class AppComponent implements OnInit {
   constructor(
     private languageService: LanguageService,
     private authService: AuthService
-  ) {}
-
-  ngOnInit(): void {
-    this.languageService.init();
+  ) {
+    // Subscribe in constructor (not ngOnInit) so the BehaviorSubject's
+    // current value is reflected on the very first template render.
+    // AuthService constructor already ran and set the value synchronously
+    // from localStorage, so this gives us the correct state immediately,
+    // preventing the #loginOnly router-outlet from ever being activated
+    // when the user is already authenticated.
     this.authService.isAuthenticated$.subscribe((val) => {
       this.isAuthenticated = val;
     });
+  }
+
+  ngOnInit(): void {
+    this.languageService.init();
   }
 }
