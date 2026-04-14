@@ -58,5 +58,5 @@ jobs:
         with:
           api_key: ${{ secrets.BUNNY_API_KEY }}
           app_id: ${{ secrets.BUNNY_BACKEND_APP_ID }}
-          container: app
+          container: formcraft-backend
           image_tag: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
