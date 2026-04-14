@@ -8,7 +8,9 @@ RUN npm run build -- --configuration=${BUILD_ENV}
 
 FROM nginx:alpine
 COPY --from=build /app/dist/formcraft-frontend/browser /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Use template so BACKEND_HOST can be overridden at runtime (default: "backend" for docker-compose)
+ENV BACKEND_HOST=backend
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
