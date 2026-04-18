@@ -129,17 +129,16 @@ await mcp2_apply_migration({
 ### 6. Test OCR Integration
 
 ```bash
-# Restart backend
-cd /media/yasser/Work/Projects/formcraft-backend
-pkill -f uvicorn
-source venv/bin/activate
-uvicorn app.main:app --port 8000 --reload
+# Restart backend containers
+docker-compose down && docker-compose up -d --build
 
-# Test with sample cheque
-curl -X POST http://localhost:8000/api/forms/import/{template_id} \
-  -H "Authorization: Bearer YOUR_JWT" \
-  -F "file=@/media/yasser/Work/Projects/FormCraft/Samples/BanqueMisr_EG.jpg" \
-  -F "page_index=0"
+# Test with sample cheque from inside backend container
+docker-compose exec backend bash -c '
+  curl -X POST http://localhost:8000/api/forms/import/{template_id} \
+    -H "Authorization: Bearer YOUR_JWT" \
+    -F "file=@""/media/yasserhosny/My Passport/Work/Projects/FormCraft/formcraft-specs/Samples/BanqueMisr_EG.jpg""" \
+    -F "page_index=0"
+'
 ```
 
 Expected response:
