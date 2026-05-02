@@ -10,4 +10,5 @@ export const getDevLocalImportEnabled = (): boolean => {
 export const environment = {
   production: false,
   apiBaseUrl: '/api',
+  apiUrl: 'http://localhost:8000/api',
 };
