@@ -8,7 +8,7 @@ from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
 from app.core.middleware.rate_limit import limiter
 from app.core.middleware.security_headers import SecurityHeadersMiddleware
-from app.api.routes import auth, users, templates, ai, pdf, health, admin, forms
+from app.api.routes import auth, users, templates, ai, pdf, health, admin, forms, tafqeet
 
 logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO))
 logger = logging.getLogger(__name__)
@@ -45,6 +45,7 @@ def create_app() -> FastAPI:
     app.include_router(ai.router, prefix="/api")
     app.include_router(pdf.router, prefix="/api")
     app.include_router(admin.router, prefix="/api")
+    app.include_router(tafqeet.router, prefix="/api")
 
     logger.info("FormCraft API v%s started", settings.APP_VERSION)
     return app

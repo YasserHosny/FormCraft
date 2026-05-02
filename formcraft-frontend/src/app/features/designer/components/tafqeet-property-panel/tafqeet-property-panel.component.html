@@ -1,0 +1,84 @@
+<div class="tafqeet-panel">
+
+  <!-- Source Element Picker (US2) -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'tafqeet.source_element' | translate }}</mat-label>
+    <mat-select [value]="sourceElementKey" (selectionChange)="onSourceElementChange($event.value)">
+      <mat-option [value]="null">— {{ 'common.none' | translate }} —</mat-option>
+      <mat-option *ngFor="let el of sourceElements" [value]="el['key']">
+        {{ el['label_ar'] || el['key'] }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Output Language (US3) -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'tafqeet.output_language' | translate }}</mat-label>
+    <mat-select [value]="outputLanguage" (selectionChange)="onOutputLanguageChange($event.value)">
+      <mat-option value="ar">عربي (Arabic)</mat-option>
+      <mat-option value="en">English</mat-option>
+      <mat-option value="both">كلاهما (Both)</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Show Currency Toggle (US3) -->
+  <div class="toggle-row">
+    <mat-slide-toggle
+      [checked]="showCurrency"
+      (change)="onShowCurrencyChange($event.checked)"
+    >
+      {{ 'tafqeet.show_currency' | translate }}
+    </mat-slide-toggle>
+  </div>
+
+  <!-- Prefix (US4) -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'tafqeet.prefix' | translate }}</mat-label>
+    <mat-select [value]="prefix" (selectionChange)="onPrefixChange($event.value)">
+      <mat-option value="none">— {{ 'common.none' | translate }} —</mat-option>
+      <mat-option value="faqat">فقط</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Suffix (US4) -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'tafqeet.suffix' | translate }}</mat-label>
+    <mat-select [value]="suffix" (selectionChange)="onSuffixChange($event.value)">
+      <mat-option value="none">— {{ 'common.none' | translate }} —</mat-option>
+      <mat-option value="la_ghair">لا غير</mat-option>
+      <mat-option value="faqat_la_ghair">فقط لا غير</mat-option>
+      <mat-option value="only" [disabled]="isSuffixOnlyDisabled()">Only (English)</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Preview Value (US2) -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'tafqeet.preview_value' | translate }}</mat-label>
+    <input
+      matInput
+      type="number"
+      [value]="previewValue ?? ''"
+      (input)="onPreviewValueChange($any($event.target).value)"
+      placeholder="e.g. 5500.75"
+    />
+    <mat-hint>{{ 'tafqeet.preview_value_hint' | translate }}</mat-hint>
+  </mat-form-field>
+
+  <!-- Warnings -->
+  <mat-hint class="warning negative-warning" *ngIf="negativeWarning">
+    <mat-icon>warning</mat-icon>
+    {{ 'tafqeet.negative_warning' | translate }}
+  </mat-hint>
+
+  <mat-hint class="warning overflow-warning" *ngIf="overflowWarning">
+    <mat-icon>warning_amber</mat-icon>
+    {{ 'tafqeet.overflow_warning' | translate }}
+  </mat-hint>
+
+  <!-- Read-only notice -->
+  <div class="readonly-notice">
+    <mat-icon>lock</mat-icon>
+    <span>{{ 'tafqeet.readonly_notice' | translate }}</span>
+  </div>
+
+</div>

@@ -24,6 +24,7 @@ class ElementType(StrEnum):
     IMAGE = "image"
     QR = "qr"
     BARCODE = "barcode"
+    TAFQEET = "tafqeet"
 
 
 class Country(StrEnum):

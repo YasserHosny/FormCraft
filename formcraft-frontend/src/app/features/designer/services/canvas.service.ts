@@ -215,6 +215,26 @@ export class CanvasService implements OnDestroy {
     if (recordUndo) {
       this.pushUndo({ type: 'remove', elementId: id, before: { ...el.data }, after: {} });
     }
+
+    // T022: If removing a number/currency element, clear sourceElementKey on any linked tafqeet elements
+    const removedType = el.data['type'];
+    const removedKey = el.data['key'] as string | undefined;
+    if ((removedType === 'number' || removedType === 'currency') && removedKey) {
+      for (const other of this.elements.values()) {
+        if (other.data['type'] === 'tafqeet') {
+          const fmt = other.data['formatting'] as Record<string, unknown> | undefined;
+          if (fmt && fmt['sourceElementKey'] === removedKey) {
+            other.data['formatting'] = { ...fmt, sourceElementKey: null, currencyCode: null };
+            // Revert canvas label to placeholder
+            const textNode = other.konvaNode.findOne<import('konva/lib/shapes/Text').Text>('.label');
+            if (textNode) {
+              textNode.text((other.data['label_ar'] as string) || (other.data['label_en'] as string) || '');
+            }
+          }
+        }
+      }
+    }
+
     el.konvaNode.destroy();
     this.elements.delete(id);
     if (this._selectedElement.value?.id === id) {
@@ -223,6 +243,21 @@ export class CanvasService implements OnDestroy {
     this.layer?.draw();
     if (recordUndo) {
       this._dirty.next(true);
+    }
+  }
+
+  /**
+   * T022: When a currency element's currencyCode changes, sync the snapshot on linked tafqeet elements.
+   * Call this after updating the currency element's formatting.
+   */
+  syncTafqeetCurrencyCode(currencyElementKey: string, newCurrencyCode: string): void {
+    for (const el of this.elements.values()) {
+      if (el.data['type'] === 'tafqeet') {
+        const fmt = el.data['formatting'] as Record<string, unknown> | undefined;
+        if (fmt && fmt['sourceElementKey'] === currencyElementKey) {
+          el.data['formatting'] = { ...fmt, currencyCode: newCurrencyCode };
+        }
+      }
     }
   }
 
@@ -340,6 +375,40 @@ export class CanvasService implements OnDestroy {
     this._dirty.next(false);
   }
 
+  /**
+   * Update the preview text shown on a tafqeet element node.
+   * Called by TafqeetPropertyPanelComponent after a successful /tafqeet/preview call.
+   */
+  updateTafqeetPreview(elementId: string, previewText: string | null): void {
+    const el = this.elements.get(elementId);
+    if (!el || el.data['type'] !== 'tafqeet') return;
+
+    const group = el.konvaNode;
+    const textNode = group.findOne<Konva.Text>('.label');
+    if (!textNode) return;
+
+    const fallback = (el.data['label_ar'] as string) || (el.data['label_en'] as string) || '';
+    textNode.text(previewText ?? fallback);
+    this.layer?.draw();
+  }
+
+  /**
+   * Update element formatting data (used by property panel without triggering save).
+   * Does NOT mark dirty — caller decides when to save.
+   */
+  updateElementFormatting(elementId: string, formatting: Record<string, unknown>): void {
+    const el = this.elements.get(elementId);
+    if (!el) return;
+    el.data['formatting'] = { ...(el.data['formatting'] as Record<string, unknown> || {}), ...formatting };
+  }
+
+  /**
+   * Get all elements on the current canvas (used by source element picker).
+   */
+  getPageElements(): Record<string, unknown>[] {
+    return Array.from(this.elements.values()).map((el) => el.data);
+  }
+
   updateElementId(oldId: string, newId: string): void {
     const element = this.elements.get(oldId);
     if (element) {
@@ -359,6 +428,16 @@ export class CanvasService implements OnDestroy {
     const nodes = Array.from(this.elements.values()).map((el) => el.konvaNode);
     this.transformer.nodes(nodes);
     this.layer?.draw();
+  }
+
+  /**
+   * FR-021: Returns element IDs that are eligible for bulk type-change operations.
+   * Tafqeet elements are excluded — they are read-only computed elements.
+   */
+  getBulkTypeChangeEligibleIds(): string[] {
+    return Array.from(this.elements.entries())
+      .filter(([, el]) => el.data['type'] !== 'tafqeet')
+      .map(([id]) => id);
   }
 
   destroy(): void {
@@ -456,33 +535,52 @@ export class CanvasService implements OnDestroy {
 
     const group = new Konva.Group({ x, y, draggable: true, name: 'element-group' });
 
+    const isTafqeet = data['type'] === 'tafqeet';
+
     // Element box
     const rect = new Konva.Rect({
       name: 'box',
       width: w,
       height: h,
-      fill: '#f8f9fa',
-      stroke: '#90caf9',
-      strokeWidth: 1,
+      fill: isTafqeet ? '#fffde7' : '#f8f9fa',
+      stroke: isTafqeet ? '#f9a825' : '#90caf9',
+      strokeWidth: isTafqeet ? 1.5 : 1,
+      dash: isTafqeet ? [4, 3] : [],
       cornerRadius: 2,
     });
     group.add(rect);
 
-    // Label text
+    // Label text — for tafqeet, show label or preview placeholder
     const label = (data['label_ar'] as string) || (data['label_en'] as string) || (data['key'] as string) || '';
+    const tafqeetDisplay = isTafqeet
+      ? ((data['formatting'] as Record<string, unknown>)?.['_previewText'] as string) || label
+      : label;
     const text = new Konva.Text({
       name: 'label',
-      text: label,
+      text: tafqeetDisplay,
       width: w,
       height: h,
       align: 'center',
       verticalAlign: 'middle',
       fontSize: 12,
       fontFamily: 'Noto Naskh Arabic, Noto Sans, sans-serif',
-      fill: '#333',
+      fill: isTafqeet ? '#5d4037' : '#333',
       listening: false,
     });
     group.add(text);
+
+    // Lock icon overlay for tafqeet (read-only indicator)
+    if (isTafqeet) {
+      const lockIcon = new Konva.Text({
+        name: 'lock',
+        text: '🔒',
+        x: w - 16,
+        y: 2,
+        fontSize: 10,
+        listening: false,
+      });
+      group.add(lockIcon);
+    }
 
     // Type badge
     const typeBadge = new Konva.Text({
@@ -492,7 +590,7 @@ export class CanvasService implements OnDestroy {
       y: 2,
       fontSize: 8,
       fontFamily: 'sans-serif',
-      fill: '#999',
+      fill: isTafqeet ? '#f9a825' : '#999',
       listening: false,
     });
     group.add(typeBadge);

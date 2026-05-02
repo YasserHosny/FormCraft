@@ -13,7 +13,8 @@
     "close": "Close",
     "back": "Back",
     "next": "Next",
-    "previous": "Previous"
+    "previous": "Previous",
+    "none": "None"
   },
   "auth": {
     "login": "Sign In",
@@ -117,6 +118,18 @@
     "EG": "Egypt",
     "SA": "Saudi Arabia",
     "AE": "United Arab Emirates"
+  },
+  "tafqeet": {
+    "source_element": "Source Element",
+    "output_language": "Output Language",
+    "show_currency": "Show Currency",
+    "prefix": "Prefix",
+    "suffix": "Suffix",
+    "preview_value": "Preview Value",
+    "preview_value_hint": "Enter a number to preview the conversion on canvas",
+    "overflow_warning": "Text may overflow — resize the element",
+    "negative_warning": "Negative values not supported",
+    "readonly_notice": "Computed element — not directly editable"
   },
   "errors": {
     "generic": "An unexpected error occurred",
