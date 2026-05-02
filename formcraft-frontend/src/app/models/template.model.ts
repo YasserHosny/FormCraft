@@ -1,5 +1,5 @@
 export type TemplateStatus = 'draft' | 'published';
-export type ElementType = 'text' | 'number' | 'date' | 'currency' | 'dropdown' | 'radio' | 'checkbox' | 'image' | 'qr' | 'barcode';
+export type ElementType = 'text' | 'number' | 'date' | 'currency' | 'dropdown' | 'radio' | 'checkbox' | 'image' | 'qr' | 'barcode' | 'tafqeet';
 export type Country = 'EG' | 'SA' | 'AE';
 export type Language = 'ar' | 'en';
 export type Direction = 'rtl' | 'ltr' | 'auto';

@@ -213,6 +213,16 @@
         <mat-slide-toggle [checked]="!!selectedElement.data['required']">
           {{ 'designer.properties.required' | translate }}
         </mat-slide-toggle>
+
+        <!-- Tafqeet-specific property panel (US2–US4, US7) -->
+        <ng-container *ngIf="selectedElement.data['type'] === 'tafqeet'">
+          <mat-divider style="margin: 12px 0;"></mat-divider>
+          <fc-tafqeet-property-panel
+            [element]="selectedElement"
+            [pageElements]="canvasService.getPageElements()"
+          ></fc-tafqeet-property-panel>
+        </ng-container>
+
         <button mat-button color="warn" (click)="deleteSelected()" style="margin-top: 16px; width: 100%;">
           <mat-icon>delete</mat-icon> {{ 'common.delete' | translate }}
         </button>

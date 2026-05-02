@@ -20,4 +20,5 @@ export const ELEMENT_DEFAULTS: Record<ElementType, ElementDefault> = {
   image: { type: 'image', width_mm: 40, height_mm: 40, label_ar: 'صورة', label_en: 'Image', icon: 'image' },
   qr: { type: 'qr', width_mm: 30, height_mm: 30, label_ar: 'رمز QR', label_en: 'QR Code', icon: 'qr_code' },
   barcode: { type: 'barcode', width_mm: 50, height_mm: 15, label_ar: 'باركود', label_en: 'Barcode', icon: 'barcode_reader' },
+  tafqeet: { type: 'tafqeet', width_mm: 120, height_mm: 12, label_ar: 'المبلغ كتابةً', label_en: 'Amount in Words', icon: 'spellcheck' },
 };

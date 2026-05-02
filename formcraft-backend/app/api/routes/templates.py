@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from app.api.deps import get_current_user, require_role
 from app.core.audit import AuditLogger
@@ -262,6 +262,42 @@ async def update_element(
 ):
     client = get_supabase_client()
     service = TemplateService(client)
+
+    # FR-023: validate tafqeet sourceElementKey references a number/currency element on same page
+    if body.formatting:
+        source_key = body.formatting.get("sourceElementKey")
+        if source_key is not None:
+            element_result = (
+                client.table("elements")
+                .select("id, type, page_id")
+                .eq("id", str(element_id))
+                .single()
+                .execute()
+            )
+            element_row = element_result.data
+            if element_row and element_row.get("type") == "tafqeet":
+                page_id = element_row.get("page_id")
+                siblings = (
+                    client.table("elements")
+                    .select("key, type")
+                    .eq("page_id", str(page_id))
+                    .neq("id", str(element_id))
+                    .execute()
+                    .data or []
+                )
+                valid_keys = {
+                    el["key"] for el in siblings
+                    if el.get("type") in ("number", "currency")
+                }
+                if source_key not in valid_keys:
+                    raise HTTPException(
+                        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        detail=(
+                            f"sourceElementKey '{source_key}' does not reference a "
+                            "number or currency element on the same page"
+                        ),
+                    )
+
     return await service.update_element(element_id, body.model_dump(exclude_none=True))
 
 

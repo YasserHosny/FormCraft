@@ -7,6 +7,7 @@ from app.services.pdf.element_renderers.dropdown_renderer import DropdownRendere
 from app.services.pdf.element_renderers.image_renderer import ImageRenderer
 from app.services.pdf.element_renderers.qr_renderer import QRRenderer
 from app.services.pdf.element_renderers.barcode_renderer import BarcodeRenderer
+from app.services.pdf.element_renderers.tafqeet_renderer import TafqeetRenderer
 
 RENDERER_MAP = {
     "text": TextRenderer(),
@@ -19,6 +20,7 @@ RENDERER_MAP = {
     "image": ImageRenderer(),
     "qr": QRRenderer(),
     "barcode": BarcodeRenderer(),
+    "tafqeet": TafqeetRenderer(),
 }
 
 
