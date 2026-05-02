@@ -51,6 +51,7 @@ This is a **polyrepo** project with three repositories:
 | 07 | Arabic Validators | P2 | [spec](specs/07-arabic-validators/spec.md) | [plan](specs/07-arabic-validators/plan.md) | [tasks](specs/07-arabic-validators/tasks.md) |
 | 08 | Security & Audit | P3 | [spec](specs/08-security-audit/spec.md) | [plan](specs/08-security-audit/plan.md) | [tasks](specs/08-security-audit/tasks.md) |
 | 09 | Perf & Hardening | P3 | [spec](specs/09-perf-hardening/spec.md) | [plan](specs/09-perf-hardening/plan.md) | [tasks](specs/09-perf-hardening/tasks.md) |
+| 10 | Tafqeet Control | P2 | [spec](specs/10-tafqeet-control/spec.md) | — | — |
 
 ## Key Principles
 
