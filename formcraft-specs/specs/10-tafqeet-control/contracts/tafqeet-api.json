@@ -1,0 +1,111 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Tafqeet API",
+    "version": "1.0.0",
+    "description": "Tafqeet amount-to-words conversion endpoints"
+  },
+  "paths": {
+    "/api/tafqeet/preview": {
+      "post": {
+        "summary": "Convert numeric amount to words (canvas preview)",
+        "description": "Stateless endpoint. No DB access. Used by Design Studio canvas for live preview of tafqeet element output. Requires valid JWT.",
+        "tags": ["Tafqeet"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TafqeetPreviewRequest" },
+              "example": {
+                "amount": 12500.50,
+                "currency_code": "EGP",
+                "language": "both",
+                "show_currency": true,
+                "prefix": "none",
+                "suffix": "faqat_la_ghair"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conversion result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TafqeetPreviewResponse" },
+                "examples": {
+                  "arabic_only": {
+                    "value": { "result": "اثنا عشر ألفاً وخمسمائة جنيه مصري وخمسون قرشاً فقط لا غير" }
+                  },
+                  "both": {
+                    "value": { "result": "اثنا عشر ألفاً وخمسمائة جنيه مصري وخمسون قرشاً فقط لا غير\nTwelve Thousand Five Hundred Egyptian Pounds and Fifty Piastres Only" }
+                  },
+                  "out_of_range": {
+                    "value": { "result": null }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized — missing or invalid JWT" },
+          "422": { "description": "Validation error — invalid suffix/language combination" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TafqeetPreviewRequest": {
+        "type": "object",
+        "required": ["amount", "currency_code", "language"],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Numeric amount to convert"
+          },
+          "currency_code": {
+            "type": "string",
+            "enum": ["EGP", "SAR", "AED", "USD"]
+          },
+          "language": {
+            "type": "string",
+            "enum": ["ar", "en", "both"]
+          },
+          "show_currency": {
+            "type": "boolean",
+            "default": true
+          },
+          "prefix": {
+            "type": "string",
+            "enum": ["none", "faqat"],
+            "default": "none"
+          },
+          "suffix": {
+            "type": "string",
+            "enum": ["none", "la_ghair", "faqat_la_ghair", "only"],
+            "default": "none"
+          }
+        }
+      },
+      "TafqeetPreviewResponse": {
+        "type": "object",
+        "required": ["result"],
+        "properties": {
+          "result": {
+            "type": "string",
+            "nullable": true,
+            "description": "Converted text, or null if amount is out of range or conversion fails"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
