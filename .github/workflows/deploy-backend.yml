@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: yasserhosny/formcraft-backend
+  IMAGE_NAME: ${{ github.repository_owner }}/formcraft-backend
 
 jobs:
   build-and-deploy:
@@ -59,4 +59,4 @@ jobs:
           api_key: ${{ secrets.BUNNY_API_KEY }}
           app_id: ${{ secrets.BUNNY_BACKEND_APP_ID }}
           container: formcraft-backend
-          image_tag: latest
+          image_tag: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
