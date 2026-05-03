@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: yasserhosny/formcraft-backend
+Z  IMAGE_NAME: ${{ github.repository_owner }}/formcraft-backend
 
 jobs:
   build-and-deploy:
