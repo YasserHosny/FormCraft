@@ -10,7 +10,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/formcraft-frontend
 
 jobs:
   build-and-deploy:
@@ -31,11 +30,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Normalize image name casing
-        run: echo "IMAGE_NAME=${IMAGE_NAME,,}" >> "$GITHUB_ENV"
+        id: normalize_image
+        run: echo "image_name=${GITHUB_REPOSITORY_OWNER,,}/formcraft-frontend" >> "$GITHUB_OUTPUT"
 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
+        env:
+          IMAGE_NAME: ${{ steps.normalize_image.outputs.image_name }}
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
@@ -47,6 +49,8 @@ jobs:
 
       - name: Build and push image
         uses: docker/build-push-action@v5
+        env:
+          IMAGE_NAME: ${{ steps.normalize_image.outputs.image_name }}
         with:
           context: ./formcraft-frontend
           push: true
@@ -58,8 +62,10 @@ jobs:
 
       - name: Deploy to Bunny Magic Containers
         uses: BunnyWay/actions/container-update-image@main
+        env:
+          IMAGE_NAME: ${{ steps.normalize_image.outputs.image_name }}
         with:
           api_key: ${{ secrets.BUNNY_API_KEY }}
           app_id: ${{ secrets.BUNNY_FRONTEND_APP_ID }}
           container: formcraft-frontend
-          image_tag: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          image_tag: latest
