@@ -27,6 +27,15 @@ const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: { roles: ['admin', 'designer'] },
   },
+  {
+    path: 'admin/feedback',
+    loadChildren: () =>
+      import('./features/feedback/feedback.module').then(
+        (m) => m.FeedbackModule
+      ),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['admin'] },
+  },
   { path: '', redirectTo: '/templates', pathMatch: 'full' },
   { path: '**', redirectTo: '/templates' },
 ];

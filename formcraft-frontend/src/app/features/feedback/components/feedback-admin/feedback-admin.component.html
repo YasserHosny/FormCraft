@@ -1,0 +1,111 @@
+<div class="feedback-admin-container">
+  <h1>{{ 'feedback.adminTitle' | translate }}</h1>
+
+  <!-- Status Filters -->
+  <div class="filter-bar">
+    <mat-chip-listbox aria-label="Filter by status">
+      <mat-chip-option [selected]="statusFilter.value === 'all'" (click)="statusFilter.setValue('all')">
+        {{ 'feedback.filterAll' | translate }}
+      </mat-chip-option>
+      <mat-chip-option [selected]="statusFilter.value === 'new'" (click)="statusFilter.setValue('new')">
+        {{ 'feedback.statusNew' | translate }}
+      </mat-chip-option>
+      <mat-chip-option [selected]="statusFilter.value === 'reviewed'" (click)="statusFilter.setValue('reviewed')">
+        {{ 'feedback.statusReviewed' | translate }}
+      </mat-chip-option>
+      <mat-chip-option [selected]="statusFilter.value === 'resolved'" (click)="statusFilter.setValue('resolved')">
+        {{ 'feedback.statusResolved' | translate }}
+      </mat-chip-option>
+    </mat-chip-listbox>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrapper">
+    <table mat-table [dataSource]="feedbackItems" class="feedback-table">
+      <!-- Date Column -->
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>{{ 'feedback.colDate' | translate }}</th>
+        <td mat-cell *matCellDef="let item">{{ item.submitted_at | date:'shortDate' }}</td>
+      </ng-container>
+
+      <!-- User Column -->
+      <ng-container matColumnDef="user">
+        <th mat-header-cell *matHeaderCellDef>{{ 'feedback.colUser' | translate }}</th>
+        <td mat-cell *matCellDef="let item">{{ item.submitter_display_name || 'Unknown' }}</td>
+      </ng-container>
+
+      <!-- Page Column -->
+      <ng-container matColumnDef="page">
+        <th mat-header-cell *matHeaderCellDef>{{ 'feedback.colPage' | translate }}</th>
+        <td mat-cell *matCellDef="let item" class="page-url">{{ item.page_url }}</td>
+      </ng-container>
+
+      <!-- Message Column -->
+      <ng-container matColumnDef="message">
+        <th mat-header-cell *matHeaderCellDef>{{ 'feedback.colMessage' | translate }}</th>
+        <td mat-cell *matCellDef="let item">
+          <span *ngIf="expandedRowId !== item.id" class="truncated-text">{{ item.text_content }}</span>
+          <span *ngIf="expandedRowId === item.id">{{ item.text_content }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Attachments Column -->
+      <ng-container matColumnDef="attachments">
+        <th mat-header-cell *matHeaderCellDef>{{ 'feedback.colAttachments' | translate }}</th>
+        <td mat-cell *matCellDef="let item">
+          <ng-container *ngIf="item.image_url || item.audio_url">
+            <mat-icon *ngIf="item.image_url" matTooltip="Image attached">image</mat-icon>
+            <mat-icon *ngIf="item.audio_url" matTooltip="Audio attached">attach_file</mat-icon>
+          </ng-container>
+        </td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>{{ 'feedback.colStatus' | translate }}</th>
+        <td mat-cell *matCellDef="let item">
+          <span class="status-chip" [ngClass]="getStatusChipClass(item.status)">
+            {{ 'feedback.status' + item.status.charAt(0).toUpperCase() + item.status.slice(1) | translate }}
+          </span>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let item; columns: displayedColumns;" class="clickable-row" (click)="toggleRow(item.id)"></tr>
+    </table>
+
+    <!-- Expanded Row Detail -->
+    <div *ngIf="expandedRowId" class="expanded-detail">
+      <ng-container *ngFor="let item of feedbackItems">
+        <div *ngIf="item.id === expandedRowId" class="detail-content">
+          <p class="full-text">{{ item.text_content }}</p>
+
+          <div *ngIf="item.image_signed_url" class="detail-image">
+            <img [src]="item.image_signed_url" alt="Feedback image" />
+          </div>
+
+          <div *ngIf="item.audio_signed_url" class="detail-audio">
+            <audio controls [src]="item.audio_signed_url"></audio>
+          </div>
+
+          <div class="detail-status">
+            <label>{{ 'feedback.colStatus' | translate }}:</label>
+            <mat-form-field appearance="outline">
+              <mat-select [value]="item.status" (selectionChange)="updateStatus(item, $event.value)">
+                <mat-option value="new">{{ 'feedback.statusNew' | translate }}</mat-option>
+                <mat-option value="reviewed">{{ 'feedback.statusReviewed' | translate }}</mat-option>
+                <mat-option value="resolved">{{ 'feedback.statusResolved' | translate }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <mat-paginator [length]="totalItems" [pageSize]="pageSize" [pageIndex]="currentPage - 1"
+    (page)="onPageChange($event.pageIndex + 1)">
+  </mat-paginator>
+</div>

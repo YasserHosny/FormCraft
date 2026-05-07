@@ -1,0 +1,149 @@
+<ng-container *ngIf="isAuthenticated">
+  <!-- Floating Action Button -->
+  <button mat-fab color="accent" class="feedback-fab" (click)="openModal()"
+    matTooltip="{{ 'feedback.widgetButton' | translate }}">
+    <mat-icon>feedback</mat-icon>
+  </button>
+
+  <!-- Modal Overlay -->
+  <div class="feedback-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+    <div class="feedback-modal" (click)="$event.stopPropagation()">
+      <!-- Success State -->
+      <ng-container *ngIf="isSuccess; else formState">
+        <div class="feedback-success">
+          <mat-icon class="success-icon">check_circle</mat-icon>
+          <h3>{{ 'feedback.successTitle' | translate }}</h3>
+          <p>{{ 'feedback.successMessage' | translate }}</p>
+          <button mat-raised-button color="primary" (click)="closeModal()">
+            {{ 'common.close' | translate }}
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- Form State -->
+      <ng-template #formState>
+        <div class="feedback-header">
+          <h2 mat-dialog-title>{{ 'feedback.widgetTitle' | translate }}</h2>
+          <button mat-icon-button (click)="closeModal()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="feedback-body">
+          <!-- Error Message -->
+          <div *ngIf="errorMessage" class="feedback-error">
+            <mat-icon>warning</mat-icon>
+            <span>{{ errorMessage }}</span>
+          </div>
+
+          <!-- Text Area -->
+          <mat-form-field appearance="outline" class="feedback-textarea">
+            <mat-label>{{ 'feedback.textPlaceholder' | translate }}</mat-label>
+            <textarea matInput [formControl]="textControl" [maxlength]="maxChars"
+              cdkTextareaAutosize cdkAutosizeMinRows="4" cdkAutosizeMaxRows="8"></textarea>
+          </mat-form-field>
+          <div class="char-counter" [class.warn]="charCount >= maxChars">
+            {{ charCount }} / {{ maxChars }}
+          </div>
+
+          <!-- Image Section -->
+          <ng-container *ngIf="!imageUrl && !imagePreviewUrl; else imagePreview">
+            <button mat-stroked-button type="button" class="attach-btn" (click)="imageInput.click()">
+              <mat-icon>image</mat-icon>
+              {{ 'feedback.addImage' | translate }}
+            </button>
+            <input #imageInput type="file" hidden accept="image/jpeg,image/png,image/webp" (change)="onImageSelected($event)" />
+          </ng-container>
+          <ng-template #imagePreview>
+            <div class="image-preview-container">
+              <img [src]="imagePreviewUrl!" class="image-thumbnail" alt="Preview" />
+              <button mat-icon-button type="button" class="remove-btn" (click)="removeImage()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </ng-template>
+
+          <!-- Image validation error -->
+          <div *ngIf="imageValidationError" class="feedback-error">
+            <mat-icon>warning</mat-icon>
+            <span>{{ imageValidationError | translate }}</span>
+          </div>
+
+          <!-- Audio Section -->
+          <!-- Not recording, no preview -->
+          <ng-container *ngIf="!hasAudioPreview && !isAudioRecording">
+            <div class="feedback-attachments">
+              <!-- Record button (only if browser supports MediaRecorder) -->
+              <button mat-stroked-button type="button" class="attach-btn" *ngIf="isAudioSupported" (click)="startAudioRecording()">
+                <mat-icon>mic</mat-icon>
+                {{ 'feedback.addAudio' | translate }}
+              </button>
+              <!-- File upload button (always available) -->
+              <button mat-stroked-button type="button" class="attach-btn" (click)="audioInput.click()">
+                <mat-icon>attach_file</mat-icon>
+                {{ 'feedback.uploadAudioFile' | translate }}
+              </button>
+              <input #audioInput type="file" hidden accept="audio/mpeg,audio/mp4,audio/wav,audio/webm,audio/x-m4a,.mp3,.m4a,.wav,.webm" (change)="onAudioFileSelected($event)" />
+              <!-- Fallback message for browsers without MediaRecorder -->
+              <p *ngIf="!isAudioSupported" class="audio-hint">
+                {{ 'feedback.audioBrowserHint' | translate }}
+              </p>
+            </div>
+          </ng-container>
+
+          <!-- Recording in progress -->
+          <ng-container *ngIf="isAudioRecording">
+            <div class="audio-recording">
+              <span class="recording-dot"></span>
+              <span>{{ 'feedback.recording' | translate }} {{ audioElapsedSeconds }}s / {{ MAX_AUDIO_SECONDS }}s</span>
+              <div class="recording-progress">
+                <div class="recording-progress-bar" [style.width.%]="(audioElapsedSeconds / MAX_AUDIO_SECONDS) * 100"></div>
+              </div>
+              <button mat-icon-button type="button" (click)="stopAudioRecording()">
+                <mat-icon>stop</mat-icon>
+              </button>
+            </div>
+          </ng-container>
+
+          <!-- Audio preview (after recording or file upload) -->
+          <ng-container *ngIf="hasAudioPreview && !isAudioRecording">
+            <div class="audio-preview">
+              <audio *ngIf="audioPreviewUrl" controls [src]="audioPreviewUrl" class="audio-player"></audio>
+              <div class="audio-actions">
+                <button mat-stroked-button type="button" *ngIf="isAudioSupported" (click)="rerecordAudio()">
+                  <mat-icon>refresh</mat-icon>
+                  {{ 'feedback.rerecord' | translate }}
+                </button>
+                <button mat-icon-button type="button" class="remove-btn" (click)="removeAudio()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Audio validation error -->
+          <div *ngIf="audioValidationError" class="feedback-error">
+            <mat-icon>warning</mat-icon>
+            <span>{{ audioValidationError | translate }}</span>
+          </div>
+
+          <!-- Submit Button -->
+          <button mat-raised-button color="primary" class="submit-btn"
+            [disabled]="!canSubmit" (click)="onSubmit()">
+            <mat-icon *ngIf="isSubmitting">
+              <mat-spinner diameter="20"></mat-spinner>
+            </mat-icon>
+            <span *ngIf="cooldownRemaining > 0">
+              {{ 'feedback.submitCooldown' | translate }} ({{ cooldownRemaining }}s)
+            </span>
+            <span *ngIf="cooldownRemaining === 0">{{ 'feedback.submit' | translate }}</span>
+          </button>
+
+          <button mat-button (click)="closeModal()" class="cancel-btn">
+            {{ 'common.cancel' | translate }}
+          </button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</ng-container>
