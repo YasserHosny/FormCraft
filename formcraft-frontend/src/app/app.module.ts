@@ -4,6 +4,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule, HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { BidiModule } from '@angular/cdk/bidi';
+import { CdkTextFieldModule } from '@angular/cdk/text-field';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
@@ -12,19 +13,22 @@ import { AppComponent } from './app.component';
 import { SharedModule } from './shared/shared.module';
 import { AuthInterceptor } from './core/auth/auth.interceptor';
 import { GlobalErrorHandler } from './core/error-handler/global-error-handler';
+import { FeedbackWidgetComponent } from './features/feedback/components/feedback-widget/feedback-widget.component';
+import { FeedbackService } from './features/feedback/services/feedback.service';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
 }
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, FeedbackWidgetComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
     ReactiveFormsModule,
     BidiModule,
+    CdkTextFieldModule,
     AppRoutingModule,
     SharedModule,
     TranslateModule.forRoot({

@@ -8,6 +8,14 @@
 **/.DS_Store
 **/.env
 **/.env.*
-!**/.env.example
+!.env.example
 **/.venv
 **/venv
+**/*.egg-info/
+**/*.log
+**/*.pyc
+**/Thumbs.db
+**/*.tmp
+**/*.swp
+.vscode/
+.idea/

@@ -8,6 +8,7 @@ import { AuthService } from './core/auth/auth.service';
   template: `
     <ng-container *ngIf="isAuthenticated; else loginOnly">
       <fc-app-shell></fc-app-shell>
+      <fc-feedback-widget></fc-feedback-widget>
     </ng-container>
     <ng-template #loginOnly>
       <router-outlet></router-outlet>
