@@ -1,0 +1,84 @@
+.label-list {
+  margin-bottom: 16px;
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #e0e0e0;
+
+  .colour-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .label-name {
+    flex: 1;
+  }
+}
+
+.edit-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  width: 100%;
+
+  .edit-name-field {
+    flex: 1;
+    min-width: 120px;
+  }
+}
+
+.no-labels {
+  color: #9e9e9e;
+  padding: 12px 0;
+  text-align: center;
+}
+
+.new-label-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+
+  h3 {
+    margin: 0 0 8px 0;
+  }
+}
+
+.colour-picker {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.colour-swatch.pickable {
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+
+  &.selected {
+    border-color: #000;
+  }
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.new-label-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  mat-form-field {
+    flex: 1;
+  }
+}

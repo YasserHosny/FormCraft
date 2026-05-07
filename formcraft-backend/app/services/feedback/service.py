@@ -123,11 +123,13 @@ class FeedbackService:
         user_id: str | None = None,
         date_from: str | None = None,
         date_to: str | None = None,
+        search: str | None = None,
+        label_ids: list[str] | None = None,
     ) -> tuple[list[dict], int]:
         """List feedback entries (admin). Returns items and total count."""
         offset = (page - 1) * limit
         query = self.client.table("feedback_submissions").select(
-            "*, profiles!feedback_submissions_user_id_fkey(display_name,email)",
+            "*, profiles!feedback_submissions_user_id_fkey(display_name,email), feedback_submission_labels(feedback_labels(id,name,colour,created_at))",
             count="exact",
         )
 
@@ -139,6 +141,22 @@ class FeedbackService:
             query = query.gte("submitted_at", date_from)
         if date_to:
             query = query.lte("submitted_at", date_to)
+        if search:
+            query = query.ilike("text_content", f"%{search}%")
+        if label_ids:
+            sub_result = (
+                self.client.table("feedback_submission_labels")
+                .select("submission_id")
+                .in_("label_id", label_ids)
+                .execute()
+            )
+            submission_ids = list(
+                {row["submission_id"] for row in sub_result.data or []}
+            )
+            if submission_ids:
+                query = query.in_("id", submission_ids)
+            else:
+                return [], 0
 
         result = (
             query.range(offset, offset + limit - 1)
@@ -153,6 +171,13 @@ class FeedbackService:
                 profile.get("display_name") or profile.get("email") or "Unknown"
             )
             row["submitter_display_name"] = display_name
+
+            labels_data = row.pop("feedback_submission_labels", []) or []
+            row["labels"] = [
+                lbl["feedback_labels"]
+                for lbl in labels_data
+                if lbl.get("feedback_labels")
+            ]
 
             if row.get("image_url"):
                 try:
@@ -190,3 +215,174 @@ class FeedbackService:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Feedback entry not found")
         entry = result.data[0]
         return {"id": entry["id"], "status": entry["status"]}
+
+    async def list_submitters(self) -> list[dict]:
+        """List distinct submitters (admin). Returns id and display_name."""
+        result = (
+            self.client.table("feedback_submissions")
+            .select(
+                "user_id, profiles!feedback_submissions_user_id_fkey(display_name,email)"
+            )
+            .execute()
+        )
+        seen = set()
+        submitters = []
+        for row in result.data or []:
+            uid = row["user_id"]
+            if uid in seen:
+                continue
+            seen.add(uid)
+            profile = row.get("profiles") or {}
+            display_name = (
+                profile.get("display_name") or profile.get("email") or "Unknown"
+            )
+            submitters.append({"id": uid, "display_name": display_name})
+        return submitters
+
+    async def list_labels(self) -> list[dict]:
+        """List all labels (admin)."""
+        result = (
+            self.client.table("feedback_labels")
+            .select("*")
+            .order("created_at")
+            .execute()
+        )
+        return result.data or []
+
+    async def create_label(self, admin_id: UUID, payload) -> dict:
+        """Create a new label (admin). Raises 409 on name conflict."""
+        row = {
+            "name": payload.name,
+            "colour": payload.colour.value if payload.colour else None,
+            "created_by": str(admin_id),
+        }
+        try:
+            result = self.client.table("feedback_labels").insert(row).execute()
+        except Exception as exc:
+            error_msg = str(exc).lower()
+            if (
+                "unique" in error_msg
+                or "duplicate" in error_msg
+                or "23505" in error_msg
+            ):
+                raise HTTPException(
+                    status.HTTP_409_CONFLICT,
+                    f"Label with name '{payload.name}' already exists",
+                )
+            raise
+        if not result.data:
+            raise HTTPException(
+                status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to create label"
+            )
+        return result.data[0]
+
+    async def update_label(self, label_id: UUID, payload) -> dict:
+        """Update a label (admin). Raises 404 if not found, 409 on name conflict."""
+        updates = {}
+        if payload.name is not None:
+            updates["name"] = payload.name
+        if payload.colour is not None:
+            updates["colour"] = payload.colour.value
+        if not updates:
+            result = (
+                self.client.table("feedback_labels")
+                .select("*")
+                .eq("id", str(label_id))
+                .single()
+                .execute()
+            )
+            if not result.data:
+                raise HTTPException(status.HTTP_404_NOT_FOUND, "Label not found")
+            return result.data
+        try:
+            result = (
+                self.client.table("feedback_labels")
+                .update(updates)
+                .eq("id", str(label_id))
+                .execute()
+            )
+        except Exception as exc:
+            error_msg = str(exc).lower()
+            if (
+                "unique" in error_msg
+                or "duplicate" in error_msg
+                or "23505" in error_msg
+            ):
+                raise HTTPException(
+                    status.HTTP_409_CONFLICT,
+                    "Label with this name already exists",
+                )
+            raise
+        if not result.data:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Label not found")
+        return result.data[0]
+
+    async def delete_label(self, label_id: UUID) -> None:
+        """Delete a label (admin). CASCADE handles associations."""
+        result = (
+            self.client.table("feedback_labels")
+            .delete()
+            .eq("id", str(label_id))
+            .execute()
+        )
+        if not result.data:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Label not found")
+
+    async def assign_labels(
+        self, feedback_id: UUID, label_ids: list[str], admin_id: UUID
+    ) -> list[dict]:
+        """Assign labels to a feedback submission. Max 5 labels."""
+        if len(label_ids) > 5:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Maximum of 5 labels allowed per submission",
+            )
+
+        valid_labels = (
+            self.client.table("feedback_labels")
+            .select("id")
+            .in_("id", label_ids)
+            .execute()
+        )
+        found_ids = {row["id"] for row in valid_labels.data}
+        missing = set(label_ids) - found_ids
+        if missing:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Label(s) not found: {', '.join(missing)}",
+            )
+
+        feedback_check = (
+            self.client.table("feedback_submissions")
+            .select("id")
+            .eq("id", str(feedback_id))
+            .execute()
+        )
+        if not feedback_check.data:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Feedback entry not found")
+
+        self.client.table("feedback_submission_labels").delete().eq(
+            "feedback_id", str(feedback_id)
+        ).execute()
+
+        rows = [
+            {
+                "feedback_id": str(feedback_id),
+                "label_id": lid,
+                "assigned_by": str(admin_id),
+            }
+            for lid in label_ids
+        ]
+        self.client.table("feedback_submission_labels").insert(rows).execute()
+
+        assigned = (
+            self.client.table("feedback_submission_labels")
+            .select("feedback_labels(id,name,colour,created_at)")
+            .eq("feedback_id", str(feedback_id))
+            .execute()
+        )
+        return [
+            row["feedback_labels"]
+            for row in assigned.data
+            if row.get("feedback_labels")
+        ]

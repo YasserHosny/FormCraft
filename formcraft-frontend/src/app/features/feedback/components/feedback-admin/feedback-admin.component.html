@@ -1,7 +1,16 @@
 <div class="feedback-admin-container">
   <h1>{{ 'feedback.adminTitle' | translate }}</h1>
 
-  <!-- Status Filters -->
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>{{ 'feedback.searchPlaceholder' | translate }}</mat-label>
+      <input matInput [formControl]="searchControl" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+  </div>
+
+  <!-- Status + Label Filters -->
   <div class="filter-bar">
     <mat-chip-listbox aria-label="Filter by status">
       <mat-chip-option [selected]="statusFilter.value === 'all'" (click)="statusFilter.setValue('all')">
@@ -17,6 +26,50 @@
         {{ 'feedback.statusResolved' | translate }}
       </mat-chip-option>
     </mat-chip-listbox>
+
+    <!-- Label filter chips -->
+    <div class="label-filter-chips" *ngIf="allLabels.length > 0">
+      <span class="filter-label-text">{{ 'feedback.filterByLabel' | translate }}:</span>
+      <mat-chip-listbox>
+        <mat-chip-option *ngFor="let label of allLabels"
+          [selected]="isLabelSelected(label.id)"
+          (click)="toggleLabel(label.id)">
+          <span class="colour-dot" [style.background-color]="label.colour || '#78909c'"></span>
+          {{ label.name }}
+        </mat-chip-option>
+      </mat-chip-listbox>
+    </div>
+
+    <!-- Submitter filter -->
+    <mat-form-field appearance="outline" class="submitter-filter">
+      <mat-label>{{ 'feedback.filterBySubmitter' | translate }}</mat-label>
+      <mat-select [formControl]="submitterFilter">
+        <mat-option value="">{{ 'feedback.allSubmitters' | translate }}</mat-option>
+        <mat-option *ngFor="let s of submitters" [value]="s.id">{{ s.display_name }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Date range filters -->
+    <mat-form-field appearance="outline" class="date-filter">
+      <mat-label>{{ 'feedback.fromDate' | translate }}</mat-label>
+      <input matInput [matDatepicker]="fromPicker" [formControl]="dateFromControl" />
+      <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+      <mat-datepicker #fromPicker></mat-datepicker>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="date-filter">
+      <mat-label>{{ 'feedback.toDate' | translate }}</mat-label>
+      <input matInput [matDatepicker]="toPicker" [formControl]="dateToControl" />
+      <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+      <mat-datepicker #toPicker></mat-datepicker>
+    </mat-form-field>
+
+    <button mat-button color="warn" *ngIf="hasActiveFilters()" (click)="clearAllFilters()">
+      {{ 'feedback.clearFilters' | translate }}
+    </button>
+
+    <button mat-raised-button color="primary" (click)="openLabelManager()" class="manage-labels-btn">
+      {{ 'feedback.manageLabels' | translate }}
+    </button>
   </div>
 
   <!-- Table -->
@@ -60,6 +113,20 @@
         </td>
       </ng-container>
 
+      <!-- Labels Column -->
+      <ng-container matColumnDef="labels">
+        <th mat-header-cell *matHeaderCellDef>{{ 'feedback.colLabels' | translate }}</th>
+        <td mat-cell *matCellDef="let item">
+          <div class="label-chips-cell">
+            <span *ngFor="let lid of (item as any).label_ids ?? []" class="label-chip inline-chip"
+              [style.background-color]="getLabelById(lid)?.colour || '#78909c'">
+              {{ getLabelById(lid)?.name || lid }}
+            </span>
+            <span *ngIf="!(item as any).label_ids?.length" class="no-labels-text">{{ 'feedback.noLabelsYet' | translate }}</span>
+          </div>
+        </td>
+      </ng-container>
+
       <!-- Status Column -->
       <ng-container matColumnDef="status">
         <th mat-header-cell *matHeaderCellDef>{{ 'feedback.colStatus' | translate }}</th>
@@ -75,6 +142,11 @@
       <tr mat-row *matRowDef="let item; columns: displayedColumns;" class="clickable-row" (click)="toggleRow(item.id)"></tr>
     </table>
 
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && feedbackItems.length === 0" class="empty-state">
+      {{ 'feedback.noResultsFound' | translate }}
+    </div>
+
     <!-- Expanded Row Detail -->
     <div *ngIf="expandedRowId" class="expanded-detail">
       <ng-container *ngFor="let item of feedbackItems">
@@ -87,6 +159,30 @@
 
           <div *ngIf="item.audio_signed_url" class="detail-audio">
             <audio controls [src]="item.audio_signed_url"></audio>
+          </div>
+
+          <!-- Labels in expanded detail -->
+          <div class="detail-labels">
+            <label>{{ 'feedback.colLabels' | translate }}:</label>
+            <div class="detail-label-chips">
+              <span *ngFor="let lid of (item as any).label_ids ?? []" class="label-chip detail-chip"
+                [style.background-color]="getLabelById(lid)?.colour || '#78909c'">
+                {{ getLabelById(lid)?.name || lid }}
+                <button mat-icon-button class="remove-label-btn" (click)="removeLabelFromSubmission(item, lid); $event.stopPropagation()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </span>
+            </div>
+            <button mat-button *ngIf="(item as any).label_ids?.length < 5" [matMenuTriggerFor]="labelMenu" class="add-label-btn">
+              {{ 'feedback.addLabel' | translate }}
+            </button>
+            <mat-menu #labelMenu="matMenu">
+              <button mat-menu-item *ngFor="let label of allLabels" (click)="assignLabelToSubmission(item, label.id)">
+                <span class="colour-dot" [style.background-color]="label.colour || '#78909c'"></span>
+                {{ label.name }}
+              </button>
+            </mat-menu>
+            <span *ngIf="(item as any).label_ids?.length >= 5" class="max-labels-text">{{ 'feedback.maxLabelsReached' | translate }}</span>
           </div>
 
           <div class="detail-status">
@@ -102,6 +198,10 @@
         </div>
       </ng-container>
     </div>
+  </div>
+
+  <div *ngIf="totalItems > 0" class="results-count">
+    {{ 'feedback.showingResults' | translate:{total: totalItems} }}
   </div>
 
   <!-- Pagination -->
