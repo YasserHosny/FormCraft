@@ -1,0 +1,51 @@
+<h2 mat-dialog-title>{{ 'feedback.manageLabels' | translate }}</h2>
+
+<mat-dialog-content>
+  <!-- Existing labels list -->
+  <div class="label-list">
+    <div *ngFor="let label of labels" class="label-row">
+      <ng-container *ngIf="editingLabelId !== label.id; else editMode">
+        <span class="colour-swatch" [style.background-color]="label.colour || '#78909c'"></span>
+        <span class="label-name">{{ label.name }}</span>
+        <button mat-icon-button (click)="startEdit(label)" [attr.aria-label]="'feedback.editLabel' | translate">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button (click)="deleteLabel(label)" [attr.aria-label]="'feedback.deleteLabel' | translate">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </ng-container>
+      <ng-template #editMode>
+        <div class="edit-row">
+          <span *ngFor="let c of colourOptions" class="colour-swatch pickable" [class.selected]="editColour === c" [style.background-color]="c" (click)="editColour = c"></span>
+          <mat-form-field appearance="outline" class="edit-name-field">
+            <input matInput [formControl]="editNameControl" maxlength="50" />
+          </mat-form-field>
+          <button mat-icon-button (click)="saveEdit(label)"><mat-icon>check</mat-icon></button>
+          <button mat-icon-button (click)="cancelEdit()"><mat-icon>close</mat-icon></button>
+        </div>
+      </ng-template>
+    </div>
+    <div *ngIf="labels.length === 0" class="no-labels">{{ 'feedback.noLabelsYet' | translate }}</div>
+  </div>
+
+  <!-- New label form -->
+  <div class="new-label-section">
+    <h3>{{ 'feedback.newLabel' | translate }}</h3>
+    <div class="colour-picker">
+      <span *ngFor="let c of colourOptions" class="colour-swatch pickable" [class.selected]="selectedColour === c" [style.background-color]="c" (click)="selectedColour = c"></span>
+    </div>
+    <div class="new-label-form">
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'feedback.labelName' | translate }}</mat-label>
+        <input matInput [formControl]="labelNameControl" maxlength="50" />
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="createLabel()" [disabled]="!labelNameControl.value?.trim()">
+        {{ 'feedback.createLabel' | translate }}
+      </button>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">{{ 'common.close' | translate }}</button>
+</mat-dialog-actions>

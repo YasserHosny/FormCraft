@@ -1,6 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { FeedbackService, FeedbackAdminItem } from '../../services/feedback.service';
+import { MatDialog } from '@angular/material/dialog';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import { FeedbackService, FeedbackAdminItem, LabelResponse, SubmitterItem } from '../../services/feedback.service';
+import { FeedbackFilterStateService } from '../../services/feedback-filter-state.service';
+import { LabelManagerComponent } from '../label-manager/label-manager.component';
 
 @Component({
   selector: 'fc-feedback-admin',
@@ -8,7 +12,7 @@ import { FeedbackService, FeedbackAdminItem } from '../../services/feedback.serv
   templateUrl: './feedback-admin.component.html',
   styleUrls: ['./feedback-admin.component.scss'],
 })
-export class FeedbackAdminComponent implements OnInit {
+export class FeedbackAdminComponent implements OnInit, OnDestroy {
   feedbackItems: FeedbackAdminItem[] = [];
   totalItems = 0;
   currentPage = 1;
@@ -16,26 +20,75 @@ export class FeedbackAdminComponent implements OnInit {
   isLoading = false;
   expandedRowId: string | null = null;
   statusFilter = new FormControl('all');
+  searchControl = new FormControl('');
+  submitterFilter = new FormControl('');
+  dateFromControl = new FormControl();
+  dateToControl = new FormControl();
 
-  displayedColumns = ['date', 'user', 'page', 'message', 'attachments', 'status'];
+  submitters: SubmitterItem[] = [];
+  allLabels: LabelResponse[] = [];
 
-  constructor(private feedbackService: FeedbackService) {}
+  displayedColumns = ['date', 'user', 'page', 'message', 'attachments', 'labels', 'status'];
+
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private feedbackService: FeedbackService,
+    private filterStateService: FeedbackFilterStateService,
+    private dialog: MatDialog,
+  ) {}
 
   ngOnInit(): void {
-    this.loadFeedback();
-    this.statusFilter.valueChanges.subscribe(() => {
+    this.loadSubmitters();
+    this.loadLabels();
+
+    this.statusFilter.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.currentPage = 1;
+      this.filterStateService.setFilter({ status: this.statusFilter.value || 'all' });
+    });
+
+    this.searchControl.valueChanges
+      .pipe(debounceTime(400), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((value) => {
+        this.currentPage = 1;
+        this.filterStateService.setFilter({ search: value || '' });
+      });
+
+    this.submitterFilter.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
+      this.currentPage = 1;
+      this.filterStateService.setFilter({ submitterId: value || null });
+    });
+
+    this.dateFromControl.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
+      this.currentPage = 1;
+      this.filterStateService.setFilter({ dateFrom: value ? new Date(value).toISOString().split('T')[0] : null });
+    });
+
+    this.dateToControl.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
+      this.currentPage = 1;
+      this.filterStateService.setFilter({ dateTo: value ? new Date(value).toISOString().split('T')[0] : null });
+    });
+
+    this.filterStateService.state$.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.loadFeedback();
     });
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   loadFeedback(): void {
     this.isLoading = true;
-    const status = this.statusFilter.value === 'all' ? undefined : this.statusFilter.value || undefined;
+    const state = this.filterStateService.snapshot;
+    const status = state.status === 'all' ? undefined : state.status || undefined;
     this.feedbackService.listFeedback({
       page: this.currentPage,
       limit: this.pageSize,
       status,
+      search: state.search || undefined,
+      labelIds: state.labelIds.length > 0 ? state.labelIds : undefined,
     }).subscribe({
       next: (response) => {
         this.feedbackItems = response.data;
@@ -44,6 +97,22 @@ export class FeedbackAdminComponent implements OnInit {
       },
       error: () => {
         this.isLoading = false;
+      },
+    });
+  }
+
+  loadSubmitters(): void {
+    this.feedbackService.getSubmitters().subscribe({
+      next: (submitters) => {
+        this.submitters = submitters;
+      },
+    });
+  }
+
+  loadLabels(): void {
+    this.feedbackService.getLabels().subscribe({
+      next: (labels) => {
+        this.allLabels = labels;
       },
     });
   }
@@ -76,5 +145,64 @@ export class FeedbackAdminComponent implements OnInit {
 
   get totalPages(): number {
     return Math.ceil(this.totalItems / this.pageSize);
+  }
+
+  openLabelManager(): void {
+    const dialogRef = this.dialog.open(LabelManagerComponent, {
+      width: '500px',
+    });
+    dialogRef.afterClosed().subscribe(() => {
+      this.loadLabels();
+    });
+  }
+
+  toggleLabel(labelId: string): void {
+    const state = this.filterStateService.snapshot;
+    const labelIds = state.labelIds.includes(labelId)
+      ? state.labelIds.filter((id) => id !== labelId)
+      : [...state.labelIds, labelId];
+    this.filterStateService.setFilter({ labelIds });
+  }
+
+  isLabelSelected(labelId: string): boolean {
+    return this.filterStateService.snapshot.labelIds.includes(labelId);
+  }
+
+  hasActiveFilters(): boolean {
+    return this.filterStateService.hasActiveFilters();
+  }
+
+  clearAllFilters(): void {
+    this.filterStateService.clearAll();
+    this.statusFilter.setValue('all', { emitEvent: false });
+    this.searchControl.setValue('', { emitEvent: false });
+    this.submitterFilter.setValue('', { emitEvent: false });
+    this.dateFromControl.setValue(null);
+    this.dateToControl.setValue(null);
+  }
+
+  assignLabelToSubmission(item: FeedbackAdminItem, labelId: string): void {
+    const currentLabelIds = (item as any).label_ids ?? [];
+    if (currentLabelIds.length >= 5) return;
+    const newLabelIds = [...currentLabelIds, labelId];
+    this.feedbackService.assignLabels(item.id, newLabelIds).subscribe({
+      next: () => {
+        this.loadFeedback();
+      },
+    });
+  }
+
+  removeLabelFromSubmission(item: FeedbackAdminItem, labelId: string): void {
+    const currentLabelIds: string[] = (item as any).label_ids ?? [];
+    const newLabelIds = currentLabelIds.filter((id: string) => id !== labelId);
+    this.feedbackService.assignLabels(item.id, newLabelIds).subscribe({
+      next: () => {
+        this.loadFeedback();
+      },
+    });
+  }
+
+  getLabelById(id: string): LabelResponse | undefined {
+    return this.allLabels.find((l) => l.id === id);
   }
 }

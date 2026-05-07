@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, HttpUrl
 
+from app.schemas.label import LabelResponse
+
 
 class FeedbackUploadResponse(BaseModel):
     url: str
@@ -33,6 +35,7 @@ class FeedbackAdminItem(BaseModel):
     submitted_at: datetime
     status: str
     submitter_display_name: str | None = None
+    labels: list[LabelResponse] = []
 
 
 class FeedbackAdminListResponse(BaseModel):
