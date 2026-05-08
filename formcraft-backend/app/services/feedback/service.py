@@ -4,7 +4,7 @@ import logging
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, UploadFile, status
 from supabase import Client
 
 
@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 COOLDOWN_SECONDS = 30
 IMAGE_MAX_SIZE = 5 * 1024 * 1024  # 5 MB
 AUDIO_MAX_SIZE = 10 * 1024 * 1024  # 10 MB
+VIDEO_MAX_SIZE = 100 * 1024 * 1024  # 100 MB
 ALLOWED_IMAGE_MIMES = {"image/jpeg", "image/png", "image/webp"}
 ALLOWED_AUDIO_MIMES = {
     "audio/mpeg",
@@ -21,6 +22,7 @@ ALLOWED_AUDIO_MIMES = {
     "audio/webm",
     "audio/x-m4a",
 }
+ALLOWED_VIDEO_MIMES = {"video/mp4", "video/webm"}
 FEEDBACK_BUCKET = "feedback"
 
 
@@ -59,12 +61,40 @@ class FeedbackService:
         )
         return storage_path
 
+    async def upload_image(self, user_id: UUID, file: UploadFile) -> str:
+        """Upload an image to Supabase Storage."""
+        content = await file.read()
+        return await self.upload_file(
+            user_id=user_id,
+            file_content=content,
+            filename=file.filename or "image.jpg",
+            content_type=file.content_type or "application/octet-stream",
+            allowed_mimes=ALLOWED_IMAGE_MIMES,
+            max_size=IMAGE_MAX_SIZE,
+        )
+
+    async def upload_video(self, user_id: UUID, file: UploadFile) -> str:
+        """Upload a video to Supabase Storage."""
+        content = await file.read()
+        return await self.upload_file(
+            user_id=user_id,
+            file_content=content,
+            filename=file.filename or "video.webm",
+            content_type=file.content_type or "application/octet-stream",
+            allowed_mimes=ALLOWED_VIDEO_MIMES,
+            max_size=VIDEO_MAX_SIZE,
+        )
+
     async def delete_file(self, user_id: UUID, storage_path: str) -> None:
+        """Delete an orphaned file from Supabase Storage (backward-compatible alias)."""
+        return await self.delete_upload(user_id, storage_path)
+
+    async def delete_upload(self, user_id: UUID, storage_path: str) -> None:
         """Delete an orphaned file from Supabase Storage."""
         expected_prefix = f"feedback/{user_id}/"
         if not storage_path.startswith(expected_prefix):
             raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
+                status.HTTP_403_FORBIDDEN,
                 "Cannot delete files belonging to another user",
             )
         try:
@@ -94,13 +124,29 @@ class FeedbackService:
                     f"Please wait {remaining} seconds before submitting again",
                 )
 
+        audio_url = getattr(payload, "audio_url", None)
+        video_url = getattr(payload, "video_url", None)
+        if (
+            audio_url is not None
+            and video_url is not None
+            and isinstance(audio_url, str)
+            and isinstance(video_url, str)
+        ):
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                "Audio and video cannot both be attached to the same submission",
+            )
+
         row = {
             "user_id": str(user_id),
             "page_url": str(payload.page_url),
             "text_content": payload.text_content,
-            "image_url": payload.image_url,
             "audio_url": payload.audio_url,
+            "video_url": payload.video_url,
         }
+        # Backward compatibility: old schema uses image_url
+        if hasattr(payload, "image_url") and payload.image_url is not None:
+            row["image_url"] = payload.image_url
         insert_result = self.client.table("feedback_submissions").insert(row).execute()
         if not insert_result.data:
             raise HTTPException(
@@ -109,10 +155,44 @@ class FeedbackService:
             )
 
         entry = insert_result.data[0]
+        feedback_id = entry["id"]
+
+        # Insert feedback_images rows
+        images = []
+        image_paths = getattr(payload, "image_paths", None)
+        if image_paths and isinstance(image_paths, list) and len(image_paths) > 0:
+            if len(image_paths) > 5:
+                raise HTTPException(
+                    status.HTTP_400_BAD_REQUEST,
+                    "Maximum 5 images allowed per submission",
+                )
+            image_rows = [
+                {
+                    "feedback_id": feedback_id,
+                    "storage_path": path,
+                    "display_order": idx,
+                }
+                for idx, path in enumerate(image_paths)
+            ]
+            img_result = (
+                self.client.table("feedback_images").insert(image_rows).execute()
+            )
+            images = [
+                {
+                    "id": img["id"],
+                    "storage_path": img["storage_path"],
+                    "display_order": img["display_order"],
+                }
+                for img in (img_result.data or [])
+            ]
+
         return {
-            "id": entry["id"],
+            "id": feedback_id,
             "submitted_at": entry["submitted_at"],
             "status": entry["status"],
+            "images": images,
+            "audio_url": payload.audio_url,
+            "video_url": payload.video_url,
         }
 
     async def list_feedback(
@@ -179,15 +259,37 @@ class FeedbackService:
                 if lbl.get("feedback_labels")
             ]
 
-            if row.get("image_url"):
+            # Fetch images for this submission
+            feedback_id = row["id"]
+            images_result = (
+                self.client.table("feedback_images")
+                .select("id,storage_path,display_order")
+                .eq("feedback_id", feedback_id)
+                .order("display_order")
+                .execute()
+            )
+            images = []
+            for img in images_result.data or []:
                 try:
-                    row["image_signed_url"] = self.client.storage.from_(
+                    signed = self.client.storage.from_(
                         FEEDBACK_BUCKET
-                    ).create_signed_url(row["image_url"], 3600)
+                    ).create_signed_url(img["storage_path"], 3600)
+                    images.append(
+                        {
+                            "id": img["id"],
+                            "storage_url": signed,
+                            "display_order": img["display_order"],
+                        }
+                    )
                 except Exception:
-                    row["image_signed_url"] = None
-            else:
-                row["image_signed_url"] = None
+                    images.append(
+                        {
+                            "id": img["id"],
+                            "storage_url": None,
+                            "display_order": img["display_order"],
+                        }
+                    )
+            row["images"] = images
 
             if row.get("audio_url"):
                 try:
@@ -198,6 +300,16 @@ class FeedbackService:
                     row["audio_signed_url"] = None
             else:
                 row["audio_signed_url"] = None
+
+            if row.get("video_url"):
+                try:
+                    row["video_signed_url"] = self.client.storage.from_(
+                        FEEDBACK_BUCKET
+                    ).create_signed_url(row["video_url"], 3600)
+                except Exception:
+                    row["video_signed_url"] = None
+            else:
+                row["video_signed_url"] = None
 
             items.append(row)
 

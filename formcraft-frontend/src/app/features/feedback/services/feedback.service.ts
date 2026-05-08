@@ -15,17 +15,33 @@ export interface SubmitterItem {
   display_name: string;
 }
 
+export interface FeedbackImageSubmitItem {
+  id: string;
+  storage_path: string;
+  display_order: number;
+}
+
+export interface FeedbackImageResponse {
+  id: string;
+  storage_url: string;
+  display_order: number;
+}
+
 export interface FeedbackSubmitRequest {
   page_url: string;
   text_content: string;
-  image_url?: string | null;
+  image_paths?: string[] | null;
   audio_url?: string | null;
+  video_url?: string | null;
 }
 
 export interface FeedbackSubmitResponse {
   id: string;
   submitted_at: string;
   status: string;
+  images: FeedbackImageSubmitItem[];
+  audio_url: string | null;
+  video_url: string | null;
 }
 
 export interface FeedbackAdminItem {
@@ -33,10 +49,11 @@ export interface FeedbackAdminItem {
   user_id: string;
   page_url: string;
   text_content: string;
-  image_url: string | null;
-  image_signed_url: string | null;
+  images: FeedbackImageResponse[];
   audio_url: string | null;
   audio_signed_url: string | null;
+  video_url: string | null;
+  video_signed_url: string | null;
   submitted_at: string;
   status: string;
   submitter_display_name: string | null;
@@ -59,20 +76,26 @@ export class FeedbackService {
     return this.http.post<FeedbackSubmitResponse>(this.baseUrl, payload);
   }
 
-  uploadImage(file: File): Observable<{ url: string }> {
+  uploadImage(file: File): Observable<{ storage_path: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<{ url: string }>(`${this.baseUrl}/upload/image`, formData);
+    return this.http.post<{ storage_path: string }>(`${this.baseUrl}/upload/image`, formData);
   }
 
-  uploadAudio(file: File | Blob): Observable<{ url: string }> {
+  uploadAudio(file: File | Blob): Observable<{ storage_path: string }> {
     const formData = new FormData();
     formData.append('file', file, 'audio.webm');
-    return this.http.post<{ url: string }>(`${this.baseUrl}/upload/audio`, formData);
+    return this.http.post<{ storage_path: string }>(`${this.baseUrl}/upload/audio`, formData);
   }
 
-  deleteUpload(url: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/upload`, { body: { url } });
+  uploadVideo(file: File | Blob): Observable<{ storage_path: string }> {
+    const formData = new FormData();
+    formData.append('file', file, 'video.webm');
+    return this.http.post<{ storage_path: string }>(`${this.baseUrl}/upload/video`, formData);
+  }
+
+  deleteUpload(type: 'image' | 'video' | 'audio', storagePath: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/upload/${type}`, { body: { storage_path: storagePath } });
   }
 
   listFeedback(params?: {

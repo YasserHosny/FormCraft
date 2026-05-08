@@ -47,21 +47,31 @@
           </div>
 
           <!-- Image Section -->
-          <ng-container *ngIf="!imageUrl && !imagePreviewUrl; else imagePreview">
-            <button mat-stroked-button type="button" class="attach-btn" (click)="imageInput.click()">
+          <div class="media-section" [class.disabled]="isAudioBlockedByVideo">
+            <button mat-stroked-button type="button" class="attach-btn" (click)="imageInput.click()"
+              [disabled]="stagedImages.length >= MAX_IMAGES || isAudioBlockedByVideo">
               <mat-icon>image</mat-icon>
               {{ 'feedback.addImage' | translate }}
             </button>
-            <input #imageInput type="file" hidden accept="image/jpeg,image/png,image/webp" (change)="onImageSelected($event)" />
-          </ng-container>
-          <ng-template #imagePreview>
-            <div class="image-preview-container">
-              <img [src]="imagePreviewUrl!" class="image-thumbnail" alt="Preview" />
-              <button mat-icon-button type="button" class="remove-btn" (click)="removeImage()">
-                <mat-icon>close</mat-icon>
-              </button>
+            <input #imageInput type="file" hidden accept="image/jpeg,image/png,image/webp" multiple (change)="onImagesSelected($event)" />
+
+            <div class="image-thumbnails" *ngIf="stagedImages.length > 0">
+              <div class="thumbnail-item" *ngFor="let img of stagedImages; let i = index">
+                <img [src]="img.objectUrl" class="image-thumbnail" alt="Preview" />
+                <button mat-icon-button type="button" class="remove-btn" (click)="removeImage(i)">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
             </div>
-          </ng-template>
+
+            <p *ngIf="stagedImages.length >= MAX_IMAGES" class="limit-message">
+              {{ 'feedback.maxImagesReached' | translate }}
+            </p>
+
+            <div *ngIf="isAudioBlockedByVideo" class="disabled-overlay">
+              <span>{{ 'feedback.videoActiveDisableAudio' | translate }}</span>
+            </div>
+          </div>
 
           <!-- Image validation error -->
           <div *ngIf="imageValidationError" class="feedback-error">
@@ -70,61 +80,129 @@
           </div>
 
           <!-- Audio Section -->
-          <!-- Not recording, no preview -->
-          <ng-container *ngIf="!hasAudioPreview && !isAudioRecording">
-            <div class="feedback-attachments">
-              <!-- Record button (only if browser supports MediaRecorder) -->
-              <button mat-stroked-button type="button" class="attach-btn" *ngIf="isAudioSupported" (click)="startAudioRecording()">
-                <mat-icon>mic</mat-icon>
-                {{ 'feedback.addAudio' | translate }}
-              </button>
-              <!-- File upload button (always available) -->
-              <button mat-stroked-button type="button" class="attach-btn" (click)="audioInput.click()">
-                <mat-icon>attach_file</mat-icon>
-                {{ 'feedback.uploadAudioFile' | translate }}
-              </button>
-              <input #audioInput type="file" hidden accept="audio/mpeg,audio/mp4,audio/wav,audio/webm,audio/x-m4a,.mp3,.m4a,.wav,.webm" (change)="onAudioFileSelected($event)" />
-              <!-- Fallback message for browsers without MediaRecorder -->
-              <p *ngIf="!isAudioSupported" class="audio-hint">
-                {{ 'feedback.audioBrowserHint' | translate }}
-              </p>
-            </div>
-          </ng-container>
-
-          <!-- Recording in progress -->
-          <ng-container *ngIf="isAudioRecording">
-            <div class="audio-recording">
-              <span class="recording-dot"></span>
-              <span>{{ 'feedback.recording' | translate }} {{ audioElapsedSeconds }}s / {{ MAX_AUDIO_SECONDS }}s</span>
-              <div class="recording-progress">
-                <div class="recording-progress-bar" [style.width.%]="(audioElapsedSeconds / MAX_AUDIO_SECONDS) * 100"></div>
-              </div>
-              <button mat-icon-button type="button" (click)="stopAudioRecording()">
-                <mat-icon>stop</mat-icon>
-              </button>
-            </div>
-          </ng-container>
-
-          <!-- Audio preview (after recording or file upload) -->
-          <ng-container *ngIf="hasAudioPreview && !isAudioRecording">
-            <div class="audio-preview">
-              <audio *ngIf="audioPreviewUrl" controls [src]="audioPreviewUrl" class="audio-player"></audio>
-              <div class="audio-actions">
-                <button mat-stroked-button type="button" *ngIf="isAudioSupported" (click)="rerecordAudio()">
-                  <mat-icon>refresh</mat-icon>
-                  {{ 'feedback.rerecord' | translate }}
+          <div class="media-section" [class.disabled]="isAudioBlockedByVideo">
+            <!-- Not recording, no preview -->
+            <ng-container *ngIf="!hasAudioPreview && !isAudioRecording">
+              <div class="feedback-attachments">
+                <!-- Record button (only if browser supports MediaRecorder) -->
+                <button mat-stroked-button type="button" class="attach-btn" *ngIf="isAudioSupported" (click)="startAudioRecording()"
+                  [disabled]="isAudioBlockedByVideo">
+                  <mat-icon>mic</mat-icon>
+                  {{ 'feedback.addAudio' | translate }}
                 </button>
-                <button mat-icon-button type="button" class="remove-btn" (click)="removeAudio()">
-                  <mat-icon>close</mat-icon>
+                <!-- File upload button (always available) -->
+                <button mat-stroked-button type="button" class="attach-btn" (click)="audioInput.click()"
+                  [disabled]="isAudioBlockedByVideo">
+                  <mat-icon>attach_file</mat-icon>
+                  {{ 'feedback.uploadAudioFile' | translate }}
+                </button>
+                <input #audioInput type="file" hidden accept="audio/mpeg,audio/mp4,audio/wav,audio/webm,audio/x-m4a,.mp3,.m4a,.wav,.webm" (change)="onAudioFileSelected($event)" />
+                <!-- Fallback message for browsers without MediaRecorder -->
+                <p *ngIf="!isAudioSupported" class="audio-hint">
+                  {{ 'feedback.audioBrowserHint' | translate }}
+                </p>
+              </div>
+            </ng-container>
+
+            <!-- Recording in progress -->
+            <ng-container *ngIf="isAudioRecording">
+              <div class="audio-recording">
+                <span class="recording-dot"></span>
+                <span>{{ 'feedback.recording' | translate }} {{ audioElapsedSeconds }}s / {{ MAX_AUDIO_SECONDS }}s</span>
+                <div class="recording-progress">
+                  <div class="recording-progress-bar" [style.width.%]="(audioElapsedSeconds / MAX_AUDIO_SECONDS) * 100"></div>
+                </div>
+                <button mat-icon-button type="button" (click)="stopAudioRecording()">
+                  <mat-icon>stop</mat-icon>
                 </button>
               </div>
-            </div>
-          </ng-container>
+            </ng-container>
 
-          <!-- Audio validation error -->
-          <div *ngIf="audioValidationError" class="feedback-error">
-            <mat-icon>warning</mat-icon>
-            <span>{{ audioValidationError | translate }}</span>
+            <!-- Audio preview (after recording or file upload) -->
+            <ng-container *ngIf="hasAudioPreview && !isAudioRecording">
+              <div class="audio-preview">
+                <audio *ngIf="audioPreviewUrl" controls [src]="audioPreviewUrl" class="audio-player"></audio>
+                <div class="audio-actions">
+                  <button mat-stroked-button type="button" *ngIf="isAudioSupported" (click)="rerecordAudio()">
+                    <mat-icon>refresh</mat-icon>
+                    {{ 'feedback.rerecord' | translate }}
+                  </button>
+                  <button mat-icon-button type="button" class="remove-btn" (click)="removeAudio()">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Audio validation error -->
+            <div *ngIf="audioValidationError" class="feedback-error">
+              <mat-icon>warning</mat-icon>
+              <span>{{ audioValidationError | translate }}</span>
+            </div>
+
+            <div *ngIf="isAudioBlockedByVideo" class="disabled-overlay">
+              <span>{{ 'feedback.videoActiveDisableAudio' | translate }}</span>
+            </div>
+          </div>
+
+          <!-- Video Section -->
+          <div class="media-section" [class.disabled]="isVideoBlockedByAudio">
+            <!-- Not recording, no video staged -->
+            <ng-container *ngIf="!stagedVideo && !isVideoRecording">
+              <div class="feedback-attachments">
+                <button mat-stroked-button type="button" class="attach-btn" *ngIf="videoRecorder.canRecord$ | async" (click)="startRecording()"
+                  [disabled]="isVideoBlockedByAudio">
+                  <mat-icon>videocam</mat-icon>
+                  {{ 'feedback.addVideo' | translate }}
+                </button>
+                <button mat-stroked-button type="button" class="attach-btn" (click)="videoInput.click()"
+                  [disabled]="isVideoBlockedByAudio">
+                  <mat-icon>attach_file</mat-icon>
+                  {{ 'feedback.uploadVideoFile' | translate }}
+                </button>
+                <input #videoInput type="file" hidden accept="video/webm,video/mp4,video/quicktime" (change)="onVideoFileSelected($event)" />
+              </div>
+            </ng-container>
+
+            <!-- Recording in progress -->
+            <ng-container *ngIf="isVideoRecording">
+              <div class="video-recording">
+                <span class="recording-dot"></span>
+                <span>{{ 'feedback.recordingVideo' | translate }} {{ videoElapsedSeconds }}s / {{ MAX_VIDEO_SECONDS }}s</span>
+                <div class="recording-progress">
+                  <div class="recording-progress-bar" [style.width.%]="(videoElapsedSeconds / MAX_VIDEO_SECONDS) * 100"></div>
+                </div>
+                <button mat-icon-button type="button" (click)="stopRecording()">
+                  <mat-icon>stop</mat-icon>
+                </button>
+              </div>
+            </ng-container>
+
+            <!-- Video preview -->
+            <ng-container *ngIf="stagedVideo && !isVideoRecording">
+              <div class="video-preview">
+                <video *ngIf="stagedVideo.objectUrl" controls [src]="stagedVideo.objectUrl" class="video-player"></video>
+                <div class="video-actions">
+                  <button mat-stroked-button type="button" (click)="reRecord()">
+                    <mat-icon>refresh</mat-icon>
+                    {{ 'feedback.reRecord' | translate }}
+                  </button>
+                  <button mat-icon-button type="button" class="remove-btn" (click)="removeVideo()">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Video validation error -->
+            <div *ngIf="videoValidationError" class="feedback-error">
+              <mat-icon>warning</mat-icon>
+              <span>{{ videoValidationError | translate }}</span>
+            </div>
+
+            <div *ngIf="isVideoBlockedByAudio" class="disabled-overlay">
+              <span>{{ 'feedback.audioActiveDisableVideo' | translate }}</span>
+            </div>
           </div>
 
           <!-- Submit Button -->

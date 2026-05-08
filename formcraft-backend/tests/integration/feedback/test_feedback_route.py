@@ -149,8 +149,8 @@ class TestImageUpload:
             )
         assert response.status_code == 200
         body = response.json()
-        assert "url" in body
-        assert body["url"].startswith(f"feedback/{designer_profile['id']}/")
+        assert "storage_path" in body
+        assert body["storage_path"].startswith(f"feedback/{designer_profile['id']}/")
 
     def test_upload_image_413_oversized(
         self, client, valid_designer_token, designer_profile
@@ -217,12 +217,12 @@ class TestImageUpload:
             response = client.request(
                 "DELETE",
                 "/api/feedback/upload",
-                json={"url": storage_path},
+                json={"storage_path": storage_path},
                 headers={"Authorization": f"Bearer {valid_designer_token}"},
             )
         assert response.status_code == 204
 
-    def test_delete_upload_400_foreign_path(
+    def test_delete_upload_403_foreign_path(
         self, client, valid_designer_token, designer_profile
     ):
         mock_client = MagicMock()
@@ -240,10 +240,10 @@ class TestImageUpload:
             response = client.request(
                 "DELETE",
                 "/api/feedback/upload",
-                json={"url": storage_path},
+                json={"storage_path": storage_path},
                 headers={"Authorization": f"Bearer {valid_designer_token}"},
             )
-        assert response.status_code == 400
+        assert response.status_code == 403
 
 
 class TestAudioUpload:
@@ -271,8 +271,8 @@ class TestAudioUpload:
             )
         assert response.status_code == 200
         body = response.json()
-        assert "url" in body
-        assert body["url"].startswith(f"feedback/{designer_profile['id']}/")
+        assert "storage_path" in body
+        assert body["storage_path"].startswith(f"feedback/{designer_profile['id']}/")
 
     def test_upload_audio_200_valid_webm(
         self, client, valid_designer_token, designer_profile
@@ -298,8 +298,8 @@ class TestAudioUpload:
             )
         assert response.status_code == 200
         body = response.json()
-        assert "url" in body
-        assert body["url"].startswith(f"feedback/{designer_profile['id']}/")
+        assert "storage_path" in body
+        assert body["storage_path"].startswith(f"feedback/{designer_profile['id']}/")
 
     def test_upload_audio_413_oversized(
         self, client, valid_designer_token, designer_profile
