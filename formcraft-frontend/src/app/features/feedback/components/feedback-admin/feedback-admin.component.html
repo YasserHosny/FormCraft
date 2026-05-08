@@ -106,9 +106,11 @@
       <ng-container matColumnDef="attachments">
         <th mat-header-cell *matHeaderCellDef>{{ 'feedback.colAttachments' | translate }}</th>
         <td mat-cell *matCellDef="let item">
-          <ng-container *ngIf="item.image_url || item.audio_url">
-            <mat-icon *ngIf="item.image_url" matTooltip="Image attached">image</mat-icon>
+          <ng-container *ngIf="item.images?.length || item.audio_url || item.video_url">
+            <mat-icon *ngIf="item.images?.length" matTooltip="Images attached">image</mat-icon>
+            <span *ngIf="item.images?.length" class="attachment-count">{{ item.images.length }}</span>
             <mat-icon *ngIf="item.audio_url" matTooltip="Audio attached">attach_file</mat-icon>
+            <mat-icon *ngIf="item.video_url" matTooltip="Video attached">videocam</mat-icon>
           </ng-container>
         </td>
       </ng-container>
@@ -153,12 +155,18 @@
         <div *ngIf="item.id === expandedRowId" class="detail-content">
           <p class="full-text">{{ item.text_content }}</p>
 
-          <div *ngIf="item.image_signed_url" class="detail-image">
-            <img [src]="item.image_signed_url" alt="Feedback image" />
+          <div *ngIf="item.images?.length" class="detail-images">
+            <div class="image-thumbnails">
+              <img *ngFor="let img of item.images" [src]="img.storage_url" alt="Feedback image" />
+            </div>
           </div>
 
           <div *ngIf="item.audio_signed_url" class="detail-audio">
             <audio controls [src]="item.audio_signed_url"></audio>
+          </div>
+
+          <div *ngIf="item.video_signed_url" class="detail-video">
+            <video controls [src]="item.video_signed_url"></video>
           </div>
 
           <!-- Labels in expanded detail -->

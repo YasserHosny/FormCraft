@@ -305,7 +305,7 @@ class TestDeleteFile:
 
         with pytest.raises(HTTPException) as exc_info:
             await service.delete_file(user_id=user_id, storage_path=storage_path)
-        assert exc_info.value.status_code == 400
+        assert exc_info.value.status_code == 403
 
 
 class TestAudioUpload:
