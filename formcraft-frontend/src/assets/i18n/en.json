@@ -211,6 +211,26 @@
     "colLabels": "Labels",
     "addLabel": "Add label",
     "submitters": "Submitters",
-    "allSubmitters": "All submitters"
+    "allSubmitters": "All submitters",
+    "thread": {
+      "reply": "Write a reply...",
+      "send": "Send",
+      "load_earlier": "Load earlier messages",
+      "empty": "No replies yet — start the conversation.",
+      "char_count": "{{count}}/{{max}}",
+      "admin_label": "Admin",
+      "user_label": "User",
+      "unread_badge": "New user reply"
+    }
+  },
+  "my_feedback": {
+    "title": "My Feedback",
+    "empty_state": "You haven't submitted any feedback yet.",
+    "submission_date": "Submitted",
+    "status": "Status"
+  },
+  "notifications": {
+    "badge_title": "You have unread replies",
+    "mark_read": "Mark as read"
   }
 }

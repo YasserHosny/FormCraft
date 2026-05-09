@@ -11,4 +11,6 @@ export const environment = {
   production: false,
   apiBaseUrl: '/api',
   apiUrl: 'http://localhost:8000/api',
+  supabaseUrl: (window as any).SUPABASE_URL || 'http://localhost:54321',
+  supabaseAnonKey: (window as any).SUPABASE_ANON_KEY || '',
 };

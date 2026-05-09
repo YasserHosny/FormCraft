@@ -58,6 +58,7 @@ def create_app() -> FastAPI:
     app.include_router(admin.router, prefix="/api")
     app.include_router(tafqeet.router, prefix="/api")
     app.include_router(feedback.router, prefix="/api")
+    app.include_router(feedback.user_router, prefix="/api")
 
     logger.info("FormCraft API v%s started", settings.APP_VERSION)
     return app

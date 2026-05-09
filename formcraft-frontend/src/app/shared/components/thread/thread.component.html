@@ -1,0 +1,86 @@
+<div class="thread-container">
+
+  <!-- Load earlier messages -->
+  <div class="load-earlier" *ngIf="hasEarlier">
+    <button
+      mat-stroked-button
+      color="primary"
+      [disabled]="loading"
+      (click)="onLoadEarlier()"
+      class="load-earlier-btn"
+    >
+      <mat-icon>expand_less</mat-icon>
+      {{ 'feedback.thread.load_earlier' | translate }}
+    </button>
+  </div>
+
+  <!-- Loading spinner (initial load) -->
+  <div class="loading-overlay" *ngIf="loading && replies.length === 0">
+    <mat-spinner diameter="32"></mat-spinner>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && replies.length === 0">
+    <mat-icon>chat_bubble_outline</mat-icon>
+    <p>{{ 'feedback.thread.empty' | translate }}</p>
+  </div>
+
+  <!-- Reply list -->
+  <div class="reply-list" *ngIf="replies.length > 0">
+    <div
+      *ngFor="let reply of replies"
+      class="reply-bubble"
+      [class.reply-bubble--admin]="reply.author_role === 'admin'"
+      [class.reply-bubble--user]="reply.author_role === 'user'"
+    >
+      <div class="reply-header">
+        <mat-chip
+          class="author-chip"
+          [class.author-chip--admin]="reply.author_role === 'admin'"
+          [class.author-chip--user]="reply.author_role === 'user'"
+          disableRipple
+        >
+          {{
+            reply.author_role === 'admin'
+              ? ('feedback.thread.admin_label' | translate)
+              : ('feedback.thread.user_label' | translate)
+          }}
+          &middot; {{ reply.author_name }}
+        </mat-chip>
+        <span class="reply-timestamp">{{ reply.created_at | date: 'dd MMM y, HH:mm' }}</span>
+      </div>
+      <p class="reply-text">{{ reply.text_content }}</p>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Reply compose area -->
+  <div class="reply-compose">
+    <mat-form-field appearance="outline" class="reply-input">
+      <mat-label>{{ 'feedback.thread.reply' | translate }}</mat-label>
+      <textarea
+        matInput
+        [(ngModel)]="replyText"
+        (keydown)="onKeydown($event)"
+        rows="3"
+        maxlength="2000"
+        [placeholder]="'feedback.thread.reply' | translate"
+      ></textarea>
+      <mat-hint align="end">
+        {{ charCount }}/2000
+      </mat-hint>
+    </mat-form-field>
+    <button
+      mat-raised-button
+      color="primary"
+      [disabled]="!isReplyValid || loading"
+      (click)="onSend()"
+      class="send-btn"
+    >
+      <mat-icon>send</mat-icon>
+      {{ 'feedback.thread.send' | translate }}
+    </button>
+  </div>
+
+</div>
