@@ -1,0 +1,149 @@
+.thread-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+/* Load earlier */
+.load-earlier {
+  display: flex;
+  justify-content: center;
+}
+
+.load-earlier-btn {
+  font-size: 13px;
+}
+
+/* Loading */
+.loading-overlay {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: rgba(0, 0, 0, 0.38);
+  padding: 16px 0;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+/* Reply list */
+.reply-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reply-bubble {
+  border-radius: 8px;
+  padding: 10px 14px;
+  max-width: 100%;
+  word-break: break-word;
+
+  &--admin {
+    background-color: #e3f2fd;
+    border-left: 3px solid #1976d2;
+    align-self: flex-start;
+  }
+
+  &--user {
+    background-color: #f3e5f5;
+    border-left: 3px solid #7b1fa2;
+    align-self: flex-end;
+  }
+}
+
+.reply-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.author-chip {
+  font-size: 12px;
+  height: 24px;
+  padding: 0 10px;
+
+  &--admin {
+    background-color: #bbdefb !important;
+    color: #0d47a1 !important;
+  }
+
+  &--user {
+    background-color: #e1bee7 !important;
+    color: #4a148c !important;
+  }
+}
+
+.reply-timestamp {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.54);
+  margin-left: auto;
+}
+
+.reply-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* Compose */
+.reply-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.reply-input {
+  width: 100%;
+}
+
+.send-btn {
+  align-self: flex-end;
+
+  mat-icon {
+    margin-inline-end: 4px;
+  }
+}
+
+/* 360px viewport */
+@media (max-width: 400px) {
+  .reply-compose {
+    gap: 4px;
+  }
+
+  .send-btn {
+    width: 100%;
+    align-self: stretch;
+  }
+
+  .reply-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .reply-timestamp {
+    margin-left: 0;
+  }
+}

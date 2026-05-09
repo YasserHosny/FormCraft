@@ -14,6 +14,8 @@ from app.schemas.label import (
     LabelResponse,
     SubmissionLabelAssignRequest,
 )
+from app.schemas.reply import ReplyCreateRequest, ReplyResponse, ThreadResponse
+from app.services.feedback.reply_service import ReplyService
 from app.services.feedback.service import FeedbackService
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
@@ -106,6 +108,60 @@ async def update_feedback_status(
     client = get_supabase_client()
     service = FeedbackService(client)
     return await service.update_status(feedback_id, request.status)
+
+
+@router.get("/feedback/{feedback_id}/replies", response_model=ThreadResponse)
+async def get_feedback_replies(
+    feedback_id: UUID,
+    current_user: Annotated[UserProfile, Depends(require_role(Role.ADMIN))],
+    limit: int = Query(20, ge=1, le=100),
+    before_id: UUID | None = None,
+):
+    """Get replies for a feedback thread (Admin only)."""
+    client = get_supabase_client()
+    service = ReplyService(client)
+    return await service.get_replies(
+        feedback_id=feedback_id,
+        user_id=current_user.id,
+        is_admin=True,
+        limit=limit,
+        before_id=before_id,
+    )
+
+
+@router.post(
+    "/feedback/{feedback_id}/replies",
+    response_model=ReplyResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def post_feedback_reply(
+    feedback_id: UUID,
+    request: ReplyCreateRequest,
+    current_user: Annotated[UserProfile, Depends(require_role(Role.ADMIN))],
+):
+    """Post a reply to a feedback thread (Admin only)."""
+    client = get_supabase_client()
+    service = ReplyService(client)
+    return await service.post_reply(
+        feedback_id=feedback_id,
+        author_id=current_user.id,
+        author_role="admin",
+        payload=request,
+    )
+
+
+@router.patch(
+    "/feedback/{feedback_id}/read",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def mark_feedback_read(
+    feedback_id: UUID,
+    current_user: Annotated[UserProfile, Depends(require_role(Role.ADMIN))],
+):
+    """Mark all user replies as read for a submission (Admin only)."""
+    client = get_supabase_client()
+    service = ReplyService(client)
+    await service.mark_submission_read(feedback_id=feedback_id)
 
 
 @router.get("/labels", response_model=list[LabelResponse])

@@ -136,6 +136,15 @@
           <span class="status-chip" [ngClass]="getStatusChipClass(item.status)">
             {{ 'feedback.status' + item.status.charAt(0).toUpperCase() + item.status.slice(1) | translate }}
           </span>
+          <!-- Unread badge: user posted a follow-up the admin hasn't seen -->
+          <span
+            *ngIf="item.has_unread_user_reply"
+            class="unread-badge"
+            [matTooltip]="'feedback.thread.unread_badge' | translate"
+            matBadge="●"
+            matBadgeColor="warn"
+            matBadgeOverlap="false"
+          >&nbsp;</span>
         </td>
       </ng-container>
 
@@ -167,6 +176,19 @@
 
           <div *ngIf="item.video_signed_url" class="detail-video">
             <video controls [src]="item.video_signed_url"></video>
+          </div>
+
+          <!-- Thread replies (Feature 014) -->
+          <div class="detail-thread">
+            <ng-container *ngIf="getThreadState(item.id) as thread">
+              <app-thread
+                [replies]="thread.replies"
+                [hasEarlier]="thread.hasEarlier"
+                [loading]="thread.loading"
+                (loadEarlier)="onLoadEarlier(item.id, $event)"
+                (sendReply)="onSendReply(item.id, $event)"
+              ></app-thread>
+            </ng-container>
           </div>
 
           <!-- Labels in expanded detail -->

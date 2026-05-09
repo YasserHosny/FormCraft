@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { ReplyCreateRequest, ReplyResponse, ThreadResponse } from '../models/reply.models';
 
 export interface LabelResponse {
   id: string;
@@ -57,6 +58,10 @@ export interface FeedbackAdminItem {
   submitted_at: string;
   status: string;
   submitter_display_name: string | null;
+  /** Number of replies in the thread (Feature 014). */
+  reply_count: number;
+  /** True when the submitting user has posted a follow-up that the admin has not yet seen. */
+  has_unread_user_reply: boolean;
 }
 
 export interface FeedbackAdminListResponse {
@@ -142,5 +147,35 @@ export class FeedbackService {
 
   getSubmitters(): Observable<SubmitterItem[]> {
     return this.http.get<SubmitterItem[]>(`${environment.apiBaseUrl}/admin/feedback/submitters`);
+  }
+
+  // ── Feature 014: Admin thread replies ───────────────────────────────────────
+
+  getAdminReplies(
+    feedbackId: string,
+    limit = 20,
+    beforeId?: string,
+  ): Observable<ThreadResponse> {
+    let params = new HttpParams().set('limit', limit);
+    if (beforeId) params = params.set('before_id', beforeId);
+    return this.http.get<ThreadResponse>(
+      `${environment.apiBaseUrl}/admin/feedback/${feedbackId}/replies`,
+      { params },
+    );
+  }
+
+  postAdminReply(feedbackId: string, text: string): Observable<ReplyResponse> {
+    const body: ReplyCreateRequest = { text_content: text };
+    return this.http.post<ReplyResponse>(
+      `${environment.apiBaseUrl}/admin/feedback/${feedbackId}/replies`,
+      body,
+    );
+  }
+
+  markFeedbackRead(feedbackId: string): Observable<void> {
+    return this.http.patch<void>(
+      `${environment.apiBaseUrl}/admin/feedback/${feedbackId}/read`,
+      {},
+    );
   }
 }

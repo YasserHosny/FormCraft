@@ -1,6 +1,5 @@
 import logging
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import Depends, Header, HTTPException, status
 
@@ -46,13 +45,17 @@ async def get_current_user(
         .single()
         .execute()
     )
-    if not result.data:
+    # Normalize: real Supabase .single() returns a dict; test mocks may return a list.
+    raw = result.data
+    if isinstance(raw, list):
+        raw = raw[0] if raw else None
+    if not raw:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User profile not found",
         )
 
-    profile = UserProfile(**result.data)
+    profile = UserProfile(**raw)
     if not profile.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

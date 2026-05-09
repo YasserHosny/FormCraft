@@ -4,7 +4,16 @@ import { MatDialog } from '@angular/material/dialog';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { FeedbackService, FeedbackAdminItem, LabelResponse, SubmitterItem } from '../../services/feedback.service';
 import { FeedbackFilterStateService } from '../../services/feedback-filter-state.service';
+import { FeedbackRealtimeService } from '../../services/feedback-realtime.service';
 import { LabelManagerComponent } from '../label-manager/label-manager.component';
+import { ReplyResponse } from '../../models/reply.models';
+
+interface ThreadState {
+  replies: ReplyResponse[];
+  hasEarlier: boolean;
+  loading: boolean;
+  collapse$: Subject<void>;
+}
 
 @Component({
   selector: 'fc-feedback-admin',
@@ -30,11 +39,15 @@ export class FeedbackAdminComponent implements OnInit, OnDestroy {
 
   displayedColumns = ['date', 'user', 'page', 'message', 'attachments', 'labels', 'status'];
 
+  /** Per-submission thread state keyed by submission id. */
+  threadMap = new Map<string, ThreadState>();
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private feedbackService: FeedbackService,
     private filterStateService: FeedbackFilterStateService,
+    private realtimeService: FeedbackRealtimeService,
     private dialog: MatDialog,
   ) {}
 
@@ -75,6 +88,13 @@ export class FeedbackAdminComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // Tear down all open thread channels
+    this.threadMap.forEach((state, id) => {
+      state.collapse$.next();
+      state.collapse$.complete();
+      this.realtimeService.unsubscribeThread(id);
+    });
+    this.threadMap.clear();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -118,7 +138,99 @@ export class FeedbackAdminComponent implements OnInit, OnDestroy {
   }
 
   toggleRow(itemId: string): void {
-    this.expandedRowId = this.expandedRowId === itemId ? null : itemId;
+    const isExpanding = this.expandedRowId !== itemId;
+    const previousId = this.expandedRowId;
+
+    // Collapse previous row's thread if any
+    if (previousId && previousId !== itemId) {
+      this.collapseThread(previousId);
+    }
+
+    this.expandedRowId = isExpanding ? itemId : null;
+
+    if (isExpanding) {
+      this.openThread(itemId);
+    } else {
+      this.collapseThread(itemId);
+    }
+  }
+
+  private openThread(feedbackId: string): void {
+    const collapse$ = new Subject<void>();
+    const state: ThreadState = { replies: [], hasEarlier: false, loading: true, collapse$ };
+    this.threadMap.set(feedbackId, state);
+
+    // Load initial replies
+    this.feedbackService.getAdminReplies(feedbackId).subscribe({
+      next: (thread) => {
+        state.replies = thread.replies;
+        state.hasEarlier = thread.has_earlier;
+        state.loading = false;
+      },
+      error: () => {
+        state.loading = false;
+      },
+    });
+
+    // Subscribe to Realtime live replies
+    this.realtimeService
+      .subscribeToThread(feedbackId)
+      .pipe(takeUntil(collapse$))
+      .subscribe((reply) => {
+        state.replies = [...state.replies, reply];
+      });
+
+    // Mark unread user replies as read
+    const item = this.feedbackItems.find((f) => f.id === feedbackId);
+    if (item?.has_unread_user_reply) {
+      this.feedbackService.markFeedbackRead(feedbackId).subscribe({
+        next: () => {
+          if (item) item.has_unread_user_reply = false;
+        },
+      });
+    }
+  }
+
+  private collapseThread(feedbackId: string): void {
+    const state = this.threadMap.get(feedbackId);
+    if (!state) return;
+    state.collapse$.next();
+    state.collapse$.complete();
+    this.realtimeService.unsubscribeThread(feedbackId);
+    this.threadMap.delete(feedbackId);
+  }
+
+  getThreadState(feedbackId: string): ThreadState | null {
+    return this.threadMap.get(feedbackId) ?? null;
+  }
+
+  onLoadEarlier(feedbackId: string, beforeId: string): void {
+    const state = this.threadMap.get(feedbackId);
+    if (!state) return;
+    state.loading = true;
+    this.feedbackService.getAdminReplies(feedbackId, 20, beforeId).subscribe({
+      next: (thread) => {
+        state.replies = [...thread.replies, ...state.replies];
+        state.hasEarlier = thread.has_earlier;
+        state.loading = false;
+      },
+      error: () => {
+        state.loading = false;
+      },
+    });
+  }
+
+  onSendReply(feedbackId: string, text: string): void {
+    const state = this.threadMap.get(feedbackId);
+    this.feedbackService.postAdminReply(feedbackId, text).subscribe({
+      next: (reply) => {
+        if (state) {
+          state.replies = [...state.replies, reply];
+        }
+        // Refresh list to update reply_count
+        this.loadFeedback();
+      },
+    });
   }
 
   updateStatus(item: FeedbackAdminItem, newStatus: string): void {

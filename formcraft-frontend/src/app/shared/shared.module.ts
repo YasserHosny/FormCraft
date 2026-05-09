@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -22,11 +22,13 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatBadgeModule } from '@angular/material/badge';
 import { MatDividerModule } from '@angular/material/divider';
 import { RouterModule } from '@angular/router';
 
 import { AutoDirDirective } from './directives/auto-dir.directive';
 import { AppShellComponent } from './components/app-shell/app-shell.component';
+import { ThreadComponent } from './components/thread/thread.component';
 
 const MATERIAL_MODULES = [
   MatButtonModule,
@@ -48,19 +50,22 @@ const MATERIAL_MODULES = [
   MatSlideToggleModule,
   MatTabsModule,
   MatProgressSpinnerModule,
+  MatBadgeModule,
   MatDividerModule,
 ];
 
 @NgModule({
-  declarations: [AutoDirDirective, AppShellComponent],
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, RouterModule, ...MATERIAL_MODULES],
+  declarations: [AutoDirDirective, AppShellComponent, ThreadComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, RouterModule, ...MATERIAL_MODULES],
   exports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     TranslateModule,
     RouterModule,
     AutoDirDirective,
     AppShellComponent,
+    ThreadComponent,
     ...MATERIAL_MODULES,
   ],
 })

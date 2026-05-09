@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { AuthService, User } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { FeedbackRealtimeService } from '../../../features/feedback/services/feedback-realtime.service';
+import { MyFeedbackService } from '../../../features/my-feedback/services/my-feedback.service';
 
 @Component({
   selector: 'fc-app-shell',
@@ -21,6 +24,19 @@ import { LanguageService } from '../../../core/i18n/language.service';
           *ngIf="user.role === 'admin'"
         >
           {{ 'auth.register' | translate }}
+        </button>
+
+        <!-- My Feedback link with notification badge (non-admin only) -->
+        <button
+          mat-button
+          routerLink="/my-feedback"
+          *ngIf="user.role !== 'admin'"
+          [matBadge]="unreadCount > 0 ? unreadCount.toString() : null"
+          matBadgeColor="warn"
+          [matTooltip]="'notifications.badge_title' | translate"
+        >
+          <mat-icon>feedback</mat-icon>
+          {{ 'my_feedback.title' | translate }}
         </button>
 
         <button mat-icon-button [matMenuTriggerFor]="userMenu">
@@ -78,21 +94,56 @@ import { LanguageService } from '../../../core/i18n/language.service';
     }
   `],
 })
-export class AppShellComponent implements OnInit {
+export class AppShellComponent implements OnInit, OnDestroy {
   user: User | null = null;
   currentLang = 'ar';
+  /** Unread notification count shown in the badge. */
+  unreadCount = 0;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private authService: AuthService,
     private languageService: LanguageService,
-    private router: Router
+    private router: Router,
+    private realtimeService: FeedbackRealtimeService,
+    private myFeedbackService: MyFeedbackService,
   ) {}
 
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe((u) => {
+    this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((u) => {
       this.user = u;
+      if (u && u.role !== 'admin') {
+        this.initNotifications(u.id);
+      } else {
+        // Reset on logout or admin login
+        this.unreadCount = 0;
+      }
     });
     this.currentLang = this.languageService.getLanguage();
+  }
+
+  ngOnDestroy(): void {
+    this.realtimeService.destroy();
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private initNotifications(userId: string): void {
+    // Seed unread count from server
+    this.myFeedbackService.getNotifications().subscribe((response) => {
+      this.unreadCount = response.unread_count;
+    });
+
+    // Start global Realtime channel
+    this.realtimeService.initNotificationChannel(userId);
+
+    // Increment badge on each live event
+    this.realtimeService.notificationEvents$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.unreadCount += 1;
+      });
   }
 
   toggleLanguage(): void {
@@ -101,6 +152,8 @@ export class AppShellComponent implements OnInit {
   }
 
   logout(): void {
+    this.realtimeService.destroy();
+    this.unreadCount = 0;
     this.authService.logout();
     this.router.navigate(['/auth/login']);
   }

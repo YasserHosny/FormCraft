@@ -1,0 +1,69 @@
+<div class="my-feedback-container">
+  <h1>{{ 'my_feedback.title' | translate }}</h1>
+
+  <!-- Loading spinner -->
+  <div class="loading-overlay" *ngIf="isLoading && items.length === 0">
+    <mat-spinner diameter="48"></mat-spinner>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!isLoading && items.length === 0">
+    <mat-icon>feedback</mat-icon>
+    <p>{{ 'my_feedback.empty_state' | translate }}</p>
+  </div>
+
+  <!-- Submissions list -->
+  <mat-accordion [multi]="false" *ngIf="items.length > 0">
+    <mat-expansion-panel
+      *ngFor="let item of items"
+      (opened)="onPanelOpened(item.id)"
+      (closed)="onPanelClosed(item.id)"
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title class="panel-title">
+          <span class="page-url">{{ item.page_url }}</span>
+          <span
+            *ngIf="item.has_unread_admin_reply"
+            class="unread-badge"
+            [matBadge]="'●'"
+            matBadgeColor="accent"
+            matBadgeOverlap="false"
+          >&nbsp;</span>
+        </mat-panel-title>
+        <mat-panel-description class="panel-meta">
+          <span>{{ item.submitted_at | date:'dd MMM y' }}</span>
+          <span class="status-chip status-{{ item.status }}">{{ item.status }}</span>
+          <span *ngIf="item.reply_count > 0" class="reply-count">
+            <mat-icon>chat_bubble_outline</mat-icon>{{ item.reply_count }}
+          </span>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <!-- Original submission text -->
+      <p class="original-text">{{ item.text_content }}</p>
+
+      <mat-divider></mat-divider>
+
+      <!-- Thread replies -->
+      <ng-container *ngIf="getThreadState(item.id) as thread">
+        <app-thread
+          [replies]="thread.replies"
+          [hasEarlier]="thread.hasEarlier"
+          [loading]="thread.loading"
+          (loadEarlier)="onLoadEarlier(item.id, $event)"
+          (sendReply)="onSendReply(item.id, $event)"
+        ></app-thread>
+      </ng-container>
+
+    </mat-expansion-panel>
+  </mat-accordion>
+
+  <!-- Pagination -->
+  <mat-paginator
+    *ngIf="totalItems > pageSize"
+    [length]="totalItems"
+    [pageSize]="pageSize"
+    [pageIndex]="currentPage - 1"
+    (page)="onPageChange($event.pageIndex + 1)"
+  ></mat-paginator>
+</div>

@@ -211,6 +211,26 @@
     "colLabels": "التصنيفات",
     "addLabel": "إضافة تصنيف",
     "submitters": "المرسلون",
-    "allSubmitters": "جميع المرسلين"
+    "allSubmitters": "جميع المرسلين",
+    "thread": {
+      "reply": "اكتب ردًا...",
+      "send": "إرسال",
+      "load_earlier": "تحميل رسائل سابقة",
+      "empty": "لا توجد ردود بعد — ابدأ المحادثة.",
+      "char_count": "{{count}}/{{max}}",
+      "admin_label": "مشرف",
+      "user_label": "مستخدم",
+      "unread_badge": "رد جديد من المستخدم"
+    }
+  },
+  "my_feedback": {
+    "title": "ملاحظاتي",
+    "empty_state": "لم تقدم أي ملاحظات بعد.",
+    "submission_date": "تاريخ الإرسال",
+    "status": "الحالة"
+  },
+  "notifications": {
+    "badge_title": "لديك ردود غير مقروءة",
+    "mark_read": "تحديد كمقروء"
   }
 }
