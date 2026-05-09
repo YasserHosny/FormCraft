@@ -150,7 +150,7 @@
             <!-- Not recording, no video staged -->
             <ng-container *ngIf="!stagedVideo && !isVideoRecording">
               <div class="feedback-attachments">
-                <button mat-stroked-button type="button" class="attach-btn" *ngIf="videoRecorder.canRecord$ | async" (click)="startRecording()"
+                <button mat-stroked-button type="button" class="attach-btn" *ngIf="videoCanRecord$ | async" (click)="startRecording()"
                   [disabled]="isVideoBlockedByAudio">
                   <mat-icon>videocam</mat-icon>
                   {{ 'feedback.addVideo' | translate }}

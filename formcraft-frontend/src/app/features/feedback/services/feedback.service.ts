@@ -62,6 +62,8 @@ export interface FeedbackAdminItem {
   reply_count: number;
   /** True when the submitting user has posted a follow-up that the admin has not yet seen. */
   has_unread_user_reply: boolean;
+  /** Label IDs assigned to this submission (Feature 014). */
+  label_ids?: string[];
 }
 
 export interface FeedbackAdminListResponse {

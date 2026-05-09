@@ -62,6 +62,10 @@ export class FeedbackWidgetComponent implements OnDestroy {
     return this.audioUrl !== null || this.isAudioRecording;
   }
 
+  get videoCanRecord$() {
+    return this.videoRecorder.canRecord$;
+  }
+
   @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
   @ViewChild('audioInput') audioInput!: ElementRef<HTMLInputElement>;
   @ViewChild('videoInput') videoInput!: ElementRef<HTMLInputElement>;

@@ -24,7 +24,9 @@ export class AuthService {
   currentUser$ = this.currentUserSubject.asObservable();
 
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
-  isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
+  // Expose BehaviorSubject (not wrapped) so callers can read .value synchronously.
+  // BehaviorSubject extends Observable, so .pipe()/.subscribe() still work everywhere.
+  isAuthenticated$ = this.isAuthenticatedSubject;
 
   constructor(private http: HttpClient) {
     const token = this.getToken();

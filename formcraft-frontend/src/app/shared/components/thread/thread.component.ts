@@ -12,6 +12,7 @@ import { ReplyResponse } from '../../../features/feedback/models/reply.models';
   templateUrl: './thread.component.html',
   styleUrls: ['./thread.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ThreadComponent {
   @Input() replies: ReplyResponse[] = [];

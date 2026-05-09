@@ -120,11 +120,11 @@
         <th mat-header-cell *matHeaderCellDef>{{ 'feedback.colLabels' | translate }}</th>
         <td mat-cell *matCellDef="let item">
           <div class="label-chips-cell">
-            <span *ngFor="let lid of (item as any).label_ids ?? []" class="label-chip inline-chip"
+            <span *ngFor="let lid of item.label_ids || []" class="label-chip inline-chip"
               [style.background-color]="getLabelById(lid)?.colour || '#78909c'">
               {{ getLabelById(lid)?.name || lid }}
             </span>
-            <span *ngIf="!(item as any).label_ids?.length" class="no-labels-text">{{ 'feedback.noLabelsYet' | translate }}</span>
+            <span *ngIf="!item.label_ids?.length" class="no-labels-text">{{ 'feedback.noLabelsYet' | translate }}</span>
           </div>
         </td>
       </ng-container>
@@ -195,7 +195,7 @@
           <div class="detail-labels">
             <label>{{ 'feedback.colLabels' | translate }}:</label>
             <div class="detail-label-chips">
-              <span *ngFor="let lid of (item as any).label_ids ?? []" class="label-chip detail-chip"
+              <span *ngFor="let lid of item.label_ids || []" class="label-chip detail-chip"
                 [style.background-color]="getLabelById(lid)?.colour || '#78909c'">
                 {{ getLabelById(lid)?.name || lid }}
                 <button mat-icon-button class="remove-label-btn" (click)="removeLabelFromSubmission(item, lid); $event.stopPropagation()">
@@ -203,7 +203,7 @@
                 </button>
               </span>
             </div>
-            <button mat-button *ngIf="(item as any).label_ids?.length < 5" [matMenuTriggerFor]="labelMenu" class="add-label-btn">
+            <button mat-button *ngIf="(item.label_ids?.length || 0) < 5" [matMenuTriggerFor]="labelMenu" class="add-label-btn">
               {{ 'feedback.addLabel' | translate }}
             </button>
             <mat-menu #labelMenu="matMenu">
@@ -212,7 +212,7 @@
                 {{ label.name }}
               </button>
             </mat-menu>
-            <span *ngIf="(item as any).label_ids?.length >= 5" class="max-labels-text">{{ 'feedback.maxLabelsReached' | translate }}</span>
+            <span *ngIf="(item.label_ids?.length || 0) >= 5" class="max-labels-text">{{ 'feedback.maxLabelsReached' | translate }}</span>
           </div>
 
           <div class="detail-status">

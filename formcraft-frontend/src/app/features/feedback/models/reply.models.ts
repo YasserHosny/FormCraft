@@ -4,6 +4,10 @@
  * Mirrors the Pydantic schemas in formcraft-backend/app/schemas/reply.py.
  */
 
+export interface ReplyCreateRequest {
+  text_content: string;
+}
+
 export interface ReplyResponse {
   id: string;
   author_role: 'admin' | 'user';

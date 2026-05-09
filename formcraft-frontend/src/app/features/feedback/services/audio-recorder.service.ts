@@ -24,7 +24,8 @@ export class AudioRecorderService {
     error: null,
   });
 
-  state$: Observable<RecordingState> = this.stateSubject.asObservable();
+  // Expose BehaviorSubject so callers can read .value synchronously.
+  state$ = this.stateSubject;
 
   private mediaRecorder: MediaRecorder | null = null;
   private chunks: Blob[] = [];

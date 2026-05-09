@@ -38,17 +38,23 @@ async def get_current_user(
         )
 
     client = get_supabase_client()
-    result = (
-        client.table("profiles")
-        .select("*")
-        .eq("id", user_id)
-        .single()
-        .execute()
-    )
-    # Normalize: real Supabase .single() returns a dict; test mocks may return a list.
-    raw = result.data
-    if isinstance(raw, list):
-        raw = raw[0] if raw else None
+    # Use .single() but catch PGRST116 (0 rows) which PostgREST raises instead of
+    # returning empty data — convert to a clean 404.
+    raw = None
+    try:
+        result = (
+            client.table("profiles")
+            .select("*")
+            .eq("id", user_id)
+            .single()
+            .execute()
+        )
+        # Normalize: real Supabase .single() returns a dict; test mocks may return a list.
+        raw = result.data
+        if isinstance(raw, list):
+            raw = raw[0] if raw else None
+    except Exception:
+        raw = None
     if not raw:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

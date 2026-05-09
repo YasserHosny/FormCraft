@@ -68,6 +68,8 @@ class FeedbackAdminItem(BaseModel):
     status: str
     submitter_display_name: str | None = None
     labels: list[LabelResponse] = []
+    reply_count: int = 0
+    has_unread_user_reply: bool = False
 
 
 class FeedbackAdminListResponse(BaseModel):
