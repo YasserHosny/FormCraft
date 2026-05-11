@@ -89,7 +89,7 @@ class ReplyService:
         # Fetch limit+1 to detect has_earlier
         query = (
             self.client.table("feedback_replies")
-            .select("id, author_id, author_role, text_content, created_at, profiles(display_name)")
+            .select("id, author_id, author_role, text_content, created_at")
             .eq("feedback_id", str(feedback_id))
             .order("created_at", desc=True)
             .order("id", desc=True)
@@ -105,11 +105,24 @@ class ReplyService:
         has_earlier = len(rows) > limit
         rows = rows[:limit]
 
+        # Batch-fetch display names
+        author_ids = list({r["author_id"] for r in rows})
+        profiles_map: dict[str, str] = {}
+        if author_ids:
+            pr = (
+                self.client.table("profiles")
+                .select("id,display_name")
+                .in_("id", author_ids)
+                .execute()
+            )
+            for p in pr.data or []:
+                profiles_map[p["id"]] = p.get("display_name") or "Unknown"
+
         replies = [
             ReplyResponse(
                 id=r["id"],
                 author_role=r["author_role"],
-                author_name=(r.get("profiles") or {}).get("display_name") or "Unknown",
+                author_name=profiles_map.get(r["author_id"], "Unknown"),
                 text_content=r["text_content"],
                 created_at=r["created_at"],
             )

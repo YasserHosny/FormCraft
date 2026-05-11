@@ -149,7 +149,6 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let item; columns: displayedColumns;" class="clickable-row" (click)="toggleRow(item.id)"></tr>
     </table>
 

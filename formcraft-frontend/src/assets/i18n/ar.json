@@ -193,7 +193,7 @@
     "toDate": "إلى تاريخ",
     "clearFilters": "مسح التصفية",
     "noResultsFound": "لم يتم العثور على نتائج",
-    "showingResults": "عرض {total} نتيجة",
+    "showingResults": "عرض {{ total }} نتيجة",
     "manageLabels": "إدارة التصنيفات",
     "newLabel": "تصنيف جديد",
     "labelName": "اسم التصنيف",

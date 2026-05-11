@@ -193,7 +193,7 @@
     "toDate": "To date",
     "clearFilters": "Clear filters",
     "noResultsFound": "No results found",
-    "showingResults": "Showing {total} results",
+    "showingResults": "Showing {{ total }} results",
     "manageLabels": "Manage Labels",
     "newLabel": "New Label",
     "labelName": "Label name",
