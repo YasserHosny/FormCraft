@@ -209,7 +209,7 @@ class FeedbackService:
         """List feedback entries (admin). Returns items and total count."""
         offset = (page - 1) * limit
         query = self.client.table("feedback_submissions").select(
-            "*, profiles!feedback_submissions_user_id_fkey(display_name,email), feedback_submission_labels(feedback_labels(id,name,colour,created_at))",
+            "*, feedback_submission_labels(feedback_labels(id,name,colour,created_at))",
             count="exact",
         )
 
@@ -226,12 +226,12 @@ class FeedbackService:
         if label_ids:
             sub_result = (
                 self.client.table("feedback_submission_labels")
-                .select("submission_id")
+                .select("feedback_id")
                 .in_("label_id", label_ids)
                 .execute()
             )
             submission_ids = list(
-                {row["submission_id"] for row in sub_result.data or []}
+                {row["feedback_id"] for row in sub_result.data or []}
             )
             if submission_ids:
                 query = query.in_("id", submission_ids)
@@ -244,13 +244,22 @@ class FeedbackService:
             .execute()
         )
 
+        # Batch-fetch display names to avoid per-row queries
+        all_user_ids = list({row["user_id"] for row in result.data or []})
+        profiles_map: dict[str, str] = {}
+        if all_user_ids:
+            pr = (
+                self.client.table("profiles")
+                .select("id,display_name")
+                .in_("id", all_user_ids)
+                .execute()
+            )
+            for p in pr.data or []:
+                profiles_map[p["id"]] = p.get("display_name") or "Unknown"
+
         items = []
         for row in result.data or []:
-            profile = row.pop("profiles", None) or {}
-            display_name = (
-                profile.get("display_name") or profile.get("email") or "Unknown"
-            )
-            row["submitter_display_name"] = display_name
+            row["submitter_display_name"] = profiles_map.get(row["user_id"], "Unknown")
 
             labels_data = row.pop("feedback_submission_labels", []) or []
             row["labels"] = [
@@ -332,24 +341,20 @@ class FeedbackService:
         """List distinct submitters (admin). Returns id and display_name."""
         result = (
             self.client.table("feedback_submissions")
-            .select(
-                "user_id, profiles!feedback_submissions_user_id_fkey(display_name,email)"
-            )
+            .select("user_id")
             .execute()
         )
-        seen = set()
-        submitters = []
-        for row in result.data or []:
-            uid = row["user_id"]
-            if uid in seen:
-                continue
-            seen.add(uid)
-            profile = row.get("profiles") or {}
-            display_name = (
-                profile.get("display_name") or profile.get("email") or "Unknown"
-            )
-            submitters.append({"id": uid, "display_name": display_name})
-        return submitters
+        user_ids = list({row["user_id"] for row in result.data or []})
+        if not user_ids:
+            return []
+        pr = (
+            self.client.table("profiles")
+            .select("id,display_name")
+            .in_("id", user_ids)
+            .execute()
+        )
+        profiles_map = {p["id"]: p.get("display_name") or "Unknown" for p in pr.data or []}
+        return [{"id": uid, "display_name": profiles_map.get(uid, "Unknown")} for uid in user_ids]
 
     async def list_labels(self) -> list[dict]:
         """List all labels (admin)."""

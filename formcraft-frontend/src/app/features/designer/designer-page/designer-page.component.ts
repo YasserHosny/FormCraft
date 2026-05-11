@@ -553,6 +553,11 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  onPropertyChange(field: string, value: unknown): void {
+    if (!this.selectedElement) return;
+    this.canvasService.updateElementData(this.selectedElement.id, { [field]: value });
+  }
+
   save(): void {
     if (!this.pageId) return;
     

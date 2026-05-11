@@ -184,33 +184,40 @@
         </mat-form-field>
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>{{ 'designer.properties.label_ar' | translate }}</mat-label>
-          <input matInput [value]="selectedElement.data['label_ar']" fcAutoDir />
+          <input matInput [value]="selectedElement.data['label_ar']" fcAutoDir
+            (change)="onPropertyChange('label_ar', $any($event.target).value)" />
         </mat-form-field>
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>{{ 'designer.properties.label_en' | translate }}</mat-label>
-          <input matInput [value]="selectedElement.data['label_en']" />
+          <input matInput [value]="selectedElement.data['label_en']"
+            (change)="onPropertyChange('label_en', $any($event.target).value)" />
         </mat-form-field>
         <div class="prop-row">
           <mat-form-field appearance="outline">
             <mat-label>X (mm)</mat-label>
-            <input matInput type="number" [value]="selectedElement.data['x_mm']" />
+            <input matInput type="number" [value]="selectedElement.data['x_mm']"
+              (change)="onPropertyChange('x_mm', +$any($event.target).value)" />
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Y (mm)</mat-label>
-            <input matInput type="number" [value]="selectedElement.data['y_mm']" />
+            <input matInput type="number" [value]="selectedElement.data['y_mm']"
+              (change)="onPropertyChange('y_mm', +$any($event.target).value)" />
           </mat-form-field>
         </div>
         <div class="prop-row">
           <mat-form-field appearance="outline">
             <mat-label>W (mm)</mat-label>
-            <input matInput type="number" [value]="selectedElement.data['width_mm']" />
+            <input matInput type="number" [value]="selectedElement.data['width_mm']"
+              (change)="onPropertyChange('width_mm', +$any($event.target).value)" />
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>H (mm)</mat-label>
-            <input matInput type="number" [value]="selectedElement.data['height_mm']" />
+            <input matInput type="number" [value]="selectedElement.data['height_mm']"
+              (change)="onPropertyChange('height_mm', +$any($event.target).value)" />
           </mat-form-field>
         </div>
-        <mat-slide-toggle [checked]="!!selectedElement.data['required']">
+        <mat-slide-toggle [checked]="!!selectedElement.data['required']"
+          (change)="onPropertyChange('required', $event.checked)">
           {{ 'designer.properties.required' | translate }}
         </mat-slide-toggle>
 

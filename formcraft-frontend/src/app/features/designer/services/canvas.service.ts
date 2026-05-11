@@ -402,6 +402,15 @@ export class CanvasService implements OnDestroy {
     el.data['formatting'] = { ...(el.data['formatting'] as Record<string, unknown> || {}), ...formatting };
   }
 
+  /** Patch arbitrary fields on an element's data, re-render the visual, and mark dirty. */
+  updateElementData(elementId: string, patch: Record<string, unknown>): void {
+    const el = this.elements.get(elementId);
+    if (!el) return;
+    Object.assign(el.data, patch);
+    this.updateElementVisual(el);
+    this._dirty.next(true);
+  }
+
   /**
    * Get all elements on the current canvas (used by source element picker).
    */

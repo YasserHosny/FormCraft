@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { ReplyCreateRequest, ReplyResponse, ThreadResponse } from '../models/reply.models';
 
@@ -120,7 +121,15 @@ export class FeedbackService {
     if (params?.labelIds && params.labelIds.length > 0) {
       httpParams = httpParams.set('label_ids', params.labelIds.join(','));
     }
-    return this.http.get<FeedbackAdminListResponse>(`${environment.apiBaseUrl}/admin/feedback`, { params: httpParams });
+    return this.http.get<any>(`${environment.apiBaseUrl}/admin/feedback`, { params: httpParams }).pipe(
+      map(response => ({
+        ...response,
+        data: (response.data || []).map((item: any) => ({
+          ...item,
+          label_ids: (item.labels || []).map((l: any) => l.id),
+        })),
+      }) as FeedbackAdminListResponse)
+    );
   }
 
   updateStatus(id: string, newStatus: string): Observable<{ id: string; status: string }> {

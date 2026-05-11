@@ -11,6 +11,20 @@ export const environment = {
   production: false,
   apiBaseUrl: '/api',
   apiUrl: 'http://localhost:8000/api',
-  supabaseUrl: (window as any).SUPABASE_URL || 'http://localhost:54321',
-  supabaseAnonKey: (window as any).SUPABASE_ANON_KEY || '',
+  get supabaseUrl() {
+    // Try to get from runtime config first, then fallback to window variable
+    const runtimeConfig = (window as any).FC_RUNTIME_CONFIG;
+    if (runtimeConfig?.supabase?.url) {
+      return runtimeConfig.supabase.url;
+    }
+    return (window as any).SUPABASE_URL || 'http://localhost:54321';
+  },
+  get supabaseAnonKey() {
+    // Try to get from runtime config first, then fallback to window variable
+    const runtimeConfig = (window as any).FC_RUNTIME_CONFIG;
+    if (runtimeConfig?.supabase?.anonKey) {
+      return runtimeConfig.supabase.anonKey;
+    }
+    return (window as any).SUPABASE_ANON_KEY || '';
+  },
 };
