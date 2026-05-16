@@ -1,0 +1,25 @@
+<nav mat-tab-nav-bar class="mode-tabs-nav desktop-tabs">
+  @for (mode of permittedModes; track mode.id) {
+    <a
+      mat-tab-link
+      [active]="activeMode?.id === mode.id"
+      (click)="onTabClick(mode)"
+      [routerLink]="mode.defaultRoute"
+      class="mode-tab-link"
+    >
+      <mat-icon class="mode-tab-icon">{{ mode.icon }}</mat-icon>
+      <span class="mode-tab-label">{{ mode.labelKey | translate }}</span>
+    </a>
+  }
+</nav>
+
+<button mat-icon-button class="mobile-menu-trigger" (click)="toggleMobileMenu()">
+  <mat-icon>menu</mat-icon>
+</button>
+
+<div class="mobile-menu-dropdown" *ngIf="mobileMenuOpen">
+  <button mat-menu-item *ngFor="let mode of permittedModes" (click)="onTabClick(mode)" [class.active]="activeMode?.id === mode.id">
+    <mat-icon>{{ mode.icon }}</mat-icon>
+    <span>{{ mode.labelKey | translate }}</span>
+  </button>
+</div>
