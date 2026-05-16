@@ -26,7 +26,10 @@ USING (org_id IN (SELECT org_id FROM profiles WHERE id = auth.uid()));
 
 CREATE POLICY "Operators can create own submissions"
 ON submissions FOR INSERT
-WITH CHECK (operator_id = auth.uid());
+WITH CHECK (
+    operator_id = auth.uid()
+    AND org_id IN (SELECT org_id FROM profiles WHERE id = auth.uid())
+);
 
 -- Reference number generation function
 CREATE OR REPLACE FUNCTION generate_submission_ref(p_org_id UUID)
@@ -45,7 +48,7 @@ BEGIN
     END IF;
 
     EXECUTE format('SELECT nextval(%L)', seq_name) INTO next_val;
-    ref_text := 'FC-' || month_year || '-' || lpad(cast(next_val AS TEXT), 4, '0');
+    ref_text := 'FC-' || left(replace(cast(p_org_id AS TEXT), '-', ''), 8) || '-' || month_year || '-' || lpad(cast(next_val AS TEXT), 4, '0');
 
     RETURN ref_text;
 END;
