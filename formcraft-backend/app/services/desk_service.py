@@ -89,7 +89,15 @@ class DeskService:
         if language:
             query = query.eq("language", language)
 
-        result = query.order("updated_at", desc=True).limit(limit * 5).execute()
+        fetch_window = max(limit * 5, limit)
+        start = offset
+        end = start + fetch_window - 1
+
+        result = (
+            query.order("updated_at", desc=True)
+            .range(start, end)
+            .execute()
+        )
 
         seen_lineages: set[str] = set()
         deduped = []

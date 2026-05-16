@@ -8,7 +8,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [ReviewQueueComponent],
-  imports: [SharedModule, RouterModule.forChild(routes)],
+  declarations: [],
+  imports: [SharedModule, RouterModule.forChild(routes), ReviewQueueComponent],
 })
 export class AdminModule {}

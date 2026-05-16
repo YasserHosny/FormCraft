@@ -13,7 +13,13 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [DesignerPageComponent, AiSuggestionChipComponent, TafqeetPropertyPanelComponent, StatusBadgeComponent, VersionHistoryComponent, VersionDiffComponent],
-  imports: [SharedModule, RouterModule.forChild(routes)],
+  declarations: [DesignerPageComponent, AiSuggestionChipComponent, TafqeetPropertyPanelComponent],
+  imports: [
+    SharedModule,
+    RouterModule.forChild(routes),
+    StatusBadgeComponent,
+    VersionHistoryComponent,
+    VersionDiffComponent,
+  ],
 })
 export class DesignerModule {}
