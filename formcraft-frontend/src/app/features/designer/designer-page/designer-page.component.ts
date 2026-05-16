@@ -3,12 +3,15 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, switchMap, take, map } from 'rxjs/operators';
 import { TemplateService } from '../../../core/services/template.service';
+import { TemplateVersionService } from '../../../core/services/template-version.service';
 import { environment, getDevLocalImportEnabled } from '../../../../environments/environment';
 import { CanvasService, CanvasElement } from '../services/canvas.service';
 import { ELEMENT_DEFAULTS, ElementDefault } from '../../../models/element-defaults';
-import { ElementType } from '../../../models/template.model';
+import { ElementType, TemplateStatus } from '../../../models/template.model';
 import { FormDetectionService } from '../../../core/services/form-detection.service';
 import { DetectionResponse, DetectedField } from '../models/detected-field.model';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'fc-designer-page',
@@ -23,6 +26,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('konvaContainer', { read: ElementRef }) konvaContainerEl?: ElementRef<HTMLElement>;
   templateId = '';
   templateName = 'Loading...';
+  templateStatus: TemplateStatus = 'draft';
   pageId = '';
   selectedElement: CanvasElement | null = null;
   isDirty = false;
@@ -85,13 +89,34 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private saveInProgress = false;
   private snapshotElementIds: string[] = [];
   isSaving = false;
+  showVersionHistory = false;
+  versionHistory: any[] = [];
+
+  get canEdit(): boolean {
+    return this.templateStatus === 'draft' || this.templateStatus === 'rejected';
+  }
+
+  get canSubmitForReview(): boolean {
+    return this.templateStatus === 'draft';
+  }
+
+  get canCreateNewVersion(): boolean {
+    return this.templateStatus === 'published';
+  }
+
+  get canTransition(): boolean {
+    return ['draft', 'submitted_for_review', 'approved', 'rejected', 'published', 'archived', 'deprecated'].includes(this.templateStatus);
+  }
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private templateService: TemplateService,
+    private versionService: TemplateVersionService,
     public canvasService: CanvasService,
-    private formDetectionService: FormDetectionService
+    private formDetectionService: FormDetectionService,
+    private snackBar: MatSnackBar,
+    private translate: TranslateService,
   ) {}
 
   @HostListener('document:keydown', ['$event'])
@@ -146,6 +171,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
       this.templateService.get(this.templateId).subscribe({
         next: (template: any) => {
           this.templateName = template.name;
+          this.templateStatus = template.status || 'draft';
           const page = template.pages?.[0];
           const w = page?.width_mm || 210;
           const h = page?.height_mm || 297;
@@ -177,6 +203,31 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.showImportPanel = true;
     this.showDetectionsPanel = false;
+  }
+
+  submitForReview(): void {
+    this.versionService.transitionStatus(this.templateId, 'submitted_for_review').subscribe({
+      next: () => {
+        this.templateStatus = 'submitted_for_review';
+        this.snackBar.open(this.translate.instant('versioning.transitionSuccess', { status: 'submitted_for_review' }), '', { duration: 3000 });
+      },
+      error: (err: any) => {
+        this.snackBar.open(err.error?.detail || this.translate.instant('versioning.transitionError'), '', { duration: 3000 });
+      },
+    });
+  }
+
+  openVersionHistory(): void {
+    this.versionService.getHistory(this.templateId).subscribe({
+      next: (response: any) => {
+        this.versionHistory = response.versions || [];
+        this.showVersionHistory = true;
+      },
+    });
+  }
+
+  closeVersionHistory(): void {
+    this.showVersionHistory = false;
   }
 
   closeImport(): void {

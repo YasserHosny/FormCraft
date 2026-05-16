@@ -10,7 +10,12 @@ class Role(StrEnum):
 
 class TemplateStatus(StrEnum):
     DRAFT = "draft"
+    SUBMITTED_FOR_REVIEW = "submitted_for_review"
+    APPROVED = "approved"
+    REJECTED = "rejected"
     PUBLISHED = "published"
+    ARCHIVED = "archived"
+    DEPRECATED = "deprecated"
 
 
 class ElementType(StrEnum):

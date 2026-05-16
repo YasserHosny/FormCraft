@@ -30,6 +30,7 @@ export interface FillTemplate {
   version: number;
   language: string;
   country: string;
+  is_deprecated: boolean;
   pages: TemplatePage[];
 }
 

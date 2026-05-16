@@ -10,6 +10,8 @@ export interface TemplateCard {
   category: string | null;
   status: string;
   version: number;
+  lineage_id?: string | null;
+  is_deprecated?: boolean;
   language: string | null;
   country: string | null;
   updated_at: string;

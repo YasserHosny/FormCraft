@@ -1,0 +1,42 @@
+<div class="version-history-panel">
+  <div class="panel-header">
+    <h3>{{ 'versioning.viewHistory' | translate }}</h3>
+    <button mat-icon-button (click)="onClose()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="compare-hint" *ngIf="selectedForCompare.length < 2">
+    <small>{{ 'versioning.compareWith' | translate }}</small>
+  </div>
+  <div class="compare-action" *ngIf="canCompare()">
+    <button mat-raised-button color="primary" (click)="onCompare()">
+      <mat-icon>compare</mat-icon>
+      {{ 'versioning.compareVersions' | translate }}
+    </button>
+  </div>
+
+  <mat-list>
+    <mat-list-item *ngFor="let version of versions" class="version-item" [class.current]="isCurrent(version)">
+      <mat-checkbox
+        *ngIf="!isCurrent(version)"
+        [checked]="selectedForCompare.includes(version.id)"
+        (change)="toggleCompare(version.id)"
+        matListItemTitle
+      ></mat-checkbox>
+      <span matListItemTitle class="version-label">
+        v{{ version.version }}
+        <fc-status-badge [status]="version.status"></fc-status-badge>
+      </span>
+      <span matListItemLine class="version-meta">
+        {{ version.created_by_name || version.created_by }} &middot;
+        {{ version.created_at | date:'short' }} &middot;
+        {{ 'templates.elementCount' | translate:{count: version.element_count} }}
+      </span>
+    </mat-list-item>
+  </mat-list>
+
+  <div *ngIf="versions.length === 0" class="empty-state">
+    <p>{{ 'templates.noVersions' | translate }}</p>
+  </div>
+</div>

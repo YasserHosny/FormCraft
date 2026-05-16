@@ -51,10 +51,25 @@
     },
     "statuses": {
       "draft": "مسودة",
-      "published": "منشور"
+      "submitted_for_review": "قيد المراجعة",
+      "approved": "معتمد",
+      "rejected": "مرفوض",
+      "published": "منشور",
+      "archived": "مؤرشف",
+      "deprecated": "مهمل"
     },
     "publish": "نشر",
-    "newVersion": "إنشاء إصدار جديد"
+    "newVersion": "إنشاء إصدار جديد",
+    "submitForReview": "إرسال للمراجعة",
+    "clone": "استنساخ",
+    "cloneName": "{{name}} (نسخة)",
+    "cloneConfirmTitle": "استنساخ القالب",
+    "cloneConfirmMessage": "ينشئ نسخة مستقلة بدون ربط بالإصدار الأصلي.",
+    "versionHistory": "سجل الإصدارات",
+    "compareVersions": "مقارنة",
+    "noVersions": "لا توجد إصدارات أخرى",
+    "elementCount": "{{count}} عنصر",
+    "pageCount": "{{count}} صفحات"
   },
   "designer": {
     "title": "استوديو التصميم",
@@ -232,5 +247,46 @@
   "notifications": {
     "badge_title": "لديك ردود غير مقروءة",
     "mark_read": "تحديد كمقروء"
+  },
+  "versioning": {
+    "statusBadge": {
+      "draft": "مسودة",
+      "submitted_for_review": "قيد المراجعة",
+      "approved": "معتمد",
+      "rejected": "مرفوض",
+      "published": "منشور",
+      "archived": "مؤرشف",
+      "deprecated": "مهمل"
+    },
+    "transitionConfirm": "هل أنت متأكد من {{action}} هذا القالب؟",
+    "transitionSuccess": "تم تحديث حالة القالب إلى {{status}}",
+    "transitionError": "فشل تحديث حالة القالب",
+    "immutableError": "لا يمكن تعديل هذا القالب في حالته الحالية. أنشئ إصداراً جديداً لإجراء التغييرات.",
+    "createVersion": "إنشاء إصدار جديد",
+    "viewHistory": "عرض السجل",
+    "diffSummary": "{{added}} مضاف، {{removed}} محذوف، {{modified}} معدّل",
+    "diffAdded": "مضاف",
+    "diffRemoved": "محذوف",
+    "diffModified": "معدّل",
+    "noDiff": "لا توجد تغييرات بين الإصدارات",
+    "compareWith": "مقارنة مع"
+  },
+  "review": {
+    "title": "قائمة المراجعة",
+    "emptyState": "لا توجد قوالب بانتظار المراجعة",
+    "approve": "اعتماد",
+    "reject": "رفض",
+    "rejectComment": "سبب الرفض",
+    "rejectCommentRequired": "يرجى تقديم سبب الرفض",
+    "approved": "معتمد",
+    "rejected": "مرفوض",
+    "pendingReviews": "{{count}} بانتظار المراجعة",
+    "submittedBy": "أرسل بواسطة",
+    "submittedAt": "تاريخ الإرسال",
+    "noReviewsYet": "لا توجد مراجعات بعد"
+  },
+  "desk": {
+    "deprecatedWarning": "يتوفر إصدار أحدث",
+    "archivedError": "هذا القالب لم يعد متاحاً"
   }
 }

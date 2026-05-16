@@ -4,6 +4,18 @@
   padding: 16px 24px;
 }
 
+.deprecated-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  background: #fff3e0;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #e65100;
+}
+
 .fill-loading {
   display: flex;
   justify-content: center;

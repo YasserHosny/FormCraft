@@ -1,0 +1,54 @@
+<mat-table [dataSource]="templates" *ngIf="!loading; else loadingTpl">
+  <ng-container matColumnDef="name">
+    <mat-header-cell *matHeaderCellDef>{{ 'templates.name' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let template">{{ template.name }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="version">
+    <mat-header-cell *matHeaderCellDef>{{ 'templates.version' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let template">v{{ template.version }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="created_by">
+    <mat-header-cell *matHeaderCellDef>{{ 'review.submittedBy' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let template">{{ template.created_by }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="created_at">
+    <mat-header-cell *matHeaderCellDef>{{ 'review.submittedAt' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let template">{{ template.updated_at | date:'short' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="status">
+    <mat-header-cell *matHeaderCellDef>{{ 'templates.status' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let template">
+      <fc-status-badge [status]="template.status"></fc-status-badge>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="actions">
+    <mat-header-cell *matHeaderCellDef>{{ 'common.actions' | translate }}</mat-header-cell>
+    <mat-cell *matCellDef="let template">
+      <button mat-icon-button color="primary" (click)="approve(template)" [matTooltip]="'review.approve' | translate">
+        <mat-icon>check_circle</mat-icon>
+      </button>
+      <button mat-icon-button color="warn" (click)="reject(template)" [matTooltip]="'review.reject' | translate">
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+</mat-table>
+
+<ng-template #loadingTpl>
+  <div class="loading-state">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>{{ 'common.loading' | translate }}</p>
+  </div>
+</ng-template>
+
+<div *ngIf="!loading && templates.length === 0" class="empty-state">
+  <p>{{ 'review.emptyState' | translate }}</p>
+</div>

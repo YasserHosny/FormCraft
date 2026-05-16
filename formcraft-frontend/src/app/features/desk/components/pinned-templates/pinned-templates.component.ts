@@ -51,6 +51,8 @@ export class PinnedTemplatesComponent {
       category: item.category,
       status: item.is_published ? 'published' : 'unpublished',
       version: item.version,
+      lineage_id: null,
+      is_deprecated: false,
       language: null,
       country: null,
       updated_at: item.pinned_at,

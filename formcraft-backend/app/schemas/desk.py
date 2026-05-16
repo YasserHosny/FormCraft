@@ -11,6 +11,8 @@ class TemplateCardResponse(BaseModel):
     category: str | None = None
     status: str
     version: int
+    lineage_id: UUID | None = None
+    is_deprecated: bool = False
     language: str | None = None
     country: str | None = None
     updated_at: datetime

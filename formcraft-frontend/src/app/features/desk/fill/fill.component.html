@@ -15,6 +15,11 @@
 
   <!-- Form Content -->
   <ng-container *ngIf="!loading && !error && template">
+    <!-- Deprecated Warning -->
+    <div class="deprecated-banner" *ngIf="isDeprecated">
+      <mat-icon color="warn">warning</mat-icon>
+      <span>A newer version of this template is available. You can still fill this version.</span>
+    </div>
     <!-- Toolbar -->
     <fc-form-toolbar
       [formValid]="formValid"
