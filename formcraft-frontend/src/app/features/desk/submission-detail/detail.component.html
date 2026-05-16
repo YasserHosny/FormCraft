@@ -1,0 +1,94 @@
+<div class="detail-container">
+  <!-- Loading -->
+  <div class="detail-loading" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- Error -->
+  <div class="detail-error" *ngIf="error && !loading">
+    <p>{{ 'errors.generic' | translate }}</p>
+    <button mat-raised-button color="primary" (click)="onBack()">{{ 'common.back' | translate }}</button>
+  </div>
+
+  <ng-container *ngIf="!loading && !error && submission">
+    <!-- Header -->
+    <div class="detail-header">
+      <button mat-icon-button (click)="onBack()" class="back-btn">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1>{{ 'history.detail_title' | translate }}</h1>
+      <span class="status-badge" [ngClass]="'status-' + submission.status">
+        {{ 'history.status_' + submission.status | translate }}
+      </span>
+    </div>
+
+    <!-- Metadata -->
+    <mat-card class="metadata-card">
+      <mat-card-content>
+        <div class="metadata-grid">
+          <div class="metadata-item">
+            <span class="metadata-label">{{ 'history.detail_ref' | translate }}</span>
+            <span class="metadata-value">{{ submission.reference_number }}</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">{{ 'history.detail_template' | translate }}</span>
+            <span class="metadata-value">{{ submission.template_name }}</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">{{ 'history.detail_version' | translate }}</span>
+            <span class="metadata-value">v{{ submission.template_version }}</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">{{ 'history.detail_date' | translate }}</span>
+            <span class="metadata-value">{{ submission.created_at | date:'medium' }}</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">{{ 'history.detail_operator' | translate }}</span>
+            <span class="metadata-value">{{ submission.operator_name }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Actions -->
+    <div class="action-row">
+      <button mat-raised-button color="primary" (click)="onReprint()" [disabled]="reprinting || templateUnavailable">
+        <mat-icon>print</mat-icon>
+        {{ 'history.action_reprint' | translate }}
+      </button>
+      <button mat-stroked-button (click)="onClone()">
+        <mat-icon>content_copy</mat-icon>
+        {{ 'history.action_clone' | translate }}
+      </button>
+      <button mat-stroked-button [matMenuTriggerFor]="exportMenu">
+        <mat-icon>file_download</mat-icon>
+        {{ 'history.action_export' | translate }}
+      </button>
+      <mat-menu #exportMenu="matMenu">
+        <button mat-menu-item (click)="onExport('json')">
+          {{ 'history.export_json' | translate }}
+        </button>
+        <button mat-menu-item (click)="onExport('csv')">
+          {{ 'history.export_csv' | translate }}
+        </button>
+      </mat-menu>
+    </div>
+
+    <div class="template-unavailable-warning" *ngIf="templateUnavailable">
+      <mat-icon>warning</mat-icon>
+      <span>{{ 'history.template_unavailable' | translate }}</span>
+    </div>
+
+    <!-- Field Values -->
+    <mat-card class="fields-card">
+      <mat-card-content>
+        <div class="field-list">
+          <div *ngFor="let entry of fieldEntries" class="field-row">
+            <span class="field-key">{{ entry.label }}</span>
+            <span class="field-value">{{ entry.value }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+</div>
