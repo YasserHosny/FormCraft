@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TemplateService } from '../../../core/services/template.service';
 import { TemplateCreateDialogComponent } from '../template-create-dialog/template-create-dialog.component';
+import { CloneDialogComponent } from '../clone-dialog/clone-dialog.component';
 
 @Component({
   selector: 'fc-template-list',
@@ -54,6 +55,20 @@ export class TemplateListComponent implements OnInit {
       error: () => {
         this.snackBar.open('Failed to create new version', '', { duration: 3000 });
       },
+    });
+  }
+
+  cloneTemplate(template: any): void {
+    const dialogRef = this.dialog.open(CloneDialogComponent, {
+      width: '480px',
+      disableClose: true,
+      data: { templateId: template.id, templateName: template.name },
+    });
+    dialogRef.afterClosed().subscribe((result: any) => {
+      if (result) {
+        this.snackBar.open('Template cloned', '', { duration: 3000 });
+        this.router.navigate(['/designer', result.id]);
+      }
     });
   }
 

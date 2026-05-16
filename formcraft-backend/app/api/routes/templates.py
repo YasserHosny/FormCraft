@@ -10,7 +10,12 @@ from app.models.enums import Role
 from app.models.user import UserProfile
 from app.schemas.element import CreateElementRequest, ReorderElementsRequest, UpdateElementRequest
 from app.schemas.page import CreatePageRequest, ReorderPagesRequest, UpdatePageRequest
-from app.schemas.template import CreateTemplateRequest, UpdateTemplateRequest
+from app.schemas.template import (
+    CloneRequest,
+    CreateTemplateRequest,
+    TransitionRequest,
+    UpdateTemplateRequest,
+)
 from app.services.template_service import TemplateService
 
 router = APIRouter(prefix="/templates", tags=["Templates"])
@@ -146,6 +151,24 @@ async def publish_template(
     return result
 
 
+@router.post("/{template_id}/transition")
+async def transition_template_status(
+    request: Request,
+    template_id: UUID,
+    body: TransitionRequest,
+    current_user: Annotated[UserProfile, Depends(get_current_user)],
+):
+    client = get_supabase_client()
+    service = TemplateService(client)
+    result = await service.transition_status(
+        template_id=template_id,
+        new_status=body.status,
+        actor_id=current_user.id,
+        comment=body.comment,
+    )
+    return result
+
+
 @router.post("/{template_id}/version")
 async def create_new_version(
     request: Request,
@@ -167,6 +190,54 @@ async def create_new_version(
         ip_address=request.client.host if request.client else None,
     )
     return new_template
+
+
+@router.post("/{template_id}/clone", status_code=201)
+async def clone_template(
+    request: Request,
+    template_id: UUID,
+    current_user: Annotated[
+        UserProfile, Depends(require_role(Role.ADMIN, Role.DESIGNER))
+    ],
+    body: CloneRequest | None = None,
+):
+    client = get_supabase_client()
+    service = TemplateService(client)
+    name = body.name if body else None
+    result = await service.clone_template(template_id, name=name, user_id=current_user.id)
+    return result
+
+
+@router.get("/{template_id}/history")
+async def get_version_history(
+    template_id: UUID,
+    current_user: Annotated[UserProfile, Depends(get_current_user)],
+):
+    client = get_supabase_client()
+    service = TemplateService(client)
+    return await service.get_version_history(template_id)
+
+
+@router.get("/{template_id}/diff")
+async def get_version_diff(
+    template_id: UUID,
+    compare_to: UUID,
+    current_user: Annotated[UserProfile, Depends(get_current_user)],
+):
+    client = get_supabase_client()
+    service = TemplateService(client)
+    return await service.compute_diff(template_id, compare_to)
+
+
+@router.get("/{template_id}/reviews")
+async def get_template_reviews(
+    template_id: UUID,
+    current_user: Annotated[UserProfile, Depends(get_current_user)],
+):
+    client = get_supabase_client()
+    service = TemplateService(client)
+    reviews = await service.get_reviews(template_id)
+    return {"reviews": reviews}
 
 
 # --- Page CRUD ---

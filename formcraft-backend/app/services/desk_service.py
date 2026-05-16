@@ -75,7 +75,7 @@ class DeskService:
         query = (
             self.client.table("templates")
             .select("*, operator_pins!left(id, operator_id)", count="exact")
-            .eq("status", "published")
+            .in_("status", ("published", "deprecated"))
         )
 
         if org_id:
@@ -89,7 +89,20 @@ class DeskService:
         if language:
             query = query.eq("language", language)
 
-        result = query.range(offset, offset + limit - 1).order("updated_at", desc=True).execute()
+        result = query.order("updated_at", desc=True).limit(limit * 5).execute()
+
+        seen_lineages: set[str] = set()
+        deduped = []
+        for row in result.data or []:
+            lineage = str(row.get("lineage_id", row["id"]))
+            if lineage in seen_lineages:
+                continue
+            seen_lineages.add(lineage)
+            deduped.append(row)
+            if len(deduped) >= limit:
+                break
+
+        total_count = result.count or 0
 
         pin_ids = set()
         try:
@@ -104,7 +117,7 @@ class DeskService:
             pass
 
         items = []
-        for row in result.data:
+        for row in deduped:
             items.append(
                 TemplateCardResponse(
                     id=row["id"],
@@ -113,6 +126,8 @@ class DeskService:
                     category=row.get("category"),
                     status=row.get("status", "published"),
                     version=row.get("version", 1),
+                    lineage_id=row.get("lineage_id"),
+                    is_deprecated=row.get("status") == "deprecated",
                     language=row.get("language"),
                     country=row.get("country"),
                     updated_at=row.get("updated_at", ""),
@@ -122,7 +137,7 @@ class DeskService:
 
         return TemplatesPageResponse(
             items=items,
-            total=result.count or 0,
+            total=total_count,
             page=(offset // limit) + 1,
             limit=limit,
         )

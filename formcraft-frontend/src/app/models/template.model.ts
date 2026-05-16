@@ -1,4 +1,4 @@
-export type TemplateStatus = 'draft' | 'published';
+export type TemplateStatus = 'draft' | 'submitted_for_review' | 'approved' | 'rejected' | 'published' | 'archived' | 'deprecated';
 export type ElementType = 'text' | 'number' | 'date' | 'currency' | 'dropdown' | 'radio' | 'checkbox' | 'image' | 'qr' | 'barcode' | 'tafqeet';
 export type Country = 'EG' | 'SA' | 'AE';
 export type Language = 'ar' | 'en';
@@ -12,6 +12,8 @@ export interface Template {
   category: string;
   status: TemplateStatus;
   version: number;
+  lineage_id: string;
+  parent_version_id: string | null;
   language: Language;
   country: Country;
   created_at: string;

@@ -1,0 +1,65 @@
+<div class="diff-view" *ngIf="diff">
+  <div class="diff-header">
+    <h3>{{ 'versioning.viewHistory' | translate }} — Diff</h3>
+    <p class="summary">{{ summaryText }}</p>
+  </div>
+
+  <mat-card class="diff-card" *ngIf="addedElements.length > 0">
+    <mat-card-header>
+      <mat-card-title class="added-title">
+        <mat-icon color="primary">add_circle</mat-icon>
+        {{ 'versioning.diffAdded' | translate }} ({{ addedElements.length }})
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-list>
+        <mat-list-item *ngFor="let el of addedElements">
+          <span matListItemTitle>{{ el.key }}</span>
+          <span matListItemLine>{{ el.type }} &middot; {{ el.label_en || el.label_ar }}</span>
+        </mat-list-item>
+      </mat-list>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="diff-card" *ngIf="removedElements.length > 0">
+    <mat-card-header>
+      <mat-card-title class="removed-title">
+        <mat-icon color="warn">remove_circle</mat-icon>
+        {{ 'versioning.diffRemoved' | translate }} ({{ removedElements.length }})
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-list>
+        <mat-list-item *ngFor="let el of removedElements">
+          <span matListItemTitle>{{ el.key }}</span>
+          <span matListItemLine>{{ el.type }}</span>
+        </mat-list-item>
+      </mat-list>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="diff-card" *ngIf="modifiedElements.length > 0">
+    <mat-card-header>
+      <mat-card-title class="modified-title">
+        <mat-icon color="accent">edit</mat-icon>
+        {{ 'versioning.diffModified' | translate }} ({{ modifiedElements.length }})
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-list>
+        <mat-list-item *ngFor="let el of modifiedElements">
+          <span matListItemTitle>{{ el.key }}</span>
+          <span matListItemLine>
+            <span *ngFor="let change of el.changes">
+              {{ change.property }}: {{ change.from }} → {{ change.to }};
+            </span>
+          </span>
+        </mat-list-item>
+      </mat-list>
+    </mat-card-content>
+  </mat-card>
+
+  <div *ngIf="addedElements.length === 0 && removedElements.length === 0 && modifiedElements.length === 0" class="no-changes">
+    <p>{{ 'versioning.noDiff' | translate }}</p>
+  </div>
+</div>

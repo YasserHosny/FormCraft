@@ -19,6 +19,9 @@
       <button mat-button [routerLink]="['/designer', template.id]">
         {{ 'designer.title' | translate }}
       </button>
+      <button mat-icon-button (click)="cloneTemplate(template)" [matTooltip]="'templates.clone' | translate">
+        <mat-icon>content_copy</mat-icon>
+      </button>
       <ng-container *ngIf="template.status === 'draft'">
         <button mat-button color="accent" (click)="publish(template)">
           {{ 'templates.publish' | translate }}

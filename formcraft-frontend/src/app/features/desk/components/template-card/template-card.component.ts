@@ -28,6 +28,10 @@ import { TemplateCard } from '../../services/desk.service';
         </button>
       </mat-card-header>
       <mat-card-content>
+        <div class="deprecated-warning" *ngIf="template?.is_deprecated">
+          <mat-icon color="warn">warning</mat-icon>
+          <span>A newer version is available</span>
+        </div>
         <p class="template-card__description" *ngIf="template?.description">
           {{ template?.description }}
         </p>
@@ -84,6 +88,17 @@ import { TemplateCard } from '../../services/desk.service';
       padding: 2px 8px;
       border-radius: 12px;
       background: rgba(0, 0, 0, 0.06);
+    }
+    .deprecated-warning {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 10px;
+      margin-bottom: 6px;
+      background: #fff3e0;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #e65100;
     }
     :host-context([dir='rtl']) .template-card__version {
       margin-left: 0;

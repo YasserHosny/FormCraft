@@ -51,10 +51,25 @@
     },
     "statuses": {
       "draft": "Draft",
-      "published": "Published"
+      "submitted_for_review": "Submitted for Review",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "published": "Published",
+      "archived": "Archived",
+      "deprecated": "Deprecated"
     },
     "publish": "Publish",
-    "newVersion": "Create New Version"
+    "newVersion": "Create New Version",
+    "submitForReview": "Submit for Review",
+    "clone": "Clone",
+    "cloneName": "{{name}} (Copy)",
+    "cloneConfirmTitle": "Clone Template",
+    "cloneConfirmMessage": "Creates an independent copy with no version link to the original.",
+    "versionHistory": "Version History",
+    "compareVersions": "Compare",
+    "noVersions": "No other versions found",
+    "elementCount": "{{count}} elements",
+    "pageCount": "{{count}} pages"
   },
   "designer": {
     "title": "Design Studio",
@@ -232,5 +247,46 @@
   "notifications": {
     "badge_title": "You have unread replies",
     "mark_read": "Mark as read"
+  },
+  "versioning": {
+    "statusBadge": {
+      "draft": "Draft",
+      "submitted_for_review": "Under Review",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "published": "Published",
+      "archived": "Archived",
+      "deprecated": "Deprecated"
+    },
+    "transitionConfirm": "Are you sure you want to {{action}} this template?",
+    "transitionSuccess": "Template status updated to {{status}}",
+    "transitionError": "Failed to update template status",
+    "immutableError": "This template cannot be edited in its current status. Create a new version to make changes.",
+    "createVersion": "Create New Version",
+    "viewHistory": "View History",
+    "diffSummary": "{{added}} added, {{removed}} removed, {{modified}} modified",
+    "diffAdded": "Added",
+    "diffRemoved": "Removed",
+    "diffModified": "Modified",
+    "noDiff": "No changes between versions",
+    "compareWith": "Compare with"
+  },
+  "review": {
+    "title": "Review Queue",
+    "emptyState": "No templates pending review",
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectComment": "Rejection reason",
+    "rejectCommentRequired": "Please provide a reason for rejection",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "pendingReviews": "{{count}} pending review",
+    "submittedBy": "Submitted by",
+    "submittedAt": "Submitted on",
+    "noReviewsYet": "No reviews yet"
+  },
+  "desk": {
+    "deprecatedWarning": "A newer version is available",
+    "archivedError": "This template is no longer available"
   }
 }

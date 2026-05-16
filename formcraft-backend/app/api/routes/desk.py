@@ -27,13 +27,20 @@ async def get_template_for_fill(
     service = TemplateService(client)
     template = await service.get_template(template_id)
 
-    if template.get("status") != "published":
+    if template.get("status") == "archived":
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE,
+            detail="This template is no longer available",
+        )
+
+    if template.get("status") not in ("published", "deprecated"):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Template not found or not published",
         )
 
-    return template
+    result = {**template, "is_deprecated": template.get("status") == "deprecated"}
+    return result
 
 
 @router.get("/dashboard", response_model=DashboardResponse)

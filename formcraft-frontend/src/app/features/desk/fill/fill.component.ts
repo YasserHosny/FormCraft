@@ -20,6 +20,7 @@ import { HistoryService } from '../services/history.service';
 })
 export class FillComponent implements OnInit, OnDestroy {
   template: FillTemplate | null = null;
+  isDeprecated = false;
   form!: FormGroup;
   loading = true;
   error = false;
@@ -66,6 +67,7 @@ export class FillComponent implements OnInit, OnDestroy {
       next: (tmpl) => {
         this.template = tmpl;
         this.templateVersion = tmpl.version;
+        this.isDeprecated = tmpl.is_deprecated || false;
 
         this.validationService.loadValidators(tmpl.country).pipe(takeUntil(this.destroy$)).subscribe(() => {
           this.buildForm(tmpl);
