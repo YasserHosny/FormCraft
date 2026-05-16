@@ -46,8 +46,8 @@ export class HistoryComponent implements OnInit, OnDestroy {
     if (this.search) params.search = this.search;
     if (this.selectedTemplate) params.template_id = this.selectedTemplate;
     if (this.selectedStatus) params.status = this.selectedStatus;
-    if (this.dateFrom) params.date_from = this.dateFrom;
-    if (this.dateTo) params.date_to = this.dateTo;
+    if (this.dateFrom) params.date_from = this.formatDateForApi(this.dateFrom);
+    if (this.dateTo) params.date_to = this.formatDateForApi(this.dateTo);
 
     this.historyService.getSubmissions(params).pipe(takeUntil(this.destroy$)).subscribe({
       next: (response) => {
@@ -83,7 +83,9 @@ export class HistoryComponent implements OnInit, OnDestroy {
   }
 
   onView(submission: SubmissionListItem): void {
-    this.router.navigate(['/desk/history', submission.id]);
+    // TODO: Implement submission detail view when submission detail module is available
+    console.log('View submission details:', submission.id);
+    // this.router.navigate(['/desk/history', submission.id]);
   }
 
   getStatusClass(status: string): string {
@@ -92,6 +94,13 @@ export class HistoryComponent implements OnInit, OnDestroy {
       case 'submitted': return 'status-submitted';
       default: return '';
     }
+  }
+
+  private formatDateForApi(date: Date | string): string {
+    if (date instanceof Date) {
+      return date.toISOString().split('T')[0]; // YYYY-MM-DD
+    }
+    return date; // Assume already in correct format if string
   }
 
   ngOnDestroy(): void {

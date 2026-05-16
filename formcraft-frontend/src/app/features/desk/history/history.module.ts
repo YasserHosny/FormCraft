@@ -17,7 +17,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { HistoryComponent } from './history.component';
-import { HistoryService } from '../services/history.service';
 
 const routes: Routes = [
   { path: '', component: HistoryComponent },
@@ -43,6 +42,6 @@ const routes: Routes = [
     MatTooltipModule,
     MatProgressSpinnerModule,
   ],
-  providers: [HistoryService],
+  providers: [],
 })
 export class HistoryModule {}
