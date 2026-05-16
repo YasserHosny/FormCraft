@@ -9,16 +9,21 @@ from supabase import Client
 from app.core.audit import AuditLogger
 from app.models.submission import Submission
 from app.services.validators.registry import ValidatorRegistry
-from app.services.validators.egypt import EgyptValidator
-from app.services.validators.saudi import SaudiValidator
-from app.services.validators.ufae import UAEValidator
+from app.services.validators.egypt import EgyptNationalIdValidator, EgyptIbanValidator, EgyptPhoneValidator
+from app.services.validators.saudi import SaudiNationalIdValidator, SaudiIbanValidator, SaudiVatValidator
+from app.services.validators.uae import UaeIbanValidator, UaeTrnValidator
 
 logger = logging.getLogger(__name__)
 
 _validator_registry = ValidatorRegistry()
-_validator_registry.register(EgyptValidator())
-_validator_registry.register(SaudiValidator())
-_validator_registry.register(UAEValidator())
+_validator_registry.register(EgyptNationalIdValidator())
+_validator_registry.register(EgyptIbanValidator())
+_validator_registry.register(EgyptPhoneValidator())
+_validator_registry.register(SaudiNationalIdValidator())
+_validator_registry.register(SaudiIbanValidator())
+_validator_registry.register(SaudiVatValidator())
+_validator_registry.register(UaeIbanValidator())
+_validator_registry.register(UaeTrnValidator())
 
 
 class SubmissionService:
@@ -272,6 +277,7 @@ class SubmissionService:
             self.client.table("submissions")
             .select("*, templates(name), profiles!submissions_operator_id_fkey(full_name)")
             .eq("id", str(submission_id))
+            .eq("org_id", str(org_id))
             .single()
             .execute()
         )

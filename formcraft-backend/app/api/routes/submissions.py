@@ -36,7 +36,7 @@ async def create_submission(
         template_version=body.template_version,
         field_values=body.field_values,
         operator_id=current_user.id,
-        org_id=current_user.id,
+        org_id=current_user.org_id,
     )
 
     audit = AuditLogger(client)
