@@ -1,0 +1,106 @@
+<div class="dashboard-container">
+  <!-- Search & Filters -->
+  <div class="dashboard-toolbar">
+    <mat-form-field appearance="outline" class="dashboard-search">
+      <mat-label>{{ 'desk.search_placeholder' | translate }}</mat-label>
+      <input matInput [(ngModel)]="search" (ngModelChange)="onSearch()" />
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="dashboard-filter">
+      <mat-label>{{ 'desk.filter_category' | translate }}</mat-label>
+      <mat-select [(ngModel)]="category" (ngModelChange)="onSearch()">
+        <mat-option value="">—</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="dashboard-filter">
+      <mat-label>{{ 'desk.filter_country' | translate }}</mat-label>
+      <mat-select [(ngModel)]="country" (ngModelChange)="onSearch()">
+        <mat-option value="">—</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="dashboard-filter">
+      <mat-label>{{ 'desk.filter_language' | translate }}</mat-label>
+      <mat-select [(ngModel)]="language" (ngModelChange)="onSearch()">
+        <mat-option value="">—</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-button (click)="onClearFilters()">
+      {{ 'desk.clear_filters' | translate }}
+    </button>
+
+    <a mat-stroked-button routerLink="/desk/history" class="history-link">
+      <mat-icon>history</mat-icon>
+      {{ 'history.title' | translate }}
+    </a>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="dashboard-loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="dashboard-error">
+    <p>{{ 'errors.generic' | translate }}</p>
+    <button mat-raised-button color="primary" (click)="retry()">
+      {{ 'common.retry' | translate }}
+    </button>
+  </div>
+
+  <ng-container *ngIf="!loading && !error && dashboard">
+    <!-- Pinned Section -->
+    <fc-pinned-templates
+      *ngIf="dashboard.pinned.length > 0"
+      [pinned]="dashboard.pinned"
+      (pinToggle)="onPinToggle($event)">
+    </fc-pinned-templates>
+
+    <!-- Recent Section -->
+    <fc-recent-templates
+      *ngIf="dashboard.recent.length > 0"
+      [recent]="dashboard.recent">
+    </fc-recent-templates>
+
+    <!-- Drafts Section -->
+    <fc-draft-list
+      *ngIf="dashboard.drafts.length > 0"
+      [drafts]="dashboard.drafts">
+    </fc-draft-list>
+
+    <!-- Notifications Section -->
+    <fc-version-notifications
+      *ngIf="dashboard.notifications.length > 0"
+      [notifications]="dashboard.notifications"
+      (dismiss)="onDismissNotification($event)">
+    </fc-version-notifications>
+
+    <!-- All Forms Grid -->
+    <h2 class="dashboard-section-title">{{ 'desk.section_all' | translate }}</h2>
+
+    <div *ngIf="dashboard.templates.items.length === 0" class="dashboard-empty">
+      <p>{{ 'desk.empty_no_templates' | translate }}</p>
+    </div>
+
+    <div *ngIf="dashboard.templates.items.length > 0" class="dashboard-grid">
+      <fc-template-card
+        *ngFor="let tmpl of dashboard.templates.items"
+        [template]="tmpl"
+        (pinToggle)="onPinToggle($event)"
+        (cardClick)="onCardClick($event)">
+      </fc-template-card>
+    </div>
+
+    <mat-paginator
+      *ngIf="dashboard.templates.total > dashboard.templates.limit"
+      [length]="dashboard.templates.total"
+      [pageSize]="dashboard.templates.limit"
+      [pageIndex]="dashboard.templates.page - 1"
+      (page)="onPageChange($event)"
+      color="primary">
+    </mat-paginator>
+  </ng-container>
+</div>

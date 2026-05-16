@@ -1,0 +1,64 @@
+<div class="fill-container">
+  <!-- Loading -->
+  <div class="fill-loading" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- Error -->
+  <div class="fill-error" *ngIf="error && !loading">
+    <p>{{ 'errors.generic' | translate }}</p>
+    <div class="fill-error-actions">
+      <button mat-raised-button color="primary" routerLink="/desk">{{ 'common.back' | translate }}</button>
+      <button mat-stroked-button (click)="retryLoad()">{{ 'common.retry' | translate }}</button>
+    </div>
+  </div>
+
+  <!-- Form Content -->
+  <ng-container *ngIf="!loading && !error && template">
+    <!-- Toolbar -->
+    <fc-form-toolbar
+      [formValid]="formValid"
+      [isDirty]="isDirty"
+      [submitting]="submitting"
+      [savingDraft]="savingDraft"
+      (print)="onPrint()"
+      (printNext)="onPrintAndNext()"
+      (saveDraft)="onSaveDraft()"
+      (clearAll)="onClearAll()"
+      (cancel)="onCancel()">
+    </fc-form-toolbar>
+
+    <!-- Error Summary -->
+    <fc-error-summary [form]="form" *ngIf="form"></fc-error-summary>
+
+    <!-- Clone Info Banner -->
+    <div class="clone-banner" *ngIf="cloneInfo">
+      <mat-icon>info</mat-icon>
+      <span>{{ 'history.clone_notice' | translate:{ref: cloneInfo.ref} }}</span>
+    </div>
+
+    <div class="completion-bar" *ngIf="completionPercent > 0 && completionPercent < 100">
+      {{ 'filler.completion' | translate:{percent: completionPercent} }}
+    </div>
+
+    <form [formGroup]="form" class="fill-form">
+      <!-- No fillable fields message -->
+      <div *ngIf="getAllElements().length === 0" class="fill-empty">
+        <p>{{ 'filler.no_fillable_fields' | translate }}</p>
+      </div>
+
+      <!-- Pages -->
+      <div *ngFor="let page of template.pages; let i = index" class="fill-page">
+        <div *ngIf="i > 0" class="fill-page-divider"></div>
+
+        <fc-field-renderer
+          *ngFor="let elem of getElementsForPage(i)"
+          [element]="elem"
+          [control]="getControl(elem.key)"
+          [label]="getLabel(elem)"
+          [country]="template?.country || ''">
+        </fc-field-renderer>
+      </div>
+    </form>
+  </ng-container>
+</div>
