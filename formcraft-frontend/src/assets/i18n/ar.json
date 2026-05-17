@@ -521,5 +521,41 @@
     "no_entries_available": "لا توجد سجلات متاحة",
     "search_placeholder": "اكتب للبحث...",
     "no_results": "لم يتم العثور على نتائج"
+  },
+  "signature": {
+    "title": "إعدادات التوقيع",
+    "pen_color": "لون القلم",
+    "pen_width": "سمك القلم",
+    "black": "أسود",
+    "blue": "أزرق",
+    "red": "أحمر",
+    "require_timestamp": "إظهار الطابع الزمني",
+    "require_label": "إظهار التسمية",
+    "clear": "مسح التوقيع",
+    "undo": "تراجع",
+    "validation_error": "التوقيع مطلوب"
+  },
+  "table": {
+    "title": "إعدادات الجدول",
+    "show_total_row": "إظهار صف المجموع",
+    "default_rows": "عدد الصفوف الافتراضي",
+    "columns": "الأعمدة",
+    "column_key": "المفتاح",
+    "column_label_en": "التسمية (EN)",
+    "column_label_ar": "التسمية (AR)",
+    "column_type": "النوع",
+    "type_text": "نص",
+    "type_number": "رقم",
+    "type_date": "تاريخ",
+    "sum": "مجموع",
+    "add_column": "إضافة عمود",
+    "add_row": "إضافة صف",
+    "validation_error": "يرجى ملء جميع الخلايا المطلوبة"
+  },
+  "designer": {
+    "elements": {
+      "signature": "توقيع",
+      "table": "جدول"
+    }
   }
 }

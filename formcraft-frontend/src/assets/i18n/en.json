@@ -527,5 +527,41 @@
     "no_entries_available": "No entries available",
     "search_placeholder": "Type to search...",
     "no_results": "No results found"
+  },
+  "signature": {
+    "title": "Signature Settings",
+    "pen_color": "Pen Color",
+    "pen_width": "Pen Width",
+    "black": "Black",
+    "blue": "Blue",
+    "red": "Red",
+    "require_timestamp": "Show Timestamp",
+    "require_label": "Show Label",
+    "clear": "Clear Signature",
+    "undo": "Undo",
+    "validation_error": "Signature is required"
+  },
+  "table": {
+    "title": "Table Settings",
+    "show_total_row": "Show Total Row",
+    "default_rows": "Default Rows",
+    "columns": "Columns",
+    "column_key": "Key",
+    "column_label_en": "Label (EN)",
+    "column_label_ar": "Label (AR)",
+    "column_type": "Type",
+    "type_text": "Text",
+    "type_number": "Number",
+    "type_date": "Date",
+    "sum": "Sum",
+    "add_column": "Add Column",
+    "add_row": "Add Row",
+    "validation_error": "Please fill in all required cells"
+  },
+  "designer": {
+    "elements": {
+      "signature": "Signature",
+      "table": "Table"
+    }
   }
 }
