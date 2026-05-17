@@ -182,9 +182,85 @@ class SubmissionService:
                         "message": result.error or f"Field '{key}' failed country-specific validation",
                     })
 
+            if elem_type == "signature" and value is not None:
+                errors.extend(self._validate_signature(key, value, required))
+
+            if elem_type == "table" and value is not None:
+                errors.extend(self._validate_table(key, value, elem))
+
         return errors
 
     def _generate_reference_number(self, org_id: UUID) -> str:
+        try:
+            result = self.client.rpc(
+                "generate_submission_ref", {"p_org_id": str(org_id)}
+            ).execute()
+            if result.data:
+                return result.data
+        except Exception:
+            pass
+
+        now = datetime.now(timezone.utc)
+        month_str = now.strftime("%Y-%m")
+        return f"FC-{month_str}-{now.strftime('%H%M%S')}"
+
+    def _validate_signature(self, key: str, value: dict | str, required: bool) -> list[dict]:
+        errors = []
+        if isinstance(value, dict):
+            sig_type = value.get("type", "inline")
+            if sig_type == "inline":
+                data = value.get("data", "")
+                if not data or not data.startswith("data:image/png;base64,"):
+                    errors.append({"field": key, "code": "invalid_signature", "message": f"Field '{key}' must be a valid PNG image"})
+                elif len(data) > 500000:
+                    errors.append({"field": key, "code": "signature_too_large", "message": f"Field '{key}' signature data exceeds 500KB limit"})
+            elif sig_type == "storage":
+                path = value.get("path", "")
+                if not path:
+                    errors.append({"field": key, "code": "invalid_signature", "message": f"Field '{key}' storage path missing"})
+        elif isinstance(value, str):
+            if not value.startswith("data:image/png;base64,"):
+                errors.append({"field": key, "code": "invalid_signature", "message": f"Field '{key}' must be a valid PNG image"})
+        elif required:
+            errors.append({"field": key, "code": "required", "message": f"Signature '{key}' is required"})
+        return errors
+
+    def _validate_table(self, key: str, value: list, elem: dict) -> list[dict]:
+        errors = []
+        if not isinstance(value, list):
+            errors.append({"field": key, "code": "invalid_table", "message": f"Field '{key}' must be an array of rows"})
+            return errors
+
+        props = elem.get("properties", {})
+        min_rows = props.get("min_rows", 0)
+        required = elem.get("required", False)
+
+        if required and len(value) < min_rows:
+            errors.append({"field": key, "code": "min_rows", "message": f"Field '{key}' requires at least {min_rows} rows"})
+
+        columns = props.get("columns", [])
+        col_types = {c["key"]: c.get("type", "text") for c in columns if "key" in c}
+        required_cols = [c["key"] for c in columns if c.get("required", False) and "key" in c]
+
+        for row_idx, row in enumerate(value):
+            if not isinstance(row, dict):
+                errors.append({"field": f"{key}[{row_idx}]", "code": "invalid_row", "message": f"Row {row_idx + 1} must be an object"})
+                continue
+            for col_key in required_cols:
+                if not row.get(col_key):
+                    errors.append({"field": f"{key}[{row_idx}].{col_key}", "code": "required", "message": f"Column '{col_key}' is required in row {row_idx + 1}"})
+            for col_key, col_val in row.items():
+                col_type = col_types.get(col_key, "text")
+                if col_type == "number" and col_val is not None and col_val != "":
+                    try:
+                        float(col_val)
+                    except (ValueError, TypeError):
+                        errors.append({"field": f"{key}[{row_idx}].{col_key}", "code": "invalid_type", "message": f"Column '{col_key}' must be numeric in row {row_idx + 1}"})
+                elif col_type == "date" and col_val is not None and col_val != "":
+                    import re as _re
+                    if not _re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(col_val)):
+                        errors.append({"field": f"{key}[{row_idx}].{col_key}", "code": "invalid_type", "message": f"Column '{col_key}' must be a date (YYYY-MM-DD) in row {row_idx + 1}"})
+        return errors
         try:
             result = self.client.rpc(
                 "generate_submission_ref", {"p_org_id": str(org_id)}

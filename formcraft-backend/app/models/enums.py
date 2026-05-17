@@ -30,6 +30,8 @@ class ElementType(StrEnum):
     QR = "qr"
     BARCODE = "barcode"
     TAFQEET = "tafqeet"
+    SIGNATURE = "signature"
+    TABLE = "table"
 
 
 class Country(StrEnum):

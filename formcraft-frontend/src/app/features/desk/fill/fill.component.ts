@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy, ViewChild, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Subject, takeUntil, debounceTime } from 'rxjs';
+import { Subject, takeUntil, debounceTime, forkJoin, of, switchMap } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { FormFillerService, FillTemplate, TemplateElement } from '../services/form-filler.service';
 import { ValidationService } from '../services/validation.service';
 import { FillerTafqeetService } from '../services/filler-tafqeet.service';
@@ -297,7 +298,10 @@ export class FillComponent implements OnInit, OnDestroy {
       this.template!.id,
       this.template!.version,
       fieldValues,
-    ).pipe(takeUntil(this.destroy$)).subscribe({
+    ).pipe(
+      switchMap((response) => this.resolveSignatureUploads(response.id, fieldValues).pipe(map(() => response))),
+      takeUntil(this.destroy$),
+    ).subscribe({
       next: (response) => {
         this.submitting = false;
         this.deleteDraftIfLoaded();
@@ -326,7 +330,10 @@ export class FillComponent implements OnInit, OnDestroy {
       this.template!.id,
       this.template!.version,
       fieldValues,
-    ).pipe(takeUntil(this.destroy$)).subscribe({
+    ).pipe(
+      switchMap((response) => this.resolveSignatureUploads(response.id, fieldValues).pipe(map(() => response))),
+      takeUntil(this.destroy$),
+    ).subscribe({
       next: (response) => {
         this.submitting = false;
         this.deleteDraftIfLoaded();
@@ -384,6 +391,25 @@ export class FillComponent implements OnInit, OnDestroy {
         },
       });
     }
+  }
+
+  private resolveSignatureUploads(submissionId: string, fieldValues: Record<string, any>) {
+    const uploads: Record<string, ReturnType<typeof this.submissionService.uploadSignature>> = {};
+    for (const [key, val] of Object.entries(fieldValues)) {
+      if (val && typeof val === 'object' && val.__pending_upload && val.dataUrl) {
+        uploads[key] = this.submissionService.uploadSignature(submissionId, key, val.dataUrl);
+      }
+    }
+    const keys = Object.keys(uploads);
+    if (keys.length === 0) return of(null);
+    return forkJoin(Object.values(uploads)).pipe(
+      map((results) => {
+        results.forEach((res, i) => {
+          fieldValues[keys[i]] = { type: res.type, path: res.path };
+        });
+        return null;
+      }),
+    );
   }
 
   openPrintDialog(fieldValues: Record<string, any>): void {

@@ -8,6 +8,8 @@ import { StatusBadgeComponent } from './components/status-badge/status-badge.com
 import { VersionHistoryComponent } from './version-history/version-history.component';
 import { VersionDiffComponent } from './version-diff/version-diff.component';
 import { FeedbackPanelComponent } from './feedback-panel/feedback-panel.component';
+import { SignaturePropertyPanelComponent } from './components/signature-property-panel/signature-property-panel.component';
+import { TableConfigPanelComponent } from './components/table-config/table-config.component';
 
 const routes: Routes = [
   { path: ':templateId', component: DesignerPageComponent },
@@ -22,6 +24,8 @@ const routes: Routes = [
     VersionHistoryComponent,
     VersionDiffComponent,
     FeedbackPanelComponent,
+    SignaturePropertyPanelComponent,
+    TableConfigPanelComponent,
   ],
 })
 export class DesignerModule {}

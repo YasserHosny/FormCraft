@@ -83,7 +83,10 @@
       "checkbox": "مربع اختيار",
       "image": "صورة",
       "qr": "رمز QR",
-      "barcode": "باركود"
+      "barcode": "باركود",
+      "tafqeet": "المبلغ كتابةً",
+      "signature": "توقيع",
+      "table": "جدول"
     },
     "properties": {
       "title": "الخصائص",
@@ -321,5 +324,37 @@
       "status": "الحالة",
       "template": "القالب"
     }
+  },
+  "signature": {
+    "title": "توقيع",
+    "draw": "رسم التوقيع",
+    "clear": "مسح",
+    "confirm": "تأكيد",
+    "required": "التوقيع مطلوب",
+    "placeholder": "وقّع هنا",
+    "penColor": "لون القلم"
+  },
+  "table": {
+    "title": "جدول",
+    "addColumn": "إضافة عمود",
+    "removeColumn": "حذف عمود",
+    "addRow": "إضافة صف",
+    "removeRow": "حذف صف",
+    "headerAr": "رأس العمود (عربي)",
+    "headerEn": "رأس العمود (إنجليزي)",
+    "columnKey": "مفتاح العمود",
+    "columnType": "نوع العمود",
+    "columnWidth": "العرض (مم)",
+    "autoSum": "جمع تلقائي",
+    "showHeader": "إظهار الرأس",
+    "showBorders": "إظهار الحدود",
+    "showFooter": "إظهار التذييل",
+    "minRows": "الحد الأدنى للصفوف",
+    "maxRows": "الحد الأقصى للصفوف",
+    "noColumns": "أضف عموداً واحداً على الأقل",
+    "duplicateKey": "مفاتيح الأعمدة يجب أن تكون فريدة",
+    "invalidColumnType": "نوع العمود غير صالح",
+    "requiredRows": "مطلوب {{min}} صفوف كحد أدنى",
+    "cellInvalid": "قيمة غير صالحة"
   }
 }

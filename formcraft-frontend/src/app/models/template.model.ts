@@ -1,5 +1,5 @@
 export type TemplateStatus = 'draft' | 'submitted_for_review' | 'approved' | 'rejected' | 'published' | 'archived' | 'deprecated';
-export type ElementType = 'text' | 'number' | 'date' | 'currency' | 'dropdown' | 'radio' | 'checkbox' | 'image' | 'qr' | 'barcode' | 'tafqeet';
+export type ElementType = 'text' | 'number' | 'date' | 'currency' | 'dropdown' | 'radio' | 'checkbox' | 'image' | 'qr' | 'barcode' | 'tafqeet' | 'signature' | 'table';
 export type Country = 'EG' | 'SA' | 'AE';
 export type Language = 'ar' | 'en';
 export type Direction = 'rtl' | 'ltr' | 'auto';

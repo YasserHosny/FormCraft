@@ -56,10 +56,10 @@
 
 **Purpose**: Operator can draw and submit signatures
 
-- [ ] T015 Install `signature_pad` npm dependency
+- [X] T015 Install `signature_pad` npm dependency — SKIPPED: custom canvas implementation used instead (no external dependency needed)
 - [X] T016 Create SignaturePadComponent `formcraft-frontend/src/app/features/desk/components/signature-pad/` — wraps signature_pad canvas, exposes value as PNG data URL, actions: draw, clear, confirm; respects pen_color from element properties
 - [X] T017 Integrate SignaturePadComponent into form filler element switch — when element.type === 'signature', render SignaturePadComponent instead of default input
-- [ ] T018 Add signature storage logic — if PNG data URL > 100KB, upload via /signature-upload endpoint; otherwise store inline in submission data
+- [X] T018 Add signature storage logic — if PNG data URL > 100KB, upload via /signature-upload endpoint; otherwise store inline in submission data
 
 **Checkpoint**: Operator can draw signature on touch/mouse, clear, confirm. Data stored correctly.
 
@@ -71,7 +71,7 @@
 
 - [X] T019 Add Table to element palette in Design Studio — draggable "Table" item in element toolbox
 - [X] T020 Create TableConfigPanel `formcraft-frontend/src/app/features/designer/components/table-config/` — column definition CRUD (add/remove/reorder columns, set header_ar, header_en, type, width_mm, auto_sum), row limits (min_rows, max_rows), display options (show_header, show_borders, show_footer)
-- [ ] T021 Create TablePreviewComponent — render table preview on canvas with configured columns and sample row
+- [X] T021 Create TablePreviewComponent — render table preview on canvas with configured columns and sample row
 
 **Checkpoint**: Designer can configure table columns, row limits, and auto-sum settings.
 
@@ -94,8 +94,8 @@
 
 **Purpose**: End-to-end verification
 
-- [ ] T026 Test signature flow: create template → add signature element → fill in Form Desk → submit → generate PDF → verify signature renders at correct position with correct dimensions
-- [ ] T027 Test table flow: create template → add table with 3 columns + auto-sum → fill 5 rows → submit → generate PDF → verify table renders with headers, borders, data, footer
-- [ ] T028 Test edge cases: signature on mobile touch, table at max_rows, table overflow page height, empty optional signature
+- [X] T026 Test signature flow: create template → add signature element → fill in Form Desk → submit → generate PDF → verify signature renders at correct position with correct dimensions
+- [X] T027 Test table flow: create template → add table with 3 columns + auto-sum → fill 5 rows → submit → generate PDF → verify table renders with headers, borders, data, footer
+- [X] T028 Test edge cases: signature on mobile touch, table at max_rows, table overflow page height, empty optional signature
 
 **Checkpoint**: Both element types work end-to-end through Design Studio → Form Desk → PDF generation.

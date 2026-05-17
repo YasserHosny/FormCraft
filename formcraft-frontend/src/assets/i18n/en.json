@@ -83,7 +83,10 @@
       "checkbox": "Checkbox",
       "image": "Image",
       "qr": "QR Code",
-      "barcode": "Barcode"
+      "barcode": "Barcode",
+      "tafqeet": "Amount in Words",
+      "signature": "Signature",
+      "table": "Table"
     },
     "properties": {
       "title": "Properties",
@@ -321,5 +324,37 @@
       "status": "Status",
       "template": "Template"
     }
+  },
+  "signature": {
+    "title": "Signature",
+    "draw": "Draw Signature",
+    "clear": "Clear",
+    "confirm": "Confirm",
+    "required": "Signature is required",
+    "placeholder": "Sign here",
+    "penColor": "Pen Color"
+  },
+  "table": {
+    "title": "Table",
+    "addColumn": "Add Column",
+    "removeColumn": "Remove Column",
+    "addRow": "Add Row",
+    "removeRow": "Remove Row",
+    "headerAr": "Header (Arabic)",
+    "headerEn": "Header (English)",
+    "columnKey": "Column Key",
+    "columnType": "Column Type",
+    "columnWidth": "Width (mm)",
+    "autoSum": "Auto Sum",
+    "showHeader": "Show Header",
+    "showBorders": "Show Borders",
+    "showFooter": "Show Footer",
+    "minRows": "Min Rows",
+    "maxRows": "Max Rows",
+    "noColumns": "Add at least one column",
+    "duplicateKey": "Column keys must be unique",
+    "invalidColumnType": "Invalid column type",
+    "requiredRows": "Minimum {{min}} rows required",
+    "cellInvalid": "Invalid value"
   }
 }
