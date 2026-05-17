@@ -15,6 +15,8 @@ import { ValidationService } from '../../services/validation.service';
 import { SignaturePadComponent } from '../signature-pad/signature-pad.component';
 import { TableInputComponent } from '../table-input/table-input.component';
 import { BoundDropdownComponent } from '../bound-dropdown/bound-dropdown.component';
+import { SignaturePadComponent } from '../signature-pad/signature-pad.component';
+import { TableInputComponent } from '../table-input/table-input.component';
 
 @Component({
   selector: 'fc-field-renderer',
@@ -247,6 +249,17 @@ export class FieldRendererComponent {
       return this.element.formatting.options;
     }
     return [];
+  }
+
+  getTableColumns(): { key: string; label: string; type: string; sum_column: boolean }[] {
+    const fmt = this.element?.formatting as Record<string, unknown> | undefined;
+    if (!fmt || !Array.isArray(fmt['columns'])) return [];
+    return (fmt['columns'] as any[]).map((c: any) => ({
+      key: c.key || '',
+      label: c.label_ar || c.label_en || c.key || '',
+      type: c.type || 'text',
+      sum_column: !!c.sum_column,
+    }));
   }
 
   getErrorMessage(): string {
