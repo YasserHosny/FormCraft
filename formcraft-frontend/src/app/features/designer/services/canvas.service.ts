@@ -614,6 +614,20 @@ export class CanvasService implements OnDestroy {
     });
     group.add(typeBadge);
 
+    // Reference binding indicator for dropdown elements
+    const formatting = data['formatting'] as Record<string, unknown> | undefined;
+    if (data['type'] === 'dropdown' && formatting?.['ref_binding']) {
+      const linkedIcon = new Konva.Text({
+        name: 'ref-link',
+        text: '🔗',
+        x: w - 18,
+        y: 2,
+        fontSize: 10,
+        listening: false,
+      });
+      group.add(linkedIcon);
+    }
+
     const element: CanvasElement = {
       id: (data['id'] as string) || `elem_${Date.now()}`,
       konvaNode: group,

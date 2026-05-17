@@ -62,7 +62,8 @@
           [element]="elem"
           [control]="getControl(elem.key)"
           [label]="getLabel(elem)"
-          [country]="template?.country || ''">
+          [country]="template?.country || ''"
+          (entrySelected)="onEntrySelected($event)">
         </fc-field-renderer>
       </div>
     </form>
