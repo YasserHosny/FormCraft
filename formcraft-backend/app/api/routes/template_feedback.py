@@ -75,6 +75,7 @@ async def update_feedback_status(
     client = get_supabase_client()
     service = TemplateFeedbackService(client)
     return service.update_feedback_status(
+        template_id=template_id,
         feedback_id=feedback_id,
         new_status=body.status,
         user_id=current_user.id,

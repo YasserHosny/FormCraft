@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 
 
 class TemplateFeedbackSubmitRequest(BaseModel):
-    template_id: UUID
     page_number: int | None = None
     element_key: str | None = None
     category: str

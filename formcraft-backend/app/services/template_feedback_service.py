@@ -82,6 +82,7 @@ class TemplateFeedbackService:
 
     def update_feedback_status(
         self,
+        template_id: UUID,
         feedback_id: UUID,
         new_status: str,
         user_id: UUID,
@@ -101,6 +102,7 @@ class TemplateFeedbackService:
             self.client.table("template_feedback")
             .update(update)
             .eq("id", str(feedback_id))
+            .eq("template_id", str(template_id))
             .execute()
         )
         if not result.data:
