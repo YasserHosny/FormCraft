@@ -9,17 +9,22 @@ class ElementHTMLRenderer(ABC):
         """Return an HTML fragment for the element, absolutely positioned."""
         ...
 
-    def _base_style(self, element: dict) -> str:
-        """Common CSS for absolute positioning in mm."""
+    def _base_style(
+        self, element: dict, x_offset: float = 0.0, y_offset: float = 0.0
+    ) -> str:
+        """Common CSS for absolute positioning in mm with optional offset."""
         direction = element.get("direction", "auto")
         text_align = "right" if direction == "rtl" else "left"
         if direction == "auto":
-            text_align = "right"  # Arabic-first default
+            text_align = "right"
+
+        left = element["x_mm"] + x_offset
+        top = element["y_mm"] + y_offset
 
         return (
             f"position: absolute; "
-            f"left: {element['x_mm']}mm; "
-            f"top: {element['y_mm']}mm; "
+            f"left: {left}mm; "
+            f"top: {top}mm; "
             f"width: {element['width_mm']}mm; "
             f"height: {element['height_mm']}mm; "
             f"direction: {direction}; "

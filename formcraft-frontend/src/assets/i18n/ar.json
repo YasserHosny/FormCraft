@@ -402,5 +402,37 @@
     "title": "نص الإرشاد",
     "ar": "نص الإرشاد بالعربية",
     "en": "نص الإرشاد بالإنجليزية"
+  },
+  "print_settings": {
+    "title": "إعدادات الطباعة",
+    "mode": "وضع الطباعة",
+    "mode_full": "كامل (الصفحة كاملة)",
+    "mode_overlay": "تراكبي (البيانات فقط)",
+    "mode_both": "كلاهما (كامل + تراكبي)",
+    "include_in_overlay": "تضمين في التراكب",
+    "overlay_preview": "معاينة التراكب"
+  },
+  "printer_profiles": {
+    "title": "ملفات الطابعات",
+    "add": "إضافة ملف طابعة",
+    "edit": "تعديل الملف",
+    "name": "اسم الملف",
+    "description": "الوصف",
+    "x_offset": "إزاحة أفقية (مم)",
+    "y_offset": "إزاحة عمودية (مم)",
+    "is_default": "افتراضي",
+    "set_default": "تعيين كافتراضي",
+    "calibration_page": "صفحة المعايرة",
+    "no_profiles": "لا توجد ملفات طابعات مهيأة",
+    "delete_confirm": "هل تريد إلغاء تنشيط ملف الطابعة هذا؟"
+  },
+  "overlay": {
+    "mode_badge": "وضع التراكب",
+    "full_badge": "الوضع الكامل",
+    "download_full": "تحميل PDF كامل",
+    "download_overlay": "تحميل PDF تراكبي",
+    "select_printer": "اختر ملف الطابعة",
+    "print_dialog_title": "خيارات الطباعة",
+    "generate_pdf": "إنشاء PDF"
   }
 }

@@ -402,5 +402,43 @@
     "title": "Placeholder Text",
     "ar": "Arabic placeholder",
     "en": "English placeholder"
+  },
+  "print_settings": {
+    "title": "Print Settings",
+    "mode": "Print Mode",
+    "mode_full": "Full (complete page)",
+    "mode_overlay": "Overlay (data only)",
+    "mode_both": "Both (full + overlay)",
+    "include_in_overlay": "Include in overlay",
+    "overlay_preview": "Overlay Preview",
+    "overlay_hint": "Only elements marked 'include in overlay' will be printed on pre-printed paper.",
+    "both_hint": "Two PDFs will be generated: a full version and an overlay-only version."
+  },
+  "printer_profiles": {
+    "title": "Printer Profiles",
+    "add": "Add Printer Profile",
+    "edit": "Edit Profile",
+    "name": "Profile Name",
+    "description": "Description",
+    "offsets": "Offsets",
+    "x_offset": "X Offset (mm)",
+    "y_offset": "Y Offset (mm)",
+    "default": "Default",
+    "is_default": "Default",
+    "set_default": "Set as Default",
+    "calibration": "Print Calibration",
+    "calibration_page": "Calibration Page",
+    "delete": "Delete",
+    "no_profiles": "No printer profiles configured",
+    "delete_confirm": "Deactivate this printer profile?"
+  },
+  "overlay": {
+    "mode_badge": "Overlay Mode",
+    "full_badge": "Full Mode",
+    "download_full": "Download Full PDF",
+    "download_overlay": "Download Overlay PDF",
+    "select_printer": "Select Printer Profile",
+    "print_dialog_title": "Print Options",
+    "generate_pdf": "Generate PDF"
   }
 }
