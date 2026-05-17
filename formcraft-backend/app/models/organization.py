@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 from app.models.enums import Language, Role
 
-
 class Organization(BaseModel):
     id: UUID
     name_ar: str

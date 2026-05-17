@@ -189,6 +189,8 @@ class TemplateService:
         category: str | None = None,
         country: str | None = None,
         search: str | None = None,
+        department_id: str | None = None,
+        user_role: str | None = None,
     ) -> tuple[list[dict], int]:
         offset = (page - 1) * limit
         query = self.client.table("templates").select("*", count="exact")
@@ -201,6 +203,8 @@ class TemplateService:
             query = query.eq("country", country)
         if search:
             query = query.ilike("name", f"%{search}%")
+        if department_id and user_role not in ("admin", "branch_manager"):
+            query = query.or_(f"department_id.is.null,department_id.eq.{department_id}")
 
         result = (
             query.range(offset, offset + limit - 1)

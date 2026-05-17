@@ -6,6 +6,8 @@ import { RoleGuard } from '../../core/auth/role.guard';
 import { LoginComponent } from './login/login.component';
 import { ProfileComponent } from './profile/profile.component';
 import { RegisterComponent } from './register/register.component';
+import { InvitationAcceptComponent } from './invitation/invitation-accept.component';
+import { InvitationExpiredComponent } from './invitation/invitation-expired.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -25,6 +27,11 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [LoginComponent, ProfileComponent, RegisterComponent],
-  imports: [SharedModule, RouterModule.forChild(routes)],
+  imports: [
+    SharedModule,
+    RouterModule.forChild(routes),
+    InvitationAcceptComponent,
+    InvitationExpiredComponent,
+  ],
 })
 export class AuthModule {}

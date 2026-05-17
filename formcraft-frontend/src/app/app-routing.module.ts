@@ -3,8 +3,13 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { AuthGuard } from './core/auth/auth.guard';
 import { RoleGuard } from './core/auth/role.guard';
+import { InvitationAcceptComponent } from './features/auth/invitation/invitation-accept.component';
+import { InvitationExpiredComponent } from './features/auth/invitation/invitation-expired.component';
 
 const routes: Routes = [
+  // Public invitation routes (no guard)
+  { path: 'invite/expired', component: InvitationExpiredComponent },
+  { path: 'invite/:token', component: InvitationAcceptComponent },
   {
     path: 'auth',
     loadChildren: () =>

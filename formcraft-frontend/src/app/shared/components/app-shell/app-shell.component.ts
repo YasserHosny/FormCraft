@@ -5,12 +5,15 @@ import { AuthService, User } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { FeedbackRealtimeService } from '../../../features/feedback/services/feedback-realtime.service';
 import { MyFeedbackService } from '../../../features/my-feedback/services/my-feedback.service';
+import { OrgAdminService } from '../../../core/services/org-admin.service';
 
 @Component({
   selector: 'fc-app-shell',
   standalone: false,
   template: `
     <mat-toolbar color="primary" class="app-toolbar">
+      <!-- T046: Org logo in nav bar -->
+      <img *ngIf="orgLogoUrl" [src]="orgLogoUrl" alt="Org logo" class="org-nav-logo" />
       <span class="app-title" routerLink="/templates">FormCraft</span>
       <span class="spacer"></span>
 
@@ -18,13 +21,31 @@ import { MyFeedbackService } from '../../../features/my-feedback/services/my-fee
         <button mat-button routerLink="/templates">
           {{ 'templates.title' | translate }}
         </button>
-        <button
-          mat-button
-          routerLink="/auth/register"
-          *ngIf="user.role === 'admin'"
-        >
-          {{ 'auth.register' | translate }}
+        <button mat-button [matMenuTriggerFor]="adminMenu" *ngIf="user.role === 'admin'">
+          <mat-icon>admin_panel_settings</mat-icon>
         </button>
+        <mat-menu #adminMenu="matMenu">
+          <button mat-menu-item routerLink="/admin/settings">
+            <mat-icon>business</mat-icon>
+            {{ 'org.title' | translate }}
+          </button>
+          <button mat-menu-item routerLink="/admin/departments">
+            <mat-icon>account_tree</mat-icon>
+            {{ 'departments.title' | translate }}
+          </button>
+          <button mat-menu-item routerLink="/admin/users">
+            <mat-icon>group</mat-icon>
+            {{ 'user_management.title' | translate }}
+          </button>
+          <button mat-menu-item routerLink="/admin/invitations">
+            <mat-icon>mail</mat-icon>
+            {{ 'invitations.title' | translate }}
+          </button>
+          <button mat-menu-item routerLink="/auth/register">
+            <mat-icon>person_add</mat-icon>
+            {{ 'auth.register' | translate }}
+          </button>
+        </mat-menu>
 
         <!-- My Feedback link with notification badge (non-admin only) -->
         <button
@@ -76,6 +97,13 @@ import { MyFeedbackService } from '../../../features/my-feedback/services/my-fee
       top: 0;
       z-index: 100;
     }
+    .org-nav-logo {
+      max-height: 32px;
+      max-width: 80px;
+      object-fit: contain;
+      margin-right: 8px;
+      border-radius: 4px;
+    }
     .app-title {
       cursor: pointer;
       font-weight: 700;
@@ -99,6 +127,8 @@ export class AppShellComponent implements OnInit, OnDestroy {
   currentLang = 'ar';
   /** Unread notification count shown in the badge. */
   unreadCount = 0;
+  /** T046: Org logo URL for the nav bar */
+  orgLogoUrl: string | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -108,16 +138,27 @@ export class AppShellComponent implements OnInit, OnDestroy {
     private router: Router,
     private realtimeService: FeedbackRealtimeService,
     private myFeedbackService: MyFeedbackService,
+    private orgAdminService: OrgAdminService,
   ) {}
 
   ngOnInit(): void {
     this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((u) => {
       this.user = u;
-      if (u && u.role !== 'admin') {
-        this.initNotifications(u.id);
+      if (u) {
+        // T046: Fetch org logo
+        this.orgAdminService.getOrgSettings().subscribe({
+          next: (settings) => (this.orgLogoUrl = settings.logo_url),
+          error: () => (this.orgLogoUrl = null),
+        });
+        if (u.role !== 'admin') {
+          this.initNotifications(u.id);
+        } else {
+          this.unreadCount = 0;
+        }
       } else {
-        // Reset on logout or admin login
+        // Reset on logout
         this.unreadCount = 0;
+        this.orgLogoUrl = null;
       }
     });
     this.currentLang = this.languageService.getLanguage();

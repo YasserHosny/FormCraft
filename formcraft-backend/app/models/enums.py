@@ -6,6 +6,7 @@ class Role(StrEnum):
     DESIGNER = "designer"
     OPERATOR = "operator"
     VIEWER = "viewer"
+    BRANCH_MANAGER = "branch_manager"
 
 
 class TemplateStatus(StrEnum):

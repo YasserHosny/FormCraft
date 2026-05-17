@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, Hos
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, switchMap, take, map } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
 import { TemplateService } from '../../../core/services/template.service';
 import { TemplateVersionService } from '../../../core/services/template-version.service';
 import { environment, getDevLocalImportEnabled } from '../../../../environments/environment';
@@ -28,6 +29,8 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   templateId = '';
   templateName = 'Loading...';
   templateStatus: TemplateStatus = 'draft';
+  templateDepartmentId: string | null = null;
+  departments: { id: string; name_en: string; name_ar: string }[] = [];
   pageId = '';
   selectedElement: CanvasElement | null = null;
   isDirty = false;
@@ -116,6 +119,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private http: HttpClient,
     private templateService: TemplateService,
     private versionService: TemplateVersionService,
     public canvasService: CanvasService,
@@ -152,6 +156,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.templateId = this.route.snapshot.paramMap.get('templateId') || '';
+    this.loadDepartments();
 
     // Auto-save: debounce dirty changes by 2 seconds
     this.subs.push(
@@ -178,6 +183,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
         next: (template: any) => {
           this.templateName = template.name;
           this.templateStatus = template.status || 'draft';
+          this.templateDepartmentId = template.department_id || null;
           const page = template.pages?.[0];
           const w = page?.width_mm || 210;
           const h = page?.height_mm || 297;
@@ -688,6 +694,18 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
       key: el.data?.key || el.key || '',
       type: el.data?.type || el.type || '',
     }));
+  }
+
+  private loadDepartments(): void {
+    this.http.get<any>(`${environment.apiBaseUrl}/departments`).subscribe({
+      next: (data) => { this.departments = data.items || data || []; },
+      error: () => { this.departments = []; },
+    });
+  }
+
+  onDepartmentChange(departmentId: string | null): void {
+    this.templateDepartmentId = departmentId;
+    this.templateService.update(this.templateId, { department_id: departmentId }).subscribe();
   }
 
 

@@ -43,6 +43,7 @@ class SubmissionService:
         field_values: dict,
         operator_id: UUID,
         org_id: UUID,
+        branch_id: UUID | None = None,
     ) -> Submission:
         template_data = self._validate_template(template_id, template_version)
         elements = self._get_template_elements(template_id, template_version)
@@ -83,6 +84,8 @@ class SubmissionService:
             "reference_number": reference_number,
             "status": "printed",
         }
+        if branch_id:
+            data["branch_id"] = str(branch_id)
 
         result = self.client.table("submissions").insert(data).execute()
         if not result.data:

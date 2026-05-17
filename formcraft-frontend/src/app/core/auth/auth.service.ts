@@ -6,16 +6,19 @@ import { environment } from '../../../environments/environment';
 export interface User {
   id: string;
   email: string;
-  role: 'admin' | 'designer' | 'operator' | 'viewer';
+  role: 'admin' | 'designer' | 'operator' | 'viewer' | 'branch_manager';
   language: 'ar' | 'en';
   display_name: string | null;
+  org_id?: string;
 }
 
 interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  expires_in: number;
+  access_token?: string;
+  refresh_token?: string;
+  token_type?: string;
+  expires_in?: number;
+  requires_org_selection?: boolean;
+  organizations?: { id: string; name_en: string; name_ar: string; logo_url: string | null }[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -44,10 +47,30 @@ export class AuthService {
       })
       .pipe(
         tap((response) => {
-          localStorage.setItem('access_token', response.access_token);
-          localStorage.setItem('refresh_token', response.refresh_token);
-          this.isAuthenticatedSubject.next(true);
-          this.loadProfile();
+          if (response.requires_org_selection) {
+            return;
+          }
+          if (response.access_token) {
+            localStorage.setItem('access_token', response.access_token);
+            localStorage.setItem('refresh_token', response.refresh_token || '');
+            this.isAuthenticatedSubject.next(true);
+            this.loadProfile();
+          }
+        })
+      );
+  }
+
+  selectOrg(orgId: string): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>(`${environment.apiBaseUrl}/auth/login/select-org`, { org_id: orgId })
+      .pipe(
+        tap((response) => {
+          if (response.access_token) {
+            localStorage.setItem('access_token', response.access_token);
+            localStorage.setItem('refresh_token', response.refresh_token || '');
+            this.isAuthenticatedSubject.next(true);
+            this.loadProfile();
+          }
         })
       );
   }
