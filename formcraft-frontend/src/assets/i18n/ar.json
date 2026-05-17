@@ -356,5 +356,51 @@
     "invalidColumnType": "نوع العمود غير صالح",
     "requiredRows": "مطلوب {{min}} صفوف كحد أدنى",
     "cellInvalid": "قيمة غير صالحة"
+  },
+  "conditions": {
+    "title": "الشروط",
+    "visible_when": "مرئي عندما",
+    "required_when": "مطلوب عندما",
+    "add_condition": "إضافة شرط",
+    "remove_condition": "حذف شرط",
+    "field": "الحقل",
+    "operator": "العملية",
+    "value": "القيمة",
+    "logic_and": "جميع الشروط يجب أن تتحقق (و)",
+    "no_conditions": "مرئي دائماً",
+    "operators": {
+      "equals": "يساوي",
+      "not_equals": "لا يساوي",
+      "contains": "يحتوي على",
+      "greater_than": "أكبر من",
+      "less_than": "أقل من",
+      "is_empty": "فارغ",
+      "is_not_empty": "غير فارغ"
+    }
+  },
+  "computed": {
+    "title": "قيمة محسوبة",
+    "expression": "المعادلة",
+    "expression_placeholder": "مثال: الكمية * سعر_الوحدة",
+    "preview": "معاينة النتيجة",
+    "invalid_expression": "صيغة المعادلة غير صحيحة",
+    "field_not_found": "الحقل المشار إليه غير موجود",
+    "calculated_badge": "محسوب"
+  },
+  "defaults": {
+    "title": "القيمة الافتراضية",
+    "value": "القيمة الافتراضية",
+    "tokens": {
+      "today": "تاريخ اليوم",
+      "now": "التاريخ والوقت الحالي",
+      "user_name": "اسم المستخدم",
+      "user_email": "بريد المستخدم",
+      "org_name": "اسم المؤسسة"
+    }
+  },
+  "placeholders": {
+    "title": "نص الإرشاد",
+    "ar": "نص الإرشاد بالعربية",
+    "en": "نص الإرشاد بالإنجليزية"
   }
 }

@@ -356,5 +356,51 @@
     "invalidColumnType": "Invalid column type",
     "requiredRows": "Minimum {{min}} rows required",
     "cellInvalid": "Invalid value"
+  },
+  "conditions": {
+    "title": "Conditions",
+    "visible_when": "Visible when",
+    "required_when": "Required when",
+    "add_condition": "Add condition",
+    "remove_condition": "Remove condition",
+    "field": "Field",
+    "operator": "Operator",
+    "value": "Value",
+    "logic_and": "All conditions must be true (AND)",
+    "no_conditions": "Always visible",
+    "operators": {
+      "equals": "Equals",
+      "not_equals": "Not equals",
+      "contains": "Contains",
+      "greater_than": "Greater than",
+      "less_than": "Less than",
+      "is_empty": "Is empty",
+      "is_not_empty": "Is not empty"
+    }
+  },
+  "computed": {
+    "title": "Computed Value",
+    "expression": "Expression",
+    "expression_placeholder": "e.g. quantity * unit_price",
+    "preview": "Preview result",
+    "invalid_expression": "Invalid expression syntax",
+    "field_not_found": "Referenced field not found",
+    "calculated_badge": "Calculated"
+  },
+  "defaults": {
+    "title": "Default Value",
+    "value": "Default value",
+    "tokens": {
+      "today": "Today's date",
+      "now": "Current date and time",
+      "user_name": "User display name",
+      "user_email": "User email",
+      "org_name": "Organization name"
+    }
+  },
+  "placeholders": {
+    "title": "Placeholder Text",
+    "ar": "Arabic placeholder",
+    "en": "English placeholder"
   }
 }
