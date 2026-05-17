@@ -269,6 +269,16 @@ export class CanvasService implements OnDestroy {
     this.layer?.draw();
   }
 
+  selectElementByKey(key: string): boolean {
+    for (const el of this.elements.values()) {
+      if (el.data && el.data['key'] === key) {
+        this.selectElement(el.id);
+        return true;
+      }
+    }
+    return false;
+  }
+
   deselectAll(): void {
     this.transformer?.nodes([]);
     this._selectedElement.next(null);

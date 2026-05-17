@@ -12,6 +12,7 @@ import { FormDetectionService } from '../../../core/services/form-detection.serv
 import { DetectionResponse, DetectedField } from '../models/detected-field.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateService } from '@ngx-translate/core';
+import { TemplateFeedbackService } from '../../desk/services/template-feedback.service';
 
 @Component({
   selector: 'fc-designer-page',
@@ -91,6 +92,10 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   isSaving = false;
   showVersionHistory = false;
   versionHistory: any[] = [];
+  showFeedbackPanel = false;
+  feedbackItems: any[] = [];
+  feedbackLoading = false;
+  newFeedbackCount = 0;
 
   get canEdit(): boolean {
     return this.templateStatus === 'draft' || this.templateStatus === 'rejected';
@@ -117,6 +122,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
     private formDetectionService: FormDetectionService,
     private snackBar: MatSnackBar,
     private translate: TranslateService,
+    private feedbackService: TemplateFeedbackService,
   ) {}
 
   @HostListener('document:keydown', ['$event'])
@@ -228,6 +234,53 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   closeVersionHistory(): void {
     this.showVersionHistory = false;
+  }
+
+  toggleFeedbackPanel(): void {
+    this.showFeedbackPanel = !this.showFeedbackPanel;
+    if (this.showFeedbackPanel) {
+      this.loadFeedback();
+    }
+  }
+
+  loadFeedback(): void {
+    if (!this.templateId) return;
+    this.feedbackLoading = true;
+    this.feedbackService.listFeedback(this.templateId).subscribe({
+      next: (response: any) => {
+        this.feedbackItems = response.items || [];
+        this.newFeedbackCount = this.feedbackItems.filter((f: any) => f.status === 'new').length;
+        this.feedbackLoading = false;
+      },
+      error: () => {
+        this.feedbackLoading = false;
+      },
+    });
+  }
+
+  closeFeedbackPanel(): void {
+    this.showFeedbackPanel = false;
+  }
+
+  onShowOnCanvas(elementKey: string): void {
+    const found = this.canvasService.selectElementByKey(elementKey);
+    if (!found) {
+      this.snackBar.open(this.translate.instant('template_feedback.panel.elementNotFound'), '', { duration: 3000 });
+    }
+  }
+
+  onAcknowledgeFeedback(feedbackId: string): void {
+    if (!this.templateId) return;
+    this.feedbackService.updateFeedbackStatus(this.templateId, feedbackId, 'acknowledged').subscribe({
+      next: () => this.loadFeedback(),
+    });
+  }
+
+  onResolveFeedback(feedbackId: string): void {
+    if (!this.templateId) return;
+    this.feedbackService.updateFeedbackStatus(this.templateId, feedbackId, 'resolved').subscribe({
+      next: () => this.loadFeedback(),
+    });
   }
 
   closeImport(): void {

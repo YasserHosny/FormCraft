@@ -18,6 +18,7 @@ import { FieldRendererComponent } from '../components/field-renderer/field-rende
 import { FormToolbarComponent } from '../components/form-toolbar/form-toolbar.component';
 import { ErrorSummaryComponent } from '../components/error-summary/error-summary.component';
 import { VersionWarningComponent } from '../components/version-warning/version-warning.component';
+import { TemplateFeedbackDialogComponent } from '../components/template-feedback-dialog/template-feedback-dialog.component';
 const routes: Routes = [
   { path: ':templateId', component: FillComponent },
 ];
@@ -28,6 +29,7 @@ const routes: Routes = [
     FormToolbarComponent,
     ErrorSummaryComponent,
     VersionWarningComponent,
+    TemplateFeedbackDialogComponent,
   ],
   imports: [
     CommonModule,

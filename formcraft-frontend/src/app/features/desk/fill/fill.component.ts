@@ -9,6 +9,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { VersionWarningComponent, VersionWarningData } from '../components/version-warning/version-warning.component';
+import { TemplateFeedbackDialogComponent } from '../components/template-feedback-dialog/template-feedback-dialog.component';
 import { DraftService } from '../services/draft.service';
 import { SubmissionService } from '../services/submission.service';
 import { HistoryService } from '../services/history.service';
@@ -276,6 +277,15 @@ export class FillComponent implements OnInit, OnDestroy {
     this.error = false;
     this.loading = true;
     this.ngOnInit();
+  }
+
+  openFeedbackDialog(): void {
+    const templateId = this.template?.id;
+    if (!templateId) return;
+    this.dialog.open(TemplateFeedbackDialogComponent, {
+      width: '480px',
+      data: { templateId },
+    });
   }
 
   onPrint(): void {
