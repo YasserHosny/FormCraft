@@ -7,6 +7,7 @@ import { TafqeetPropertyPanelComponent } from './components/tafqeet-property-pan
 import { StatusBadgeComponent } from './components/status-badge/status-badge.component';
 import { VersionHistoryComponent } from './version-history/version-history.component';
 import { VersionDiffComponent } from './version-diff/version-diff.component';
+import { FeedbackPanelComponent } from './feedback-panel/feedback-panel.component';
 
 const routes: Routes = [
   { path: ':templateId', component: DesignerPageComponent },
@@ -20,6 +21,7 @@ const routes: Routes = [
     StatusBadgeComponent,
     VersionHistoryComponent,
     VersionDiffComponent,
+    FeedbackPanelComponent,
   ],
 })
 export class DesignerModule {}

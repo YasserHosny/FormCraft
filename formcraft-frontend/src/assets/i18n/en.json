@@ -288,5 +288,38 @@
   "desk": {
     "deprecatedWarning": "A newer version is available",
     "archivedError": "This template is no longer available"
+  },
+  "template_feedback": {
+    "dialog": {
+      "title": "Submit Feedback",
+      "category": "Category",
+      "categoryLayout": "Layout",
+      "categoryReadability": "Readability",
+      "categoryLogical": "Logical",
+      "categoryOther": "Other",
+      "comment": "Comment",
+      "commentRequired": "Please enter a comment",
+      "screenshot": "Attach Screenshot",
+      "submit": "Submit Feedback",
+      "success": "Feedback submitted successfully"
+    },
+    "panel": {
+      "title": "Template Feedback",
+      "emptyState": "No feedback yet",
+      "statusNew": "New",
+      "statusAcknowledged": "Acknowledged",
+      "statusResolved": "Resolved",
+      "markAcknowledged": "Acknowledge",
+      "markResolved": "Resolve",
+      "showOnCanvas": "Show on canvas",
+      "elementNotFound": "Element not found on canvas",
+      "noElement": "General feedback"
+    },
+    "admin": {
+      "title": "Template Feedback Overview",
+      "category": "Category",
+      "status": "Status",
+      "template": "Template"
+    }
   }
 }

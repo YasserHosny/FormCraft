@@ -47,7 +47,7 @@
         <button mat-icon-button (click)="openVersionHistory()" matTooltip="{{ 'templates.versionHistory' | translate }}">
           <mat-icon>history</mat-icon>
         </button>
-        <button mat-icon-button (click)="toggleFeedbackPanel()" matTooltip="{{ 'template_feedback.panel.title' | translate }}">
+        <button mat-icon-button (click)="toggleFeedbackPanel()" matTooltip="{{ 'template_feedback.panel.title' | translate }}" style="position:relative">
           <mat-icon>feedback</mat-icon>
           <span *ngIf="newFeedbackCount > 0" class="feedback-badge">{{ newFeedbackCount }}</span>
         </button>
@@ -265,7 +265,9 @@
         [feedbackItems]="feedbackItems"
         [loading]="feedbackLoading"
         (close)="closeFeedbackPanel()"
-        (showOnCanvas)="onShowOnCanvas($event)">
+        (showOnCanvas)="onShowOnCanvas($event)"
+        (acknowledge)="onAcknowledgeFeedback($event)"
+        (resolve)="onResolveFeedback($event)">
       </fc-feedback-panel>
     </mat-sidenav>
   </mat-sidenav-container>

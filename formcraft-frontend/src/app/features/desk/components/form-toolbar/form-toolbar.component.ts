@@ -28,6 +28,13 @@ import { CommonModule } from '@angular/common';
         <mat-icon>arrow_back</mat-icon>
       </button>
 
+      <button mat-icon-button
+              class="toolbar-btn"
+              (click)="feedback.emit()"
+              [matTooltip]="'template_feedback.dialog.title' | translate">
+        <mat-icon>feedback</mat-icon>
+      </button>
+
       <span class="toolbar-spacer"></span>
 
       <button mat-stroked-button
@@ -144,4 +151,5 @@ export class FormToolbarComponent {
   @Output() saveDraft = new EventEmitter<void>();
   @Output() clearAll = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
+  @Output() feedback = new EventEmitter<void>();
 }

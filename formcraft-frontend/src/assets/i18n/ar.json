@@ -288,5 +288,38 @@
   "desk": {
     "deprecatedWarning": "يتوفر إصدار أحدث",
     "archivedError": "هذا القالب لم يعد متاحاً"
+  },
+  "template_feedback": {
+    "dialog": {
+      "title": "إرسال ملاحظات",
+      "category": "الفئة",
+      "categoryLayout": "التخطيط",
+      "categoryReadability": "القراءة",
+      "categoryLogical": "منطقي",
+      "categoryOther": "أخرى",
+      "comment": "التعليق",
+      "commentRequired": "يرجى إدخال تعليق",
+      "screenshot": "إرفاق لقطة شاشة",
+      "submit": "إرسال الملاحظات",
+      "success": "تم إرسال الملاحظات بنجاح"
+    },
+    "panel": {
+      "title": "ملاحظات القالب",
+      "emptyState": "لا توجد ملاحظات بعد",
+      "statusNew": "جديد",
+      "statusAcknowledged": "تم الاعتراف",
+      "statusResolved": "تم الحل",
+      "markAcknowledged": "اعتراف",
+      "markResolved": "حل",
+      "showOnCanvas": "عرض على التصميم",
+      "elementNotFound": "العنصر غير موجود على التصميم",
+      "noElement": "ملاحظات عامة"
+    },
+    "admin": {
+      "title": "نظرة عامة على ملاحظات القالب",
+      "category": "الفئة",
+      "status": "الحالة",
+      "template": "القالب"
+    }
   }
 }
