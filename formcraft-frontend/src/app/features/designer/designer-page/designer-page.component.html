@@ -259,6 +259,16 @@
           </fc-table-config-panel>
         </ng-container>
 
+        <!-- Reference binding panel for dropdown elements -->
+        <ng-container *ngIf="selectedElement.data['type'] === 'dropdown'">
+          <mat-divider style="margin: 12px 0;"></mat-divider>
+          <fc-ref-binding-panel
+            [element]="selectedElement"
+            [pageElements]="getPageElementKeys()"
+            (bindingChange)="onRefBindingChange($event)">
+          </fc-ref-binding-panel>
+        </ng-container>
+
         <button mat-button color="warn" (click)="deleteSelected()" style="margin-top: 16px; width: 100%;">
           <mat-icon>delete</mat-icon> {{ 'common.delete' | translate }}
         </button>

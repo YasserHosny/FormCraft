@@ -15,6 +15,7 @@ import { TemplateFeedbackDialogComponent } from '../components/template-feedback
 import { DraftService } from '../services/draft.service';
 import { SubmissionService } from '../services/submission.service';
 import { HistoryService } from '../services/history.service';
+import { AutoFillService } from '../services/auto-fill.service';
 
 @Component({
   selector: 'fc-fill',
@@ -55,6 +56,7 @@ export class FillComponent implements OnInit, OnDestroy {
     private submissionService: SubmissionService,
     private historyService: HistoryService,
     private conditionEngine: ConditionEngineService,
+    private autoFillService: AutoFillService,
   ) {}
 
   ngOnInit(): void {
@@ -331,6 +333,31 @@ export class FillComponent implements OnInit, OnDestroy {
       width: '480px',
       data: { templateId },
     });
+  }
+
+  onEntrySelected(event: { entry_id: string; values: Record<string, any>; elementKey: string }): void {
+    if (!this.template) return;
+
+    const boundElement = this.template.pages
+      .flatMap(p => p.elements)
+      .find(e => e.key === event.elementKey);
+    if (!boundElement) return;
+
+    const formatting = boundElement.formatting as Record<string, unknown> | undefined;
+    const refBinding = formatting?.['ref_binding'] as Record<string, any> | undefined;
+    if (!refBinding || !refBinding.auto_fill) return;
+
+    const visibleKeys = new Set<string>(
+      this.template.pages.flatMap(p => p.elements).map(e => e.key)
+    );
+
+    this.autoFillService.executeAutoFill(
+      refBinding.auto_fill,
+      event.values,
+      this.form,
+      visibleKeys,
+      refBinding.clear_on_deselect ?? false,
+    );
   }
 
   onPrint(): void {

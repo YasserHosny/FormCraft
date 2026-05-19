@@ -675,6 +675,22 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  onRefBindingChange(binding: any): void {
+    if (!this.selectedElement) return;
+    const formatting = this.selectedElement.data['formatting'] || {};
+    this.canvasService.updateElementData(this.selectedElement.id, {
+      formatting: { ...formatting, ref_binding: binding },
+    });
+  }
+
+  getPageElementKeys(): { key: string; type: string }[] {
+    return this.canvasService.getElementsDataWithIds().map((el: any) => ({
+      key: el.data?.key || el.key || '',
+      type: el.data?.type || el.type || '',
+    }));
+  }
+
+
   save(): void {
     if (!this.pageId) return;
     

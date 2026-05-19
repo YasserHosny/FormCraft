@@ -1,4 +1,4 @@
-import { Component, Input, Optional } from '@angular/core';
+import { Component, Input, Optional, Output, EventEmitter } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -14,11 +14,14 @@ import { TemplateElement } from '../../services/form-filler.service';
 import { ValidationService } from '../../services/validation.service';
 import { SignaturePadComponent } from '../signature-pad/signature-pad.component';
 import { TableInputComponent } from '../table-input/table-input.component';
+import { BoundDropdownComponent } from '../bound-dropdown/bound-dropdown.component';
+import { SignaturePadComponent } from '../signature-pad/signature-pad.component';
+import { TableInputComponent } from '../table-input/table-input.component';
 
 @Component({
   selector: 'fc-field-renderer',
   standalone: true,
-  imports: [
+imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
@@ -33,6 +36,7 @@ import { TableInputComponent } from '../table-input/table-input.component';
     TranslateModule,
     SignaturePadComponent,
     TableInputComponent,
+    BoundDropdownComponent,
   ],
   template: `
     <div class="field-renderer" [ngSwitch]="element?.type" [dir]="element?.direction || 'rtl'">
@@ -75,8 +79,22 @@ import { TableInputComponent } from '../table-input/table-input.component';
         </mat-error>
       </mat-form-field>
 
-      <!-- Dropdown -->
-      <mat-form-field *ngSwitchCase="'dropdown'" appearance="outline" class="field-full">
+      <!-- Dropdown (bound to reference list) -->
+      <fc-bound-dropdown *ngSwitchCase="'dropdown'"
+        *ngIf="hasRefBinding()"
+        [label]="label"
+        [required]="element?.required ?? false"
+        [listId]="getRefBinding()?.list_id"
+        [displayColumn]="getRefBinding()?.display_column || ''"
+        [valueColumn]="getRefBinding()?.value_column || ''"
+        [searchThreshold]="getRefBinding()?.search_threshold ?? 20"
+        [selectedValue]="control.value"
+        (valueChange)="onDropdownValueChange($event)"
+        (entrySelected)="onEntrySelected($event)">
+      </fc-bound-dropdown>
+
+      <!-- Dropdown (unbound) -->
+      <mat-form-field *ngSwitchCase="'dropdown'" *ngIf="!hasRefBinding()" appearance="outline" class="field-full">
         <mat-label>{{ label }}</mat-label>
         <mat-select [formControl]="control" [required]="element?.required">
           <mat-option *ngFor="let opt of options" [value]="opt">{{ opt }}</mat-option>
@@ -201,8 +219,29 @@ export class FieldRendererComponent {
   @Input() control: FormControl = new FormControl('');
   @Input() label = '';
   @Input() country = '';
+  @Output() entrySelected = new EventEmitter<{ entry_id: string; values: Record<string, any>; elementKey: string }>();
 
   constructor(private validationService: ValidationService) {}
+
+  hasRefBinding(): boolean {
+    const formatting = this.element?.formatting as Record<string, unknown> | undefined;
+    return !!(formatting && formatting['ref_binding']);
+  }
+
+  getRefBinding(): Record<string, any> | null {
+    const formatting = this.element?.formatting as Record<string, unknown> | undefined;
+    if (!formatting || !formatting['ref_binding']) return null;
+    return formatting['ref_binding'] as Record<string, any>;
+  }
+
+  onDropdownValueChange(value: any): void {
+    this.control.setValue(value);
+    this.control.markAsTouched();
+  }
+
+  onEntrySelected(event: { entry_id: string; values: Record<string, any> }): void {
+    this.entrySelected.emit({ ...event, elementKey: this.element?.key || '' });
+  }
 
   get options(): string[] {
     if (!this.element?.formatting?.options) return [];
@@ -210,6 +249,17 @@ export class FieldRendererComponent {
       return this.element.formatting.options;
     }
     return [];
+  }
+
+  getTableColumns(): { key: string; label: string; type: string; sum_column: boolean }[] {
+    const fmt = this.element?.formatting as Record<string, unknown> | undefined;
+    if (!fmt || !Array.isArray(fmt['columns'])) return [];
+    return (fmt['columns'] as any[]).map((c: any) => ({
+      key: c.key || '',
+      label: c.label_ar || c.label_en || c.key || '',
+      type: c.type || 'text',
+      sum_column: !!c.sum_column,
+    }));
   }
 
   getErrorMessage(): string {

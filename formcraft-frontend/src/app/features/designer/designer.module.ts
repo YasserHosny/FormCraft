@@ -10,6 +10,7 @@ import { VersionDiffComponent } from './version-diff/version-diff.component';
 import { FeedbackPanelComponent } from './feedback-panel/feedback-panel.component';
 import { SignaturePropertyPanelComponent } from './components/signature-property-panel/signature-property-panel.component';
 import { TableConfigPanelComponent } from './components/table-config/table-config.component';
+import { RefBindingPanelComponent } from './components/ref-binding-panel/ref-binding-panel.component';
 
 const routes: Routes = [
   { path: ':templateId', component: DesignerPageComponent },
@@ -26,6 +27,7 @@ const routes: Routes = [
     FeedbackPanelComponent,
     SignaturePropertyPanelComponent,
     TableConfigPanelComponent,
+    RefBindingPanelComponent,
   ],
 })
 export class DesignerModule {}
