@@ -234,13 +234,11 @@ export class FieldRendererComponent {
       this.control.markAsTouched();
       return;
     }
-    const base64 = dataUrl.split(',')[1] || '';
-    const sizeBytes = Math.ceil(base64.length * 0.75);
-    if (sizeBytes > 100 * 1024) {
-      this.control.setValue({ __pending_upload: true, dataUrl });
-    } else {
-      this.control.setValue(dataUrl);
-    }
+    // Always store the dataUrl directly. Large signatures are resolved
+    // after submission via resolveSignatureUploads which reads __pending
+    // markers from the raw value. We mark the control with metadata so
+    // the fill component can detect oversized sigs post-submit.
+    this.control.setValue(dataUrl);
     this.control.markAsTouched();
   }
 

@@ -722,6 +722,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
         direction: data['direction'],
         validation: data['validation'],
         formatting: data['formatting'],
+        properties: data['properties'],
       })
     );
 
@@ -736,6 +737,8 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
         height_mm: element['height_mm'],
         required: element['required'],
         direction: element['direction'],
+        formatting: element['formatting'],
+        properties: element['properties'],
       }).pipe(
         map((response: any) => ({ response, canvasId }))
       )

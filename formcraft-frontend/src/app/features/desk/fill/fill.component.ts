@@ -396,8 +396,12 @@ export class FillComponent implements OnInit, OnDestroy {
   private resolveSignatureUploads(submissionId: string, fieldValues: Record<string, any>) {
     const uploads: Record<string, ReturnType<typeof this.submissionService.uploadSignature>> = {};
     for (const [key, val] of Object.entries(fieldValues)) {
-      if (val && typeof val === 'object' && val.__pending_upload && val.dataUrl) {
-        uploads[key] = this.submissionService.uploadSignature(submissionId, key, val.dataUrl);
+      if (typeof val === 'string' && val.startsWith('data:image/png;base64,')) {
+        const base64 = val.split(',')[1] || '';
+        const sizeBytes = Math.ceil(base64.length * 0.75);
+        if (sizeBytes > 100 * 1024) {
+          uploads[key] = this.submissionService.uploadSignature(submissionId, key, val);
+        }
       }
     }
     const keys = Object.keys(uploads);

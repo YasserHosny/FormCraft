@@ -60,7 +60,7 @@ interface ColumnDef {
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matMatRowDef="let row; columns: displayedColumns;"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         <tr mat-footer-row *matFooterRowDef="displayedColumns" *ngIf="showFooter"></tr>
       </table>
 
@@ -189,7 +189,10 @@ export class TableInputComponent implements OnChanges {
   }
 
   private emitValue(): void {
-    this.valueChange.emit([...this.rows]);
+    // Read current values from the FormArray controls, not the stale rows cache
+    const currentValues = this.formArray.controls.map((group) => (group as any).value);
+    this.rows = currentValues;
+    this.valueChange.emit([...currentValues]);
   }
 
   constructor(private fb: FormBuilder) {}

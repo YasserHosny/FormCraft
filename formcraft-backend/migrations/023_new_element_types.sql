@@ -8,7 +8,7 @@ ALTER TABLE elements
 ADD CONSTRAINT elements_type_check
 CHECK (type IN (
   'text', 'number', 'date', 'checkbox', 'radio', 'dropdown',
-  'textarea', 'image', 'label', 'barcode', 'qr_code',
+  'textarea', 'image', 'label', 'barcode', 'qr',
   'currency', 'tafqeet',
   'signature', 'table'
 ));
