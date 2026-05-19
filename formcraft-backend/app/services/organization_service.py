@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -89,7 +90,7 @@ class OrganizationService:
     # ------------------------------------------------------------------
 
     async def update_org(self, org_id: UUID, data: dict, updated_by: UUID) -> dict:
-        data["updated_at"] = "now()"
+        data["updated_at"] = datetime.now(timezone.utc).isoformat()
         result = (
             self.client.table("organizations")
             .update(data)
@@ -130,7 +131,7 @@ class OrganizationService:
         if not updates:
             return await self.get_org(org_id)
 
-        updates["updated_at"] = "now()"
+        updates["updated_at"] = datetime.now(timezone.utc).isoformat()
         result = (
             self.client.table("organizations")
             .update(updates)
@@ -169,7 +170,7 @@ class OrganizationService:
         )
         logo_url = self.client.storage.from_("assets").get_public_url(path)
         self.client.table("organizations").update(
-            {"logo_url": logo_url, "updated_at": "now()"}
+            {"logo_url": logo_url, "updated_at": datetime.now(timezone.utc).isoformat()}
         ).eq("id", str(org_id)).execute()
         await self.audit.log_event(
             user_id=str(updated_by),

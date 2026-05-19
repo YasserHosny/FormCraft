@@ -74,6 +74,36 @@ async def cancel_invitation(
 public_router = APIRouter(tags=["Invitations (Public)"])
 
 
+@public_router.get("/invitations/{token}")
+async def get_invitation_by_token(token: str):
+    """Get invitation details by token (public, for prefilling the accept form)."""
+    from fastapi import HTTPException, status as http_status
+
+    client = get_supabase_client()
+    result = (
+        client.table("user_invitations")
+        .select("id,email,role,org_id,department_id,branch_id,status,expires_at")
+        .eq("token", token)
+        .execute()
+    )
+    if not result.data:
+        raise HTTPException(http_status.HTTP_404_NOT_FOUND, "Invitation not found")
+    invitation = result.data[0]
+    if invitation["status"] != "pending":
+        raise HTTPException(http_status.HTTP_410_GONE, "Invitation already processed")
+    # Fetch org name for display
+    org = client.table("organizations").select("name_en,name_ar,logo_url").eq("id", invitation["org_id"]).execute()
+    org_data = org.data[0] if org.data else {}
+    return {
+        "email": invitation["email"],
+        "role": invitation["role"],
+        "org_name_en": org_data.get("name_en", ""),
+        "org_name_ar": org_data.get("name_ar", ""),
+        "org_logo_url": org_data.get("logo_url"),
+        "expires_at": invitation["expires_at"],
+    }
+
+
 @public_router.post("/invitations/accept/{token}")
 async def accept_invitation(
     token: str,

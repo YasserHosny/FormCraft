@@ -201,7 +201,7 @@ export class OrgAdminService {
   }
 
   updateUser(id: string, data: UserAssignment): Observable<OrgUser> {
-    return this.http.patch<OrgUser>(`${this.base}/users/${id}`, data);
+    return this.http.patch<OrgUser>(`${this.base}/users/${id}/assignment`, data);
   }
 
   deactivateUser(id: string): Observable<void> {

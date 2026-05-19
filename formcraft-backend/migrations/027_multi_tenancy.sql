@@ -43,7 +43,7 @@ CREATE INDEX idx_departments_org ON departments(org_id);
 
 ALTER TABLE departments ENABLE ROW LEVEL SECURITY;
 CREATE POLICY departments_org_isolation ON departments
-  USING (org_id = current_setting('app.current_org_id')::UUID);
+  USING (org_id = current_setting('app.current_org_id', true)::UUID);
 
 -- Step 3: Create branches table
 CREATE TABLE branches (
@@ -62,7 +62,7 @@ CREATE INDEX idx_branches_org ON branches(org_id);
 
 ALTER TABLE branches ENABLE ROW LEVEL SECURITY;
 CREATE POLICY branches_org_isolation ON branches
-  USING (org_id = current_setting('app.current_org_id')::UUID);
+  USING (org_id = current_setting('app.current_org_id', true)::UUID);
 
 -- Step 4: Create user_invitations table
 CREATE TABLE user_invitations (
@@ -114,7 +114,7 @@ ALTER TABLE profiles ALTER COLUMN org_id SET NOT NULL;
 -- Step 9: Add RLS to profiles
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY profiles_org_isolation ON profiles
-  USING (org_id = current_setting('app.current_org_id')::UUID
+  USING (org_id = current_setting('app.current_org_id', true)::UUID
          OR (current_setting('app.is_platform_admin', true)::VARCHAR) = 'true');
 
 -- Step 10: Add department_id to templates for scoping
@@ -149,7 +149,7 @@ CREATE POLICY organizations_read ON organizations
 -- Step 15: Add RLS to user_invitations
 ALTER TABLE user_invitations ENABLE ROW LEVEL SECURITY;
 CREATE POLICY invitations_org_isolation ON user_invitations
-  USING (org_id = current_setting('app.current_org_id')::UUID);
+  USING (org_id = current_setting('app.current_org_id', true)::UUID);
 
 -- Step 16: Add audit triggers
 CREATE OR REPLACE FUNCTION audit_organizations() RETURNS TRIGGER AS $$

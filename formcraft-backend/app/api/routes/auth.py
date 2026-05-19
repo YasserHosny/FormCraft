@@ -12,9 +12,15 @@ from app.core.audit import AuditLogger
 from app.core.supabase import get_supabase_client
 from app.models.enums import Role
 from app.models.user import UserProfile
+from pydantic import BaseModel
+
 from app.schemas.auth import LoginRequest, LoginResponse, RefreshRequest, RegisterRequest
 from app.services.organization_service import OrganizationService
 from app.services.user_service import UserService
+
+
+class SelectOrgRequest(BaseModel):
+    org_id: str
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -25,7 +31,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 # ------------------------------------------------------------------
 
 
-@router.post("/login", response_model=LoginResponse)
+@router.post("/login")
 async def login(body: LoginRequest, request: Request):
     """Authenticate user via Supabase Auth and return JWT tokens.
 
@@ -154,21 +160,16 @@ async def login(body: LoginRequest, request: Request):
 
 @router.post("/login/select-org")
 async def select_org(
+    body: SelectOrgRequest,
     request: Request,
     current_user: Annotated[UserProfile, Depends(get_current_user)],
-    org_id: str | None = None,
 ):
     """Select an organisation after login when the user belongs to multiple orgs.
 
     Returns the user's profile scoped to the chosen organisation.
     """
     client = get_supabase_client()
-
-    if not org_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="org_id is required",
-        )
+    org_id = body.org_id
 
     # Verify the user has a profile in the requested org
     result = (
