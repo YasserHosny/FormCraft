@@ -396,13 +396,23 @@ async def validate_dependencies(
     ],
 ):
     client = get_supabase_client()
-    result = (
-        client.table("elements")
-        .select("key, visible_when, required_when, computed_value")
+    # Elements are keyed by page_id, not template_id — fetch pages first
+    pages_result = (
+        client.table("pages")
+        .select("id")
         .eq("template_id", str(template_id))
         .execute()
     )
-    elements = result.data or []
+    page_ids = [p["id"] for p in (pages_result.data or [])]
+    elements: list[dict] = []
+    for pid in page_ids:
+        result = (
+            client.table("elements")
+            .select("key, visible_when, required_when, computed_value")
+            .eq("page_id", pid)
+            .execute()
+        )
+        elements.extend(result.data or [])
 
     validator = DependencyValidator()
     cycle = validator.detect_cycles(elements)

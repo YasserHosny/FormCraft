@@ -62,7 +62,9 @@ class SubmissionService:
                     "message": f"Field '{key}' is required",
                 })
 
-        errors = self._validate_field_values(clean_values, elements, country)
+        # Only validate visible elements — hidden fields should not trigger required errors
+        visible_elements = [e for e in elements if e.get("key", "") in visible_keys]
+        errors = self._validate_field_values(clean_values, visible_elements, country)
         errors.extend(cond_errors)
         if errors:
             raise HTTPException(
@@ -118,7 +120,7 @@ class SubmissionService:
         try:
             result = (
                 self.client.table("element_renderers")
-                .select("key, type, required, validation, formatting, visible_when, required_when, computed_value")
+                .select("key, type, required, validation, formatting, properties, visible_when, required_when, computed_value")
                 .eq("template_id", str(template_id))
                 .execute()
             )
@@ -226,6 +228,12 @@ class SubmissionService:
     def _validate_signature(self, key: str, value: dict | str, required: bool) -> list[dict]:
         errors = []
         if isinstance(value, dict):
+            # Accept pending-upload markers — large signatures uploaded post-submission
+            if value.get("__pending_upload") and value.get("dataUrl"):
+                data_url = value["dataUrl"]
+                if not data_url.startswith("data:image/png;base64,"):
+                    errors.append({"field": key, "code": "invalid_signature", "message": f"Field '{key}' must be a valid PNG image"})
+                return errors
             sig_type = value.get("type", "inline")
             if sig_type == "inline":
                 data = value.get("data", "")
