@@ -8,6 +8,8 @@ from app.services.pdf.element_renderers.image_renderer import ImageRenderer
 from app.services.pdf.element_renderers.qr_renderer import QRRenderer
 from app.services.pdf.element_renderers.barcode_renderer import BarcodeRenderer
 from app.services.pdf.element_renderers.tafqeet_renderer import TafqeetRenderer
+from app.services.pdf.element_renderers.signature_renderer import SignatureRenderer
+from app.services.pdf.element_renderers.table_renderer import TableRenderer
 
 RENDERER_MAP = {
     "text": TextRenderer(),
@@ -21,6 +23,8 @@ RENDERER_MAP = {
     "qr": QRRenderer(),
     "barcode": BarcodeRenderer(),
     "tafqeet": TafqeetRenderer(),
+    "signature": SignatureRenderer(),
+    "table": TableRenderer(),
 }
 
 

@@ -2,7 +2,7 @@ import io
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Depends, Query, Request, UploadFile, File, Form, status
 from fastapi.responses import StreamingResponse, JSONResponse
 
 from app.api.deps import get_current_user
@@ -212,3 +212,32 @@ async def export_submission(
         content=export_data,
         headers={"Content-Disposition": f'attachment; filename="{ref}.json"'},
     )
+
+
+@router.post("/{submission_id}/signature-upload", status_code=status.HTTP_201_CREATED)
+async def upload_signature(
+    submission_id: UUID,
+    element_key: Annotated[str, Form()],
+    file: Annotated[UploadFile, File()],
+    current_user: Annotated[UserProfile, Depends(get_current_user)],
+):
+    """Upload a signature image to Supabase Storage for large signatures."""
+    if not file.content_type or not file.content_type.startswith("image/png"):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=422, detail="Invalid image format, only PNG accepted")
+
+    content = await file.read()
+    if len(content) > 500 * 1024:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=413, detail="Signature file too large (max 500KB)")
+
+    client = get_supabase_client()
+    user_id = str(current_user.id)
+
+    path = f"{current_user.org_id}/{submission_id}/{element_key}.png"
+    result = client.storage.from_("signatures").upload(path, content, {"content-type": "image/png"})
+    if hasattr(result, "error") and result.error:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=result.error.get("message", "Upload failed"))
+
+    return {"type": "storage", "path": path}

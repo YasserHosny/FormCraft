@@ -12,6 +12,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule } from '@ngx-translate/core';
 import { TemplateElement } from '../../services/form-filler.service';
 import { ValidationService } from '../../services/validation.service';
+import { SignaturePadComponent } from '../signature-pad/signature-pad.component';
+import { TableInputComponent } from '../table-input/table-input.component';
 
 @Component({
   selector: 'fc-field-renderer',
@@ -29,6 +31,8 @@ import { ValidationService } from '../../services/validation.service';
     MatNativeDateModule,
     MatIconModule,
     TranslateModule,
+    SignaturePadComponent,
+    TableInputComponent,
   ],
   template: `
     <div class="field-renderer" [ngSwitch]="element?.type" [dir]="element?.direction || 'rtl'">
@@ -124,6 +128,21 @@ import { ValidationService } from '../../services/validation.service';
         <mat-icon matSuffix>view_week</mat-icon>
       </mat-form-field>
 
+      <!-- Signature -->
+      <fc-signature-pad *ngSwitchCase="'signature'"
+        [label]="label"
+        [penColor]="element?.formatting?.pen_color || '#000000'"
+        [required]="element?.required || false"
+        (valueChange)="onSignatureChange($event)">
+      </fc-signature-pad>
+
+      <!-- Table -->
+      <fc-table-input *ngSwitchCase="'table'"
+        [element]="element"
+        [label]="label"
+        (valueChange)="onTableChange($event)">
+      </fc-table-input>
+
       <!-- Default fallback -->
       <mat-form-field *ngSwitchDefault appearance="outline" class="field-full">
         <mat-label>{{ label }}</mat-label>
@@ -207,5 +226,24 @@ export class FieldRendererComponent {
       };
       reader.readAsDataURL(input.files[0]);
     }
+  }
+
+  onSignatureChange(dataUrl: string): void {
+    if (!dataUrl) {
+      this.control.setValue('');
+      this.control.markAsTouched();
+      return;
+    }
+    // Always store the dataUrl directly. Large signatures are resolved
+    // after submission via resolveSignatureUploads which reads __pending
+    // markers from the raw value. We mark the control with metadata so
+    // the fill component can detect oversized sigs post-submit.
+    this.control.setValue(dataUrl);
+    this.control.markAsTouched();
+  }
+
+  onTableChange(rows: any[]): void {
+    this.control.setValue(rows);
+    this.control.markAsTouched();
   }
 }
