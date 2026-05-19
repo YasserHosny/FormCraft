@@ -20,6 +20,7 @@ from app.api.routes import (
     tafqeet,
     feedback,
     template_feedback,
+    printer_profiles,
 )
 
 logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO))
@@ -62,6 +63,7 @@ def create_app() -> FastAPI:
     app.include_router(feedback.user_router, prefix="/api")
     app.include_router(template_feedback.router, prefix="/api")
     app.include_router(template_feedback.admin_router, prefix="/api")
+    app.include_router(printer_profiles.router, prefix="/api")
 
     logger.info("FormCraft API v%s started", settings.APP_VERSION)
     return app

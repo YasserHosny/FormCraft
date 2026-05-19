@@ -16,7 +16,9 @@ from app.schemas.template import (
     TransitionRequest,
     UpdateTemplateRequest,
 )
+from app.schemas.print_settings import PrintSettingsUpdate
 from app.services.dependency_validator import DependencyValidator
+from app.services.print_settings_service import PrintSettingsService
 from app.services.template_service import TemplateService
 
 router = APIRouter(prefix="/templates", tags=["Templates"])
@@ -428,3 +430,38 @@ async def validate_dependencies(
 
     stats = validator.get_stats(elements)
     return {"valid": True, **stats}
+
+
+# --- Print Settings ---
+
+
+@router.get("/{template_id}/print-settings")
+async def get_print_settings(
+    template_id: UUID,
+    current_user: Annotated[
+        UserProfile, Depends(require_role(Role.ADMIN, Role.DESIGNER))
+    ],
+):
+    client = get_supabase_client()
+    service = PrintSettingsService(client)
+    settings = await service.get_settings(template_id)
+    if not settings:
+        return {"template_id": str(template_id), "print_mode": "full"}
+    return settings
+
+
+@router.put("/{template_id}/print-settings")
+async def update_print_settings(
+    template_id: UUID,
+    body: PrintSettingsUpdate,
+    current_user: Annotated[
+        UserProfile, Depends(require_role(Role.ADMIN, Role.DESIGNER))
+    ],
+):
+    client = get_supabase_client()
+    service = PrintSettingsService(client)
+    return await service.upsert_settings(
+        template_id=template_id,
+        print_mode=body.print_mode,
+        org_id=current_user.org_id,
+    )
