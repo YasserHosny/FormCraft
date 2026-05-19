@@ -235,9 +235,7 @@ export class FieldRendererComponent {
       return;
     }
     // Always store the dataUrl directly. Large signatures are resolved
-    // after submission via resolveSignatureUploads which reads __pending
-    // markers from the raw value. We mark the control with metadata so
-    // the fill component can detect oversized sigs post-submit.
+    // after submission via resolveSignatureUploads which detects large base64 strings.
     this.control.setValue(dataUrl);
     this.control.markAsTouched();
   }

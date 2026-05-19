@@ -30,6 +30,11 @@ def build_html(
         for element in page.get("elements", []):
             if overlay_mode and not element.get("include_in_overlay", True):
                 continue
+            # Apply calibration offsets to element positions
+            if x_offset_mm or y_offset_mm:
+                element = {**element}
+                element["x_mm"] = element.get("x_mm", 0) + x_offset_mm
+                element["y_mm"] = element.get("y_mm", 0) + y_offset_mm
             renderer = get_renderer(element.get("type", "text"))
             elements_html.append(renderer.render(element))
 

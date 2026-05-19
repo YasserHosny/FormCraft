@@ -83,7 +83,7 @@ export class PrintDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.profileService.list().subscribe((res) => {
-      this.profiles = res.data;
+      this.profiles = res.items;
       const def = this.profiles.find((p) => p.is_default);
       if (def) this.selectedProfileId = def.id;
     });

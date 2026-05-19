@@ -36,7 +36,7 @@ async def list_profiles(
 ):
     client = get_supabase_client()
     service = PrinterProfileService(client)
-    items = await service.list_profiles(include_inactive)
+    items = await service.list_profiles(current_user.org_id, include_inactive)
     return {"items": items, "total": len(items)}
 
 
@@ -48,7 +48,7 @@ async def update_profile(
 ):
     client = get_supabase_client()
     service = PrinterProfileService(client)
-    return await service.update_profile(profile_id, body.model_dump(exclude_none=True))
+    return await service.update_profile(profile_id, body.model_dump(exclude_none=True), current_user.org_id)
 
 
 @router.delete("/{profile_id}")
@@ -58,7 +58,7 @@ async def delete_profile(
 ):
     client = get_supabase_client()
     service = PrinterProfileService(client)
-    return await service.delete_profile(profile_id)
+    return await service.delete_profile(profile_id, current_user.org_id)
 
 
 @router.post("/{profile_id}/set-default")

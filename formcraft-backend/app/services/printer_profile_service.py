@@ -1,5 +1,6 @@
 """Service for printer profile CRUD and calibration page generation."""
 
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -26,18 +27,25 @@ class PrinterProfileService:
             raise HTTPException(status_code=500, detail="Failed to create printer profile")
         return PrinterProfile(**result.data[0])
 
-    async def list_profiles(self, include_inactive: bool = False) -> list[dict]:
-        query = self.client.table("printer_profiles").select("*").order("name")
+    async def list_profiles(self, org_id: UUID, include_inactive: bool = False) -> list[dict]:
+        query = (
+            self.client.table("printer_profiles")
+            .select("*")
+            .eq("org_id", str(org_id))
+            .order("name")
+        )
         if not include_inactive:
             query = query.eq("is_active", True)
         result = query.execute()
         return result.data or []
 
-    async def update_profile(self, profile_id: UUID, data: dict) -> dict:
+    async def update_profile(self, profile_id: UUID, data: dict, org_id: UUID) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
         result = (
             self.client.table("printer_profiles")
-            .update({**data, "updated_at": "now()"})
+            .update({**data, "updated_at": now})
             .eq("id", str(profile_id))
+            .eq("org_id", str(org_id))
             .eq("is_active", True)
             .execute()
         )
@@ -45,11 +53,13 @@ class PrinterProfileService:
             raise HTTPException(status_code=404, detail="Printer profile not found")
         return result.data[0]
 
-    async def delete_profile(self, profile_id: UUID) -> dict:
+    async def delete_profile(self, profile_id: UUID, org_id: UUID) -> dict:
+        now = datetime.now(timezone.utc).isoformat()
         result = (
             self.client.table("printer_profiles")
-            .update({"is_active": False, "is_default": False, "updated_at": "now()"})
+            .update({"is_active": False, "is_default": False, "updated_at": now})
             .eq("id", str(profile_id))
+            .eq("org_id", str(org_id))
             .execute()
         )
         if not result.data:
@@ -58,10 +68,12 @@ class PrinterProfileService:
 
     async def set_default(self, profile_id: UUID, org_id: UUID) -> dict:
         await self._unset_current_default(org_id)
+        now = datetime.now(timezone.utc).isoformat()
         result = (
             self.client.table("printer_profiles")
-            .update({"is_default": True, "updated_at": "now()"})
+            .update({"is_default": True, "updated_at": now})
             .eq("id", str(profile_id))
+            .eq("org_id", str(org_id))
             .eq("is_active", True)
             .execute()
         )
@@ -73,6 +85,7 @@ class PrinterProfileService:
         result = (
             self.client.table("printer_profiles")
             .select("*")
+            .eq("org_id", str(org_id))
             .eq("is_default", True)
             .eq("is_active", True)
             .single()
@@ -112,6 +125,7 @@ body {{ margin: 0; font-family: sans-serif; }}
         return html
 
     async def _unset_current_default(self, org_id: UUID) -> None:
+        now = datetime.now(timezone.utc).isoformat()
         self.client.table("printer_profiles").update(
-            {"is_default": False, "updated_at": "now()"}
-        ).eq("is_default", True).eq("is_active", True).execute()
+            {"is_default": False, "updated_at": now}
+        ).eq("org_id", str(org_id)).eq("is_default", True).eq("is_active", True).execute()
