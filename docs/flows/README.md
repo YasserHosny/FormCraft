@@ -1,7 +1,7 @@
 # FormCraft — Feature Flows
 
-> Structured documentation of every user journey, system flow, and wireflow across all 14 features.
-> Last updated: 2026-05-11
+> Structured documentation of every user journey, system flow, and wireflow across all 19 features.
+> Last updated: 2026-05-20
 
 ---
 
@@ -25,6 +25,11 @@
 | [f12-feedback-labels.md](f12-feedback-labels.md) | Feedback Dashboard Search & Labels |
 | [f13-feedback-media.md](f13-feedback-media.md) | Feedback Rich Media |
 | [f14-feedback-threading.md](f14-feedback-threading.md) | Feedback Threading & Replies |
+| [f20-new-element-types.md](f20-new-element-types.md) | New Element Types (Signature + Table) |
+| [f21-advanced-validation.md](f21-advanced-validation.md) | Advanced Form Validation & Conditions |
+| [f22-overlay-print-mode.md](f22-overlay-print-mode.md) | Overlay Print Mode & Printer Profiles |
+| [f23-reference-data.md](f23-reference-data.md) | Reference Data Manager |
+| [f24-multi-tenancy.md](f24-multi-tenancy.md) | Multi-Tenancy (Orgs, Departments, Branches) |
 
 ---
 
@@ -40,10 +45,15 @@ Auth (F01) ───────────────────────
  │                                └── Validation (F07)
  ├── Security / Audit (F08) ◄──── all features    │
  ├── Performance (F09) ◄──── all features         │
- └── Feedback Widget (F11) ◄──────────────────────┘
-          ├── Search & Labels (F12)
-          ├── Rich Media (F13)
-          └── Threading (F14)
+ ├── Feedback Widget (F11) ◄──────────────────────┘
+ │        ├── Search & Labels (F12)
+ │        ├── Rich Media (F13)
+ │        └── Threading (F14)
+ ├── New Element Types (F20) ──► Signature + Table
+ ├── Advanced Validation (F21) ──► Conditions + Country Validators
+ ├── Overlay Print Mode (F22) ──► Printer Profiles + Calibration
+ ├── Reference Data (F23) ──► Lists, Entries, CSV Import, Dropdown Binding
+ └── Multi-Tenancy (F24) ──► Orgs, Departments, Branches, Invitations
 ```
 
 ---
@@ -55,4 +65,6 @@ Auth (F01) ───────────────────────
 | **Admin** | [F01](f01-auth.md) → [F08](f08-security.md) → [F11](f11-feedback-widget.md) → [F12](f12-feedback-labels.md) → [F14](f14-feedback-threading.md) |
 | **Designer** | [F03](f03-templates.md) → [F04](f04-design-studio.md) → [F05](f05-ai-suggestions.md) → [F10](f10-tafqeet.md) → [F06](f06-pdf-engine.md) |
 | **Operator / Viewer** | [F03](f03-templates.md) → [F06](f06-pdf-engine.md) |
+| **Branch Manager** | [F24](f24-multi-tenancy.md) → [F03](f03-templates.md) → [F06](f06-pdf-engine.md) |
+| **Platform Admin** | [F24](f24-multi-tenancy.md) → [F01](f01-auth.md) → [F08](f08-security.md) |
 | **All users** | [F02](f02-i18n.md) → [F11](f11-feedback-widget.md) → [F14](f14-feedback-threading.md) |

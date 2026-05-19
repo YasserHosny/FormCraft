@@ -8,14 +8,18 @@
 
 ```mermaid
 graph TD
-    Admin["🔑 Admin\nFull system access\nUser management\nAudit logs\nFeedback dashboard"]
-    Designer["🎨 Designer\nCreate & edit own templates\nCanvas editor\nAI suggestions\nTafqeet\nPDF preview/export"]
-    Operator["⚙️ Operator\nView published templates\nExport PDF\nSubmit & reply to feedback"]
+    PlatformAdmin["🌐 Platform Admin\nManage all organizations\nCreate/deactivate orgs\nCross-org visibility"]
+    OrgAdmin["🔑 Org Admin\nFull org access\nUser management\nOrg settings\nDepartments & branches\nInvitations\nReference data\nPrinter profiles\nAudit logs\nFeedback dashboard"]
+    Designer["🎨 Designer\nCreate & edit own templates\nCanvas editor (signature, table)\nAI suggestions\nTafqeet\nPDF preview/export\nBind reference dropdowns\nConfigure conditions"]
+    BranchManager["🏢 Branch Manager\nView dept-scoped templates\nManage branch operations\nExport PDF"]
+    Operator["⚙️ Operator\nView published templates\nFill forms (signature, table, bound dropdowns)\nExport PDF\nSubmit & reply to feedback"]
     Viewer["👁 Viewer\nView published templates only\nSubmit & reply to feedback"]
     AnyAuth["🙋 Any Authenticated\nSubmit feedback\nView /my-feedback\nSwitch language"]
 
-    Admin --> Designer
-    Designer --> Operator
+    PlatformAdmin --> OrgAdmin
+    OrgAdmin --> Designer
+    Designer --> BranchManager
+    BranchManager --> Operator
     Operator --> Viewer
     Viewer --> AnyAuth
 ```
@@ -27,10 +31,17 @@ graph TD
 | Route | Guard | Allowed roles |
 |-------|-------|:-------------:|
 | `/auth/login` | — | public |
+| `/auth/branding/:domain` | — | public |
+| `/invite/:token` | — | public |
+| `/invite/expired` | — | public |
 | `/templates` | AuthGuard | any authenticated |
 | `/designer/:pageId` | AuthGuard + RoleGuard | admin, designer |
 | `/admin/feedback` | AuthGuard + RoleGuard | admin |
-| `/admin/users` | AuthGuard + RoleGuard | admin |
+| `/admin/users` | AuthGuard + RoleGuard | org admin |
+| `/admin/settings` | AuthGuard + RoleGuard | org admin |
+| `/admin/departments` | AuthGuard + RoleGuard | org admin |
+| `/admin/invitations` | AuthGuard + RoleGuard | org admin |
+| `/admin/reference-data` | AuthGuard + RoleGuard | admin |
 | `/admin/audit-logs` | AuthGuard + RoleGuard | admin |
 | `/my-feedback` | AuthGuard | any authenticated |
 
@@ -46,13 +57,28 @@ sequenceDiagram
     participant SB as Supabase Auth
 
     U->>FE: Open /auth/login
+    Note over FE: Check custom_domain → GET /api/auth/branding/{domain}
+    FE->>FE: Apply org logo + colors if branding found
+    U->>FE: Enter email + password → Submit
     FE->>API: POST /api/auth/login {email, password}
     API->>SB: verifyCredentials()
     SB-->>API: JWT access_token + refresh_token
-    API-->>FE: 200 {access_token, refresh_token}
-    FE->>FE: store tokens in localStorage
+    API->>API: Query active profiles across all orgs
+
+    alt Single org
+        API-->>FE: 200 {access_token, refresh_token}
+        FE->>FE: store tokens in localStorage
+    else Multiple orgs
+        API-->>FE: 200 {requires_org_select: true, orgs: [...]}
+        FE->>U: Show org selector cards
+        U->>FE: Click organization card
+        FE->>API: POST /api/auth/login/select-org {org_id}
+        API-->>FE: {user_id, org_id, role, display_name}
+        FE->>FE: store org context + tokens
+    end
+
     FE->>API: GET /api/users/me
-    API-->>FE: {id, email, role, language, display_name}
+    API-->>FE: {id, email, role, org_id, department_id, branch_id}
     FE->>U: Redirect to /templates
 
     Note over FE,API: Later — token expiry
@@ -63,7 +89,7 @@ sequenceDiagram
 
     U->>FE: Logout
     FE->>API: POST /api/auth/logout
-    FE->>FE: clearSession() — remove tokens
+    FE->>FE: clearSession() — remove tokens + org context
     FE->>U: Redirect to /auth/login
 ```
 
