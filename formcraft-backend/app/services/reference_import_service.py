@@ -53,6 +53,7 @@ class ReferenceImportService:
             "list_id": str(list_id),
             "valid_rows": valid_rows,
             "column_mapping": column_mapping,
+            "schema": schema,
             "mode": mode,
             "expires_at": datetime.now(timezone.utc) + timedelta(minutes=PREVIEW_TTL_MINUTES),
         }
@@ -86,6 +87,13 @@ class ReferenceImportService:
                 detail="Preview token expired",
             )
 
+        # Validate that the preview token was generated for this specific list
+        if preview.get("list_id") != str(list_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Preview token does not belong to this reference list",
+            )
+
         valid_rows = preview["valid_rows"]
         mode = preview["mode"]
         imported = 0
@@ -105,8 +113,30 @@ class ReferenceImportService:
                 self.client.table("reference_entries").insert(rows_to_insert).execute()
                 imported += len(batch)
             else:
+                # Update mode: look up existing entries by unique key and update values
+                schema_cols = preview.get("schema", [])
+                unique_key_cols = [c["key"] for c in schema_cols if c.get("is_unique_key")]
                 for row in batch:
-                    imported += 1
+                    if unique_key_cols and unique_key_cols[0] in row:
+                        unique_key_col = unique_key_cols[0]
+                        result = (
+                            self.client.table("reference_entries")
+                            .update({"values": row})
+                            .eq("list_id", str(list_id))
+                            .filter("values->>{}".format(unique_key_col), "eq", row[unique_key_col])
+                            .execute()
+                        )
+                        if result.data:
+                            imported += 1
+                        else:
+                            # If no existing entry found, insert as new
+                            self.client.table("reference_entries").insert({
+                                "list_id": str(list_id),
+                                "values": row,
+                                "org_id": str(org_id),
+                                "created_by": str(user_id),
+                            }).execute()
+                            imported += 1
 
         await self.audit.log_event(
             user_id=str(user_id),

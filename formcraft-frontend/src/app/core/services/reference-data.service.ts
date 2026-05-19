@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface ColumnSchema {
@@ -110,10 +111,12 @@ export class ReferenceDataService {
 
   getDropdownItems(listId: string, displayCol: string, valueCol: string, q?: string): Observable<{ display: string; value: any }[]> {
     let params = new HttpParams()
-      .set('display_col', displayCol)
-      .set('value_col', valueCol);
+      .set('display_column', displayCol)
+      .set('value_column', valueCol);
     if (q) params = params.set('q', q);
-    return this.http.get<{ display: string; value: any }[]>(`${this.baseUrl}/${listId}/dropdown`, { params });
+    return this.http.get<any>(`${this.baseUrl}/${listId}/entries/dropdown`, { params }).pipe(
+      map((res: any) => res.items || [])
+    );
   }
 
   importPreview(listId: string, file: File, mode: 'insert' | 'update'): Observable<ImportPreviewResult> {

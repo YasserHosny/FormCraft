@@ -200,7 +200,7 @@ export class ReferenceDataFormDialogComponent {
       name_ar: this.model.name_ar,
       name_en: this.model.name_en,
       description: this.model.description,
-      columns,
+      schema: columns,
     };
 
     const request$ = this.isEdit
