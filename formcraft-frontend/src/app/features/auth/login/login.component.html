@@ -1,5 +1,36 @@
 <div class="login-container">
-  <mat-card class="login-card">
+  <!-- T045: Custom domain branding -->
+  <div *ngIf="branding" class="branding-header">
+    <img *ngIf="branding.logo_url" [src]="branding.logo_url" alt="Organization logo" class="branding-logo" />
+    <h2 [style.color]="branding.primary_color">{{ branding.name_en }}</h2>
+  </div>
+
+  <!-- T044: Org Selector Panel -->
+  <mat-card class="login-card" *ngIf="showOrgSelector">
+    <mat-card-header>
+      <mat-card-title>{{ 'org.selector_title' | translate }}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p>{{ 'org.selector_message' | translate }}</p>
+      <div class="org-list">
+        <div
+          *ngFor="let org of orgOptions"
+          class="org-option"
+          (click)="selectOrg(org.id)"
+          [class.disabled]="loading"
+        >
+          <img *ngIf="org.logo_url" [src]="org.logo_url" alt="" class="org-logo" />
+          <mat-icon *ngIf="!org.logo_url">business</mat-icon>
+          <span class="org-name">{{ org.name }}</span>
+        </div>
+      </div>
+      <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+      <mat-spinner *ngIf="loading" diameter="24" class="org-spinner"></mat-spinner>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Standard Login Form -->
+  <mat-card class="login-card" *ngIf="!showOrgSelector">
     <mat-card-header>
       <mat-card-title>{{ 'auth.login' | translate }}</mat-card-title>
     </mat-card-header>
