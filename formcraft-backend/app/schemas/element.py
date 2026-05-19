@@ -5,6 +5,22 @@ from pydantic import BaseModel
 from app.models.enums import Direction, ElementType
 
 
+class ConditionItem(BaseModel):
+    field: str
+    operator: str
+    value: str | int | float | bool | None = None
+
+
+class ConditionObject(BaseModel):
+    conditions: list[ConditionItem]
+    logic: str = "AND"
+
+
+class PlaceholderText(BaseModel):
+    ar: str = ""
+    en: str = ""
+
+
 class CreateElementRequest(BaseModel):
     type: ElementType
     label_ar: str = ""
@@ -15,6 +31,11 @@ class CreateElementRequest(BaseModel):
     height_mm: float = 10
     required: bool = False
     direction: Direction = Direction.AUTO
+    visible_when: ConditionObject | None = None
+    required_when: ConditionObject | None = None
+    computed_value: str | None = None
+    default_value: str | None = None
+    placeholder_text: PlaceholderText | None = None
 
 
 class UpdateElementRequest(BaseModel):
@@ -28,6 +49,11 @@ class UpdateElementRequest(BaseModel):
     formatting: dict | None = None
     required: bool | None = None
     direction: Direction | None = None
+    visible_when: ConditionObject | None = None
+    required_when: ConditionObject | None = None
+    computed_value: str | None = None
+    default_value: str | None = None
+    placeholder_text: PlaceholderText | None = None
 
 
 class ReorderElementsRequest(BaseModel):
@@ -50,3 +76,8 @@ class ElementResponse(BaseModel):
     required: bool
     direction: Direction
     sort_order: int
+    visible_when: dict | None = None
+    required_when: dict | None = None
+    computed_value: str | None = None
+    default_value: str | None = None
+    placeholder_text: dict | None = None

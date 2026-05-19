@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 import { FormFillerService, FillTemplate, TemplateElement } from '../services/form-filler.service';
 import { ValidationService } from '../services/validation.service';
 import { FillerTafqeetService } from '../services/filler-tafqeet.service';
+import { ConditionEngineService } from '../services/condition-engine.service';
 import { TranslateService } from '@ngx-translate/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
@@ -34,6 +35,8 @@ export class FillComponent implements OnInit, OnDestroy {
   savingDraft = false;
   completionPercent = 0;
   cloneInfo: { id: string; ref: string } | null = null;
+  visibleKeys = new Set<string>();
+  requiredKeys = new Set<string>();
 
   private destroy$ = new Subject<void>();
   private autoSaveInterval: ReturnType<typeof setInterval> | null = null;
@@ -51,6 +54,7 @@ export class FillComponent implements OnInit, OnDestroy {
     private draftService: DraftService,
     private submissionService: SubmissionService,
     private historyService: HistoryService,
+    private conditionEngine: ConditionEngineService,
   ) {}
 
   ngOnInit(): void {
@@ -102,6 +106,7 @@ export class FillComponent implements OnInit, OnDestroy {
 
     this.form = new FormGroup(controls);
 
+    this.initConditionEngine(allElements);
     this.wireTafqeetSubscriptions(allElements);
 
     this.form.valueChanges.pipe(
@@ -112,6 +117,45 @@ export class FillComponent implements OnInit, OnDestroy {
       this.formValid = this.form.valid;
       this.updateCompletionPercent();
     });
+  }
+
+  private initConditionEngine(elements: TemplateElement[]): void {
+    const conditionalElements = elements.map((e) => ({
+      key: e.key,
+      required: e.required,
+      visible_when: (e as any).visible_when || null,
+      required_when: (e as any).required_when || null,
+      computed_value: (e as any).computed_value || null,
+      default_value: (e as any).default_value || null,
+      placeholder_text: (e as any).placeholder_text || null,
+    }));
+
+    const defaults = this.conditionEngine.resolveDefaults(conditionalElements, this.translate.currentLang);
+    for (const [key, val] of Object.entries(defaults)) {
+      const control = this.form.get(key);
+      if (control && !control.value) {
+        control.setValue(val, { emitEvent: false });
+      }
+    }
+
+    this.conditionEngine.initialize(conditionalElements, this.form);
+
+    this.conditionEngine.visibilityChanged$.pipe(takeUntil(this.destroy$)).subscribe((keys) => {
+      this.visibleKeys = keys;
+    });
+
+    this.conditionEngine.requiredChanged$.pipe(takeUntil(this.destroy$)).subscribe((keys) => {
+      this.requiredKeys = keys;
+    });
+  }
+
+  isElementVisible(key: string): boolean {
+    if (this.visibleKeys.size === 0) return true;
+    return this.visibleKeys.has(key);
+  }
+
+  isElementRequired(key: string): boolean {
+    return this.requiredKeys.has(key);
   }
 
   wireTafqeetSubscriptions(elements: TemplateElement[]): void {
@@ -515,6 +559,7 @@ export class FillComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopAutoSave();
+    this.conditionEngine.destroy();
     this.destroy$.next();
     this.destroy$.complete();
   }

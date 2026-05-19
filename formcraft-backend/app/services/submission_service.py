@@ -8,6 +8,7 @@ from supabase import Client
 
 from app.core.audit import AuditLogger
 from app.models.submission import Submission
+from app.services.condition_engine import ConditionEngine
 from app.services.validators.registry import ValidatorRegistry
 from app.services.validators.egypt import EgyptNationalIdValidator, EgyptIbanValidator, EgyptPhoneValidator
 from app.services.validators.saudi import SaudiNationalIdValidator, SaudiIbanValidator, SaudiVatValidator
@@ -24,6 +25,9 @@ _validator_registry.register(SaudiIbanValidator())
 _validator_registry.register(SaudiVatValidator())
 _validator_registry.register(UaeIbanValidator())
 _validator_registry.register(UaeTrnValidator())
+
+
+_condition_engine = ConditionEngine()
 
 
 class SubmissionService:
@@ -44,7 +48,24 @@ class SubmissionService:
         elements = self._get_template_elements(template_id, template_version)
         country = template_data.get("country", "SA")
 
-        errors = self._validate_field_values(field_values, elements, country)
+        visible_keys = _condition_engine.evaluate_visibility(elements, field_values)
+        clean_values = _condition_engine.strip_hidden_values(field_values, visible_keys)
+
+        required_keys = _condition_engine.evaluate_required(elements, clean_values, visible_keys)
+        cond_errors = []
+        for key in required_keys:
+            val = clean_values.get(key)
+            if val is None or val == "":
+                cond_errors.append({
+                    "field": key,
+                    "code": "required",
+                    "message": f"Field '{key}' is required",
+                })
+
+        # Only validate visible elements — hidden fields should not trigger required errors
+        visible_elements = [e for e in elements if e.get("key", "") in visible_keys]
+        errors = self._validate_field_values(clean_values, visible_elements, country)
+        errors.extend(cond_errors)
         if errors:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -58,7 +79,7 @@ class SubmissionService:
             "template_version": template_version,
             "operator_id": str(operator_id),
             "org_id": str(org_id),
-            "field_values": field_values,
+            "field_values": clean_values,
             "reference_number": reference_number,
             "status": "printed",
         }
@@ -99,7 +120,7 @@ class SubmissionService:
         try:
             result = (
                 self.client.table("element_renderers")
-                .select("key, type, required, validation, formatting")
+                .select("key, type, required, validation, formatting, properties, visible_when, required_when, computed_value")
                 .eq("template_id", str(template_id))
                 .execute()
             )
@@ -207,6 +228,12 @@ class SubmissionService:
     def _validate_signature(self, key: str, value: dict | str, required: bool) -> list[dict]:
         errors = []
         if isinstance(value, dict):
+            # Accept pending-upload markers — large signatures uploaded post-submission
+            if value.get("__pending_upload") and value.get("dataUrl"):
+                data_url = value["dataUrl"]
+                if not data_url.startswith("data:image/png;base64,"):
+                    errors.append({"field": key, "code": "invalid_signature", "message": f"Field '{key}' must be a valid PNG image"})
+                return errors
             sig_type = value.get("type", "inline")
             if sig_type == "inline":
                 data = value.get("data", "")

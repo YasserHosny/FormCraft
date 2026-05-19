@@ -16,6 +16,7 @@ from app.schemas.template import (
     TransitionRequest,
     UpdateTemplateRequest,
 )
+from app.services.dependency_validator import DependencyValidator
 from app.services.template_service import TemplateService
 
 router = APIRouter(prefix="/templates", tags=["Templates"])
@@ -382,3 +383,48 @@ async def delete_element(
     client = get_supabase_client()
     service = TemplateService(client)
     await service.delete_element(element_id)
+
+
+# --- Dependency Validation ---
+
+
+@router.post("/{template_id}/validate-dependencies")
+async def validate_dependencies(
+    template_id: UUID,
+    current_user: Annotated[
+        UserProfile, Depends(require_role(Role.ADMIN, Role.DESIGNER))
+    ],
+):
+    client = get_supabase_client()
+    # Elements are keyed by page_id, not template_id — fetch pages first
+    pages_result = (
+        client.table("pages")
+        .select("id")
+        .eq("template_id", str(template_id))
+        .execute()
+    )
+    page_ids = [p["id"] for p in (pages_result.data or [])]
+    elements: list[dict] = []
+    for pid in page_ids:
+        result = (
+            client.table("elements")
+            .select("key, visible_when, required_when, computed_value")
+            .eq("page_id", pid)
+            .execute()
+        )
+        elements.extend(result.data or [])
+
+    validator = DependencyValidator()
+    cycle = validator.detect_cycles(elements)
+    if cycle:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "valid": False,
+                "detail": "Circular dependency detected",
+                "cycle": cycle,
+            },
+        )
+
+    stats = validator.get_stats(elements)
+    return {"valid": True, **stats}
