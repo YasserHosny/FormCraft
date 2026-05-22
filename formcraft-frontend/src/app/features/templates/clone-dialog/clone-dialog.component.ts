@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { TemplateService } from '../../../core/services/template.service';
 
@@ -13,6 +13,10 @@ export class CloneDialogComponent {
   form: FormGroup;
   saving = false;
   errorMessage = '';
+
+  get nameControl(): FormControl {
+    return this.form.get('name') as FormControl;
+  }
 
   constructor(
     private fb: FormBuilder,

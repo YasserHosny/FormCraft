@@ -1,3 +1,5 @@
+import { Environment } from './environment.interface';
+
 export const getDevLocalImportEnabled = (): boolean => {
   if (typeof window === 'undefined') return false;
   const devLocalImport = (window as any).FC_DEV_LOCAL_IMPORT === true;
@@ -7,12 +9,11 @@ export const getDevLocalImportEnabled = (): boolean => {
   return automationFlag || queryFlag;
 };
 
-export const environment = {
+export const environment: Environment = {
   production: false,
   apiBaseUrl: '/api',
   apiUrl: 'http://localhost:8000/api',
   get supabaseUrl() {
-    // Try to get from runtime config first, then fallback to window variable
     const runtimeConfig = (window as any).FC_RUNTIME_CONFIG;
     if (runtimeConfig?.supabase?.url) {
       return runtimeConfig.supabase.url;
@@ -20,7 +21,6 @@ export const environment = {
     return (window as any).SUPABASE_URL || 'http://localhost:54321';
   },
   get supabaseAnonKey() {
-    // Try to get from runtime config first, then fallback to window variable
     const runtimeConfig = (window as any).FC_RUNTIME_CONFIG;
     if (runtimeConfig?.supabase?.anonKey) {
       return runtimeConfig.supabase.anonKey;

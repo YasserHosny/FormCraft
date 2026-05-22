@@ -3,7 +3,7 @@
   <p>{{ 'templates.cloneConfirmMessage' | translate }}</p>
   <mat-form-field appearance="outline" class="full-width">
     <mat-label>{{ 'templates.name' | translate }}</mat-label>
-    <input matInput [formControl]="form.controls.name" />
+    <input matInput [formControl]="nameControl" />
   </mat-form-field>
   <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
 </mat-dialog-content>
