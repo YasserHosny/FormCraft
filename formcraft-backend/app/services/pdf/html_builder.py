@@ -55,7 +55,7 @@ def build_html(
         )
 
     return f"""<!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="ar">
 <head>
 <meta charset="utf-8">
 <style>

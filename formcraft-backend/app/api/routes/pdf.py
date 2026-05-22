@@ -47,13 +47,21 @@ async def render_pdf(
         if body.print_mode_override:
             print_mode = body.print_mode_override
         else:
-            ps_service = PrintSettingsService(client)
-            settings = await ps_service.get_settings(template_id)
-            if settings:
-                print_mode = settings.get("print_mode", "full")
+            try:
+                ps_service = PrintSettingsService(client)
+                settings = await ps_service.get_settings(template_id)
+                if settings:
+                    print_mode = settings.get("print_mode", "full")
+            except Exception:
+                # print_settings table may not exist yet (migration pending)
+                pass
 
         if body.printer_profile_id:
-            x_offset, y_offset = _get_profile_offsets(client, body.printer_profile_id)
+            try:
+                x_offset, y_offset = _get_profile_offsets(client, body.printer_profile_id)
+            except Exception:
+                # printer_profiles table may not exist yet (migration pending)
+                pass
 
     if print_mode == "both":
         buf = BytesIO()

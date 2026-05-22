@@ -134,9 +134,13 @@ class TemplateService:
         result = self.client.table("templates").insert(template_data).execute()
         template = result.data[0]
 
-        self.client.table("templates").update(
-            {"lineage_id": template["id"]}
-        ).eq("id", template["id"]).execute()
+        try:
+            self.client.table("templates").update(
+                {"lineage_id": template["id"]}
+            ).eq("id", template["id"]).execute()
+        except Exception:
+            # lineage_id column may not exist yet (migration 020 pending)
+            pass
 
         page_data = {
             "template_id": template["id"],
@@ -363,7 +367,22 @@ class TemplateService:
             "key": key,
             "sort_order": next_order,
         }
-        result = self.client.table("elements").insert(element_data).execute()
+        # Try full insert first; on schema error, strip columns that may
+        # not exist yet (migrations 023/024 add extra element columns).
+        try:
+            result = self.client.table("elements").insert(element_data).execute()
+        except Exception as exc:
+            if "PGRST204" in str(exc) or "schema cache" in str(exc):
+                _BASE_ELEMENT_COLS = {
+                    "page_id", "type", "key", "label_ar", "label_en",
+                    "x_mm", "y_mm", "width_mm", "height_mm",
+                    "validation", "formatting", "required", "direction",
+                    "sort_order",
+                }
+                element_data = {k: v for k, v in element_data.items() if k in _BASE_ELEMENT_COLS}
+                result = self.client.table("elements").insert(element_data).execute()
+            else:
+                raise
         return result.data[0]
 
     async def update_element(self, element_id: UUID, data: dict) -> dict:
@@ -386,12 +405,30 @@ class TemplateService:
         if page.data:
             template = await self.get_template(UUID(page.data["template_id"]))
             self._check_editable(template)
-        result = (
-            self.client.table("elements")
-            .update(data)
-            .eq("id", str(element_id))
-            .execute()
-        )
+        try:
+            result = (
+                self.client.table("elements")
+                .update(data)
+                .eq("id", str(element_id))
+                .execute()
+            )
+        except Exception as exc:
+            if "PGRST204" in str(exc) or "schema cache" in str(exc):
+                _BASE_ELEMENT_COLS = {
+                    "type", "key", "label_ar", "label_en",
+                    "x_mm", "y_mm", "width_mm", "height_mm",
+                    "validation", "formatting", "required", "direction",
+                    "sort_order",
+                }
+                data = {k: v for k, v in data.items() if k in _BASE_ELEMENT_COLS}
+                result = (
+                    self.client.table("elements")
+                    .update(data)
+                    .eq("id", str(element_id))
+                    .execute()
+                )
+            else:
+                raise
         if not result.data:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Element not found")
         return result.data[0]
@@ -485,10 +522,12 @@ class TemplateService:
             "status": "draft",
             "version": new_version,
             "created_by": str(user_id),
-            "lineage_id": source.get("lineage_id", source["id"]),
-            "parent_version_id": str(template_id),
             "org_id": source.get("org_id"),
         }
+        # Add versioning columns only if they exist in schema (migration 020)
+        if "lineage_id" in source:
+            new_template_data["lineage_id"] = source.get("lineage_id", source["id"])
+            new_template_data["parent_version_id"] = str(template_id)
         result = self.client.table("templates").insert(new_template_data).execute()
         new_template = result.data[0]
 
@@ -553,9 +592,13 @@ class TemplateService:
         result = self.client.table("templates").insert(new_template_data).execute()
         new_template = result.data[0]
 
-        self.client.table("templates").update(
-            {"lineage_id": new_template["id"]}
-        ).eq("id", new_template["id"]).execute()
+        try:
+            self.client.table("templates").update(
+                {"lineage_id": new_template["id"]}
+            ).eq("id", new_template["id"]).execute()
+        except Exception:
+            # lineage_id column may not exist yet (migration 020 pending)
+            pass
 
         for page in source.get("pages", []):
             page_data = {

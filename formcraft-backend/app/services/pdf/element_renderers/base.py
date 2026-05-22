@@ -23,6 +23,7 @@ class ElementHTMLRenderer(ABC):
 
         return (
             f"position: absolute; "
+            f"float: none; "
             f"left: {left}mm; "
             f"top: {top}mm; "
             f"width: {element['width_mm']}mm; "
