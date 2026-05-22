@@ -4,6 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
+import { MatListModule } from '@angular/material/list';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
@@ -15,6 +16,7 @@ import { TranslateModule } from '@ngx-translate/core';
     MatButtonModule,
     MatCardModule,
     MatTableModule,
+    MatListModule,
     TranslateModule,
   ],
   templateUrl: './version-diff.component.html',

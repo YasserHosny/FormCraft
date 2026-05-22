@@ -179,11 +179,11 @@ export class RefBindingPanelComponent implements OnInit {
     this.referenceDataService.getList(listId).subscribe({
       next: (list: any) => {
         this.listColumns = list.columns || list.schema || [];
-        const uniqueCol = this.listColumns.find(c => c.is_unique_key || c.unique_key);
+        const uniqueCol = this.listColumns.find(c => c.unique_key);
         if (uniqueCol && !this.form.value.value_column) {
           this.form.patchValue({ value_column: uniqueCol.key });
         }
-        const displayCol = this.listColumns.find(c => c.type === 'text' && !c.is_hidden);
+        const displayCol = this.listColumns.find(c => c.type === 'text');
         if (displayCol && !this.form.value.display_column) {
           this.form.patchValue({ display_column: displayCol.key });
         }

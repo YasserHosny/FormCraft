@@ -6,6 +6,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule } from '@ngx-translate/core';
 import { TemplateService } from '../../../core/services/template.service';
 import { StatusBadgeComponent } from '../../designer/components/status-badge/status-badge.component';
@@ -21,6 +23,8 @@ import { StatusBadgeComponent } from '../../designer/components/status-badge/sta
     MatChipsModule,
     MatDialogModule,
     MatSnackBarModule,
+    MatTooltipModule,
+    MatProgressSpinnerModule,
     TranslateModule,
     StatusBadgeComponent,
   ],
