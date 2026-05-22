@@ -1,6 +1,6 @@
 # FormCraft — Feature Map
 
-> System-level view of how all 19 features connect, which roles own them, and how data flows between modules.
+> System-level view of how all 25 features connect, which roles own them, and how data flows between modules.
 
 ---
 
@@ -22,34 +22,48 @@ graph TD
     F12["F12 · Search & Labels"]
     F13["F13 · Rich Media"]
     F14["F14 · Threading"]
-    F20["F20 · Signature + Table"]
-    F21["F21 · Advanced Validation"]
-    F22["F22 · Overlay Print Mode"]
-    F23["F23 · Reference Data"]
-    F24["F24 · Multi-Tenancy"]
+    F15["F15 · Mode Switching"]
+    F16["F16 · Operator Dashboard"]
+    F17["F17 · Form Filler"]
+    F18["F18 · Submission History"]
+    F19["F19 · Template Versioning"]
+    F20["F20 · Template Feedback"]
+    F21["F21 · Signature + Table"]
+    F22["F22 · Advanced Validation"]
+    F23["F23 · Overlay Print Mode"]
+    F24["F24 · Reference Data"]
+    F25["F25 · Multi-Tenancy"]
 
     F01 --> F02
     F01 --> F03
     F01 --> F11
+    F01 --> F15
+    F01 --> F25
     F03 --> F04
+    F03 --> F19
     F04 --> F05
     F04 --> F10
     F04 --> F06
-    F04 --> F20
-    F04 --> F23
+    F04 --> F21
+    F04 --> F24
     F05 --> F07
     F06 --> F07
-    F06 --> F22
-    F07 --> F21
+    F06 --> F23
+    F07 --> F22
     F11 --> F12
     F11 --> F13
     F11 --> F14
-    F01 --> F24
-    F24 -.->|"org scoping"| F03
-    F24 -.->|"org scoping"| F22
-    F24 -.->|"org scoping"| F23
-    F20 -.->|"new types"| F06
-    F21 -.->|"conditions"| F20
+    F15 --> F16
+    F16 --> F17
+    F17 --> F18
+    F17 --> F20
+    F19 -.->|"lineage tracking"| F03
+    F20 -.->|"designer panel"| F04
+    F25 -.->|"org scoping"| F03
+    F25 -.->|"org scoping"| F23
+    F25 -.->|"org scoping"| F24
+    F21 -.->|"new types"| F06
+    F22 -.->|"conditions"| F21
     F01 -.->|"audit events"| F08
     F03 -.->|"audit events"| F08
     F04 -.->|"audit events"| F08
@@ -59,78 +73,95 @@ graph TD
 
 ---
 
-## Role × Feature access matrix
+## Role x Feature access matrix
 
-| Feature | Admin | Designer | Operator | Viewer | Any Auth |
-|---------|:-----:|:--------:|:--------:|:------:|:--------:|
-| F01 Auth | ✅ manage users | ✅ own profile | ✅ own profile | ✅ own profile | — |
-| F02 i18n | ✅ | ✅ | ✅ | ✅ | ✅ |
-| F03 Templates | ✅ publish | ✅ create/edit draft | 📖 published only | 📖 published only | — |
-| F04 Design Studio | ✅ | ✅ | — | — | — |
-| F05 AI Suggest | ✅ | ✅ | — | — | — |
-| F06 PDF Engine | ✅ | ✅ preview | ✅ export | — | — |
-| F07 Validation | system | system | system | system | — |
-| F08 Security / Audit | ✅ view logs | — | — | — | — |
-| F09 Performance | system / devops | — | — | — | — |
-| F10 Tafqeet | ✅ | ✅ configure | — | — | — |
-| F11 Feedback Widget | ✅ | ✅ | ✅ | ✅ | ✅ submit |
-| F12 Search & Labels | ✅ | — | — | — | — |
-| F13 Rich Media | ✅ view | ✅ attach | ✅ attach | ✅ attach | ✅ attach |
-| F14 Threading | ✅ reply | — | ✅ reply | ✅ reply | ✅ reply |
-| F20 Signature + Table | ✅ | ✅ configure | ✅ fill | — | — |
-| F21 Advanced Validation | system | ✅ configure rules | system | system | — |
-| F22 Overlay Print | ✅ profiles | ✅ overlay flag | ✅ print | — | — |
-| F23 Reference Data | ✅ manage lists | ✅ bind dropdowns | ✅ use dropdowns | — | — |
-| F24 Multi-Tenancy | ✅ org admin | ✅ scoped | ✅ scoped | ✅ scoped | — |
+| Feature | Platform Admin | Org Admin | Designer | Branch Mgr | Operator | Viewer | Any Auth |
+|---------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| F01 Auth | ✅ all | ✅ manage users | ✅ own profile | ✅ own profile | ✅ own profile | ✅ own profile | — |
+| F02 i18n | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| F03 Templates | ✅ | ✅ publish | ✅ create/edit | 📖 published | 📖 published | 📖 published | — |
+| F04 Design Studio | ✅ | ✅ | ✅ | — | — | — | — |
+| F05 AI Suggest | ✅ | ✅ | ✅ | — | — | — | — |
+| F06 PDF Engine | ✅ | ✅ | ✅ preview | ✅ export | ✅ export | — | — |
+| F07 Validation | system | system | system | system | system | system | — |
+| F08 Security / Audit | ✅ | ✅ view logs | — | — | — | — | — |
+| F09 Performance | system | system | — | — | — | — | — |
+| F10 Tafqeet | ✅ | ✅ | ✅ configure | — | — | — | — |
+| F11 Feedback Widget | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ submit |
+| F12 Search & Labels | ✅ | ✅ | — | — | — | — | — |
+| F13 Rich Media | ✅ | ✅ view | ✅ attach | ✅ attach | ✅ attach | ✅ attach | ✅ attach |
+| F14 Threading | ✅ | ✅ reply | — | ✅ reply | ✅ reply | ✅ reply | ✅ reply |
+| F15 Mode Switching | ✅ all modes | ✅ all modes | ✅ Studio+Desk | ✅ Desk | ✅ Desk | — | — |
+| F16 Operator Dashboard | — | ✅ view | — | ✅ view | ✅ primary | — | — |
+| F17 Form Filler | — | ✅ fill | — | ✅ fill | ✅ primary | — | — |
+| F18 Submission History | — | ✅ org-wide | — | ✅ dept-scoped | ✅ own | — | — |
+| F19 Template Versioning | — | ✅ publish/archive | ✅ create versions | — | — | — | — |
+| F20 Template Feedback | — | ✅ overview | ✅ resolve | — | ✅ submit | — | — |
+| F21 Signature + Table | ✅ | ✅ | ✅ configure | — | ✅ fill | — | — |
+| F22 Advanced Validation | system | system | ✅ configure | system | system | system | — |
+| F23 Overlay Print | ✅ | ✅ profiles | ✅ overlay flag | ✅ print | ✅ print | — | — |
+| F24 Reference Data | ✅ | ✅ manage lists | ✅ bind dropdowns | ✅ use | ✅ use | — | — |
+| F25 Multi-Tenancy | ✅ create orgs | ✅ org admin | ✅ scoped | ✅ scoped | ✅ scoped | ✅ scoped | — |
 
 ---
 
-## Module map (frontend routes → feature)
+## Module map (frontend routes -> feature)
 
 ```mermaid
 graph LR
     subgraph "Public"
         login["/auth/login"]
+        branding["/auth/branding/:domain"]
+        inviteAccept["/invite/:token"]
     end
 
-    subgraph "Any authenticated"
-        templates["/templates"]
-        myFeedback["/my-feedback"]
+    subgraph "Mode: Form Desk /desk"
+        desk["/desk"]
+        deskFill["/desk/fill/:templateId"]
+        deskHistory["/desk/history"]
     end
 
-    subgraph "Admin only"
+    subgraph "Mode: Design Studio /studio"
+        studioTemplates["/studio/templates"]
+        designer["/designer/:pageId"]
+    end
+
+    subgraph "Mode: Admin Console /admin"
         adminFeedback["/admin/feedback"]
+        adminTemplateFeedback["/admin/template-feedback"]
         adminUsers["/admin/users"]
         adminDepts["/admin/departments"]
         adminInvitations["/admin/invitations"]
         adminOrgSettings["/admin/settings"]
         adminRefData["/admin/reference-data"]
+        adminPrinter["/admin/printer-profiles"]
         auditLogs["/admin/audit-logs"]
     end
 
-    subgraph "Admin + Designer"
-        designer["/designer/:pageId"]
+    subgraph "Any Authenticated"
+        templates["/templates"]
+        myFeedback["/my-feedback"]
     end
 
-    subgraph "Public (no auth)"
-        inviteAccept["/invite/:token"]
-        branding["/auth/branding/:domain"]
-    end
-
-    login -->|"F01 F24"| templates
-    templates -->|"F03"| designer
-    designer -->|"F04 F20 F23"| designer
-    templates -->|"F03"| adminFeedback
+    login -->|"F01 F25"| desk
+    login -->|"F01 F25"| studioTemplates
+    login -->|"F01 F25"| templates
+    inviteAccept -->|"F25"| login
+    branding -->|"F25"| login
+    desk -->|"F16"| deskFill
+    deskFill -->|"F17"| deskHistory
+    studioTemplates -->|"F03 F19"| designer
+    designer -->|"F04 F21 F24"| designer
     adminFeedback -->|"F11 F12 F14"| adminFeedback
-    myFeedback -->|"F14"| myFeedback
-    adminUsers -->|"F01 F24"| adminUsers
-    adminDepts -->|"F24"| adminDepts
-    adminInvitations -->|"F24"| adminInvitations
-    adminOrgSettings -->|"F24"| adminOrgSettings
-    adminRefData -->|"F23"| adminRefData
+    adminTemplateFeedback -->|"F20"| adminTemplateFeedback
+    adminRefData -->|"F24"| adminRefData
+    adminPrinter -->|"F23"| adminPrinter
+    adminUsers -->|"F01 F25"| adminUsers
+    adminDepts -->|"F25"| adminDepts
+    adminInvitations -->|"F25"| adminInvitations
+    adminOrgSettings -->|"F25"| adminOrgSettings
     auditLogs -->|"F08"| auditLogs
-    inviteAccept -->|"F24"| login
-    branding -->|"F24"| login
+    myFeedback -->|"F14"| myFeedback
 ```
 
 ---
@@ -151,21 +182,24 @@ erDiagram
     template_pages ||--o{ template_elements : contains
     template_elements ||--o| template_elements : "tafqeet links to"
     templates }o--o| departments : "scoped to"
+    templates ||--o{ templates : "lineage (parent_version_id)"
     organizations ||--o{ reference_lists : owns
     reference_lists ||--o{ reference_entries : contains
     template_elements }o--o| reference_lists : "dropdown binds to"
     organizations ||--o{ printer_profiles : owns
     organizations ||--o{ submissions : contains
     submissions }o--o| branches : "tagged with"
+    submissions }o--|| templates : "references version"
+    organizations ||--o{ drafts : contains
+    profiles ||--o{ drafts : saves
+    profiles ||--o{ operator_pins : bookmarks
     profiles ||--o{ feedback_submissions : submits
     feedback_submissions ||--o{ feedback_images : has
-    feedback_submissions ||--o| feedback_submissions : "audio_url / video_url"
-    feedback_submissions ||--o{ feedback_labels : "tagged with"
-    labels ||--o{ feedback_labels : defines
     feedback_submissions ||--o{ feedback_replies : "thread"
     feedback_replies }o--|| profiles : "authored by"
     profiles ||--o{ feedback_notifications : receives
-    feedback_notifications }o--|| feedback_replies : "triggered by"
+    profiles ||--o{ template_feedback : submits
+    template_feedback }o--|| templates : "references version"
     profiles ||--o{ audit_logs : generates
 ```
 
@@ -185,7 +219,13 @@ erDiagram
 | Admin labels | `/api/admin/labels/*` | ✅ | admin |
 | Feedback (user) | `/api/feedback/*` | ✅ | any authenticated |
 | My feedback | `/api/my-feedback` | ✅ | any authenticated |
+| Template feedback | `/api/template-feedback/*` | ✅ | operator (submit), designer (resolve), admin (overview) |
 | Notifications | `/api/notifications/*` | ✅ | any authenticated |
+| Desk dashboard | `/api/desk/dashboard` | ✅ | operator / admin |
+| Desk templates | `/api/desk/templates` | ✅ | operator / admin |
+| Desk pins | `/api/desk/pins/*` | ✅ | operator |
+| Desk drafts | `/api/desk/drafts/*` | ✅ | operator |
+| Submissions | `/api/desk/submissions/*` | ✅ | operator (own), admin (org-wide) |
 | Health | `/api/health` | — | — |
 | Audit | `/api/admin/audit-logs` | ✅ | admin |
 | Organizations | `/api/organizations/*` | ✅ | platform admin |

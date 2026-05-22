@@ -1,4 +1,4 @@
-# F20 — New Element Types (Signature + Table)
+# F21 — New Element Types (Signature + Table)
 
 **Roles**: Designer (configure) · Operator (fill)  
 **Related**: [F04 Design Studio](f04-design-studio.md) · [F06 PDF Engine](f06-pdf-engine.md) · [F03 Templates](f03-templates.md)
@@ -175,7 +175,7 @@ flowchart TD
 
 ## Flows
 
-### 20.1 Designer adds a signature element
+### 21.1 Designer adds a signature element
 
 ```
 Designer drags "Signature" from palette onto canvas
@@ -186,7 +186,7 @@ Designer drags "Signature" from palette onto canvas
 → Auto-save triggers after 2s debounce
 ```
 
-### 20.2 Operator fills a signature
+### 21.2 Operator fills a signature
 
 ```
 Operator opens a form containing a signature element
@@ -198,7 +198,7 @@ Operator opens a form containing a signature element
 → Submission stores either inline base64 or storage URL
 ```
 
-### 20.3 Designer configures a table element
+### 21.3 Designer configures a table element
 
 ```
 Designer drags "Table" from palette onto canvas
@@ -209,7 +209,7 @@ Designer drags "Table" from palette onto canvas
 → onTablePropertyChange handler updates element data
 ```
 
-### 20.4 Operator fills a table
+### 21.4 Operator fills a table
 
 ```
 Operator opens form with table element

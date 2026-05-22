@@ -1,7 +1,7 @@
-# F24 — Multi-Tenancy
+# F25 — Multi-Tenancy
 
 **Roles**: Platform Admin · Org Admin · Designer · Operator · Viewer · Branch Manager  
-**Related**: [F01 Auth](f01-auth.md) · [F08 Security](f08-security.md) · [F22 Overlay Print](f22-overlay-print-mode.md) · [F23 Reference Data](f23-reference-data.md)
+**Related**: [F01 Auth](f01-auth.md) · [F08 Security](f08-security.md) · [F23 Overlay Print](f23-overlay-print-mode.md) · [F24 Reference Data](f24-reference-data.md)
 
 ---
 
@@ -215,7 +215,7 @@ flowchart TD
 
 ## Flows
 
-### 24.1 Platform admin creates an organization
+### 25.1 Platform admin creates an organization
 
 ```
 Platform admin (is_platform_admin=true) accesses /platform/organizations
@@ -227,7 +227,7 @@ Platform admin (is_platform_admin=true) accesses /platform/organizations
 → First admin user invited via invitation workflow
 ```
 
-### 24.2 Multi-org login flow
+### 25.2 Multi-org login flow
 
 ```
 User enters email + password at /auth/login
@@ -242,7 +242,7 @@ User enters email + password at /auth/login
 → Frontend stores tokens and redirects to /templates
 ```
 
-### 24.3 Org admin invites a user
+### 25.3 Org admin invites a user
 
 ```
 Org admin opens /admin/invitations
@@ -260,7 +260,7 @@ Org admin opens /admin/invitations
 → Invitation marked as accepted
 ```
 
-### 24.4 Org admin manages user assignments
+### 25.4 Org admin manages user assignments
 
 ```
 Org admin opens /admin/users → user management
@@ -271,7 +271,7 @@ Org admin opens /admin/users → user management
 → Deactivated users cannot log in
 ```
 
-### 24.5 Org admin configures settings
+### 25.5 Org admin configures settings
 
 ```
 Org admin opens /admin/org-settings
@@ -286,7 +286,7 @@ Org admin opens /admin/org-settings
 → PATCH /org-settings saves changes
 ```
 
-### 24.6 Custom domain branding
+### 25.6 Custom domain branding
 
 ```
 User navigates to forms.acme.com/auth/login
@@ -296,7 +296,7 @@ User navigates to forms.acme.com/auth/login
 → After login, user lands in correct org context
 ```
 
-### 24.7 Department-scoped templates
+### 25.7 Department-scoped templates
 
 ```
 Designer creates a template → assigns to department (optional)
@@ -306,7 +306,7 @@ Designer creates a template → assigns to department (optional)
 → Org-wide templates visible to all; department templates only to department members
 ```
 
-### 24.8 Branch-tagged submissions
+### 25.8 Branch-tagged submissions
 
 ```
 Operator submits a form

@@ -1,4 +1,4 @@
-# F22 — Overlay Print Mode
+# F23 — Overlay Print Mode
 
 **Roles**: Admin (printer profiles) · Operator (print) · Designer (element overlay flag)  
 **Related**: [F06 PDF Engine](f06-pdf-engine.md) · [F04 Design Studio](f04-design-studio.md)
@@ -148,7 +148,7 @@ flowchart TD
 
 ## Flows
 
-### 22.1 Admin creates a printer profile
+### 23.1 Admin creates a printer profile
 
 ```
 Admin opens /admin/printer-profiles
@@ -159,7 +159,7 @@ Admin opens /admin/printer-profiles
 → Profile appears in list
 ```
 
-### 22.2 Admin calibrates a printer profile
+### 23.2 Admin calibrates a printer profile
 
 ```
 Admin selects a profile → clicks "Print Calibration Page"
@@ -172,7 +172,7 @@ Admin selects a profile → clicks "Print Calibration Page"
 → All future prints using this profile shift elements by (1.5, -0.8) mm
 ```
 
-### 22.3 Admin sets a default profile
+### 23.3 Admin sets a default profile
 
 ```
 Admin selects a profile → clicks "Set as Default"
@@ -181,7 +181,7 @@ Admin selects a profile → clicks "Set as Default"
 → Print dialog pre-selects this profile for all operators in the org
 ```
 
-### 22.4 Operator prints in overlay mode
+### 23.4 Operator prints in overlay mode
 
 ```
 Operator opens a filled submission → clicks "Print"
@@ -197,7 +197,7 @@ Operator opens a filled submission → clicks "Print"
 → Operator prints on pre-printed paper
 ```
 
-### 22.5 Designer marks elements for overlay exclusion
+### 23.5 Designer marks elements for overlay exclusion
 
 ```
 Designer opens template in Design Studio

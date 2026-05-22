@@ -1,4 +1,4 @@
-# F23 — Reference Data Manager
+# F24 — Reference Data Manager
 
 **Roles**: Admin (manage lists/entries) · Designer (bind dropdowns) · Operator (use bound dropdowns)  
 **Related**: [F04 Design Studio](f04-design-studio.md) · [F03 Templates](f03-templates.md)
@@ -153,7 +153,7 @@ sequenceDiagram
 
 ## Flows
 
-### 23.1 Admin creates a reference list
+### 24.1 Admin creates a reference list
 
 ```
 Admin opens /admin/reference-data
@@ -166,7 +166,7 @@ Admin opens /admin/reference-data
 → List created, scoped to admin's org_id
 ```
 
-### 23.2 Admin manages entries
+### 24.2 Admin manages entries
 
 ```
 Admin opens a reference list → entries view
@@ -178,7 +178,7 @@ Admin opens a reference list → entries view
 → Search/filter by any column value via query param
 ```
 
-### 23.3 Admin imports entries via CSV
+### 24.3 Admin imports entries via CSV
 
 ```
 Admin clicks "Import CSV" on a list
@@ -198,7 +198,7 @@ Admin clicks "Import CSV" on a list
   → Response: inserted/updated/skipped counts
 ```
 
-### 23.4 Designer binds a dropdown to a reference list
+### 24.4 Designer binds a dropdown to a reference list
 
 ```
 Designer selects a dropdown element in Design Studio
@@ -209,7 +209,7 @@ Designer selects a dropdown element in Design Studio
 → Binding saved: element.properties.list_id, display_column, value_column
 ```
 
-### 23.5 Operator uses a bound dropdown
+### 24.5 Operator uses a bound dropdown
 
 ```
 Operator opens form with bound dropdown

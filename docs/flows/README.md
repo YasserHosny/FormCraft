@@ -1,7 +1,7 @@
 # FormCraft — Feature Flows
 
-> Structured documentation of every user journey, system flow, and wireflow across all 19 features.
-> Last updated: 2026-05-20
+> Structured documentation of every user journey, system flow, and wireflow across all 25 features.
+> Last updated: 2026-05-22
 
 ---
 
@@ -9,8 +9,9 @@
 
 | File | What it covers |
 |------|---------------|
-| [feature-map.md](feature-map.md) | System-level feature dependency graph, role–feature matrix |
+| [feature-map.md](feature-map.md) | System-level feature dependency graph, role-feature matrix |
 | [user-flows.md](user-flows.md) | Cross-cutting flows: role hierarchy, error handling, RTL/bilingual |
+| [comprehensive-flow.md](comprehensive-flow.md) | End-to-end platform flow across all 25 features |
 | [f01-auth.md](f01-auth.md) | Authentication & User Management |
 | [f02-i18n.md](f02-i18n.md) | Internationalization & RTL Support |
 | [f03-templates.md](f03-templates.md) | Template Domain Model |
@@ -25,46 +26,59 @@
 | [f12-feedback-labels.md](f12-feedback-labels.md) | Feedback Dashboard Search & Labels |
 | [f13-feedback-media.md](f13-feedback-media.md) | Feedback Rich Media |
 | [f14-feedback-threading.md](f14-feedback-threading.md) | Feedback Threading & Replies |
-| [f20-new-element-types.md](f20-new-element-types.md) | New Element Types (Signature + Table) |
-| [f21-advanced-validation.md](f21-advanced-validation.md) | Advanced Form Validation & Conditions |
-| [f22-overlay-print-mode.md](f22-overlay-print-mode.md) | Overlay Print Mode & Printer Profiles |
-| [f23-reference-data.md](f23-reference-data.md) | Reference Data Manager |
-| [f24-multi-tenancy.md](f24-multi-tenancy.md) | Multi-Tenancy (Orgs, Departments, Branches) |
+| [f15-mode-switching.md](f15-mode-switching.md) | Mode Switching UX |
+| [f16-operator-dashboard.md](f16-operator-dashboard.md) | Operator Dashboard (Form Desk) |
+| [f17-form-filler.md](f17-form-filler.md) | Form Filler |
+| [f18-submission-history.md](f18-submission-history.md) | Submission History & Reprint |
+| [f19-template-versioning.md](f19-template-versioning.md) | Template Versioning & Cloning |
+| [f20-template-feedback.md](f20-template-feedback.md) | Template Feedback |
+| [f21-new-element-types.md](f21-new-element-types.md) | New Element Types (Signature + Table) |
+| [f22-advanced-validation.md](f22-advanced-validation.md) | Advanced Form Validation & Conditions |
+| [f23-overlay-print-mode.md](f23-overlay-print-mode.md) | Overlay Print Mode & Printer Profiles |
+| [f24-reference-data.md](f24-reference-data.md) | Reference Data Manager |
+| [f25-multi-tenancy.md](f25-multi-tenancy.md) | Multi-Tenancy (Orgs, Departments, Branches) |
 
 ---
 
 ## Feature dependency overview
 
 ```
-Auth (F01) ──────────────────────────────────────┐
- ├── i18n (F02)                                   │
- ├── Templates (F03) ──► Design Studio (F04)      │
- │                          ├── AI Suggest (F05)  │
- │                          ├── Tafqeet (F10)     │
- │                          └── PDF Engine (F06)  │
- │                                └── Validation (F07)
- ├── Security / Audit (F08) ◄──── all features    │
- ├── Performance (F09) ◄──── all features         │
- ├── Feedback Widget (F11) ◄──────────────────────┘
+Auth (F01) ──────────────────────────────────────────────────┐
+ ├── i18n (F02)                                              │
+ ├── Templates (F03) ──► Design Studio (F04)                 │
+ │                          ├── AI Suggest (F05)             │
+ │                          ├── Tafqeet (F10)                │
+ │                          ├── New Elements (F21)           │
+ │                          ├── Ref Data Binding (F24)       │
+ │                          └── PDF Engine (F06)             │
+ │                                ├── Validation (F07)       │
+ │                                │     └── Adv. Valid (F22) │
+ │                                └── Overlay Print (F23)    │
+ ├── Template Versioning (F19) ◄── Templates (F03)           │
+ ├── Template Feedback (F20) ◄── Studio (F04) + Desk (F17)   │
+ ├── Mode Switching (F15) ──► Nav bar & route guards          │
+ │     ├── Operator Dashboard (F16)                          │
+ │     │     └── Form Filler (F17)                           │
+ │     │           └── Submission History (F18)              │
+ │     └── Admin Console                                     │
+ ├── Security / Audit (F08) ◄──── all features               │
+ ├── Performance (F09) ◄──── all features                    │
+ ├── Feedback Widget (F11) ◄─────────────────────────────────┘
  │        ├── Search & Labels (F12)
  │        ├── Rich Media (F13)
  │        └── Threading (F14)
- ├── New Element Types (F20) ──► Signature + Table
- ├── Advanced Validation (F21) ──► Conditions + Country Validators
- ├── Overlay Print Mode (F22) ──► Printer Profiles + Calibration
- ├── Reference Data (F23) ──► Lists, Entries, CSV Import, Dropdown Binding
- └── Multi-Tenancy (F24) ──► Orgs, Departments, Branches, Invitations
+ └── Multi-Tenancy (F25) ──► Orgs, Departments, Branches
 ```
 
 ---
 
 ## Quick navigation by role
 
-| I am a… | Start reading |
+| I am a... | Start reading |
 |---------|--------------|
-| **Admin** | [F01](f01-auth.md) → [F08](f08-security.md) → [F11](f11-feedback-widget.md) → [F12](f12-feedback-labels.md) → [F14](f14-feedback-threading.md) |
-| **Designer** | [F03](f03-templates.md) → [F04](f04-design-studio.md) → [F05](f05-ai-suggestions.md) → [F10](f10-tafqeet.md) → [F06](f06-pdf-engine.md) |
-| **Operator / Viewer** | [F03](f03-templates.md) → [F06](f06-pdf-engine.md) |
-| **Branch Manager** | [F24](f24-multi-tenancy.md) → [F03](f03-templates.md) → [F06](f06-pdf-engine.md) |
-| **Platform Admin** | [F24](f24-multi-tenancy.md) → [F01](f01-auth.md) → [F08](f08-security.md) |
-| **All users** | [F02](f02-i18n.md) → [F11](f11-feedback-widget.md) → [F14](f14-feedback-threading.md) |
+| **Platform Admin** | [F25](f25-multi-tenancy.md) → [F01](f01-auth.md) → [F08](f08-security.md) |
+| **Org Admin** | [F25](f25-multi-tenancy.md) → [F15](f15-mode-switching.md) → [F24](f24-reference-data.md) → [F23](f23-overlay-print-mode.md) |
+| **Designer** | [F03](f03-templates.md) → [F04](f04-design-studio.md) → [F19](f19-template-versioning.md) → [F21](f21-new-element-types.md) → [F22](f22-advanced-validation.md) |
+| **Operator** | [F15](f15-mode-switching.md) → [F16](f16-operator-dashboard.md) → [F17](f17-form-filler.md) → [F18](f18-submission-history.md) |
+| **Branch Manager** | [F25](f25-multi-tenancy.md) → [F16](f16-operator-dashboard.md) → [F18](f18-submission-history.md) |
+| **All users** | [F02](f02-i18n.md) → [F11](f11-feedback-widget.md) → [F14](f14-feedback-threading.md) → [F20](f20-template-feedback.md) |

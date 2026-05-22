@@ -35,15 +35,24 @@ graph TD
 | `/invite/:token` | — | public |
 | `/invite/expired` | — | public |
 | `/templates` | AuthGuard | any authenticated |
+| `/my-feedback` | AuthGuard | any authenticated |
+| **Mode: Design Studio** | | |
+| `/studio/templates` | AuthGuard + RoleGuard | admin, designer |
 | `/designer/:pageId` | AuthGuard + RoleGuard | admin, designer |
+| **Mode: Form Desk** | | |
+| `/desk` | AuthGuard + RoleGuard | admin, branch_manager, operator |
+| `/desk/fill/:templateId` | AuthGuard + RoleGuard | admin, branch_manager, operator |
+| `/desk/history` | AuthGuard + RoleGuard | admin, branch_manager, operator |
+| **Mode: Admin Console** | | |
 | `/admin/feedback` | AuthGuard + RoleGuard | admin |
+| `/admin/template-feedback` | AuthGuard + RoleGuard | admin |
 | `/admin/users` | AuthGuard + RoleGuard | org admin |
 | `/admin/settings` | AuthGuard + RoleGuard | org admin |
 | `/admin/departments` | AuthGuard + RoleGuard | org admin |
 | `/admin/invitations` | AuthGuard + RoleGuard | org admin |
 | `/admin/reference-data` | AuthGuard + RoleGuard | admin |
+| `/admin/printer-profiles` | AuthGuard + RoleGuard | admin |
 | `/admin/audit-logs` | AuthGuard + RoleGuard | admin |
-| `/my-feedback` | AuthGuard | any authenticated |
 
 ---
 
