@@ -225,7 +225,7 @@ erDiagram
 | Desk templates | `/api/desk/templates` | ✅ | operator / admin |
 | Desk pins | `/api/desk/pins/*` | ✅ | operator |
 | Desk drafts | `/api/desk/drafts/*` | ✅ | operator |
-| Submissions | `/api/desk/submissions/*` | ✅ | operator (own), admin (org-wide) |
+| Submissions | `/api/submissions/*` | ✅ | operator (own), admin (org-wide) |
 | Health | `/api/health` | — | — |
 | Audit | `/api/admin/audit-logs` | ✅ | admin |
 | Organizations | `/api/organizations/*` | ✅ | platform admin |

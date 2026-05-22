@@ -51,6 +51,13 @@ const routes: Routes = [
     data: { roles: ['admin'] },
   },
   {
+    path: 'desk',
+    loadChildren: () =>
+      import('./features/desk/desk.module').then((m) => m.DeskModule),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['admin', 'branch_manager', 'operator'] },
+  },
+  {
     path: 'my-feedback',
     loadChildren: () =>
       import('./features/my-feedback/my-feedback.module').then(

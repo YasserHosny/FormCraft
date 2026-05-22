@@ -216,9 +216,13 @@ async def get_branding(domain: str):
 
     Used by the login page to display the correct logo and colours.
     """
-    client = get_supabase_client()
-    service = OrganizationService(client)
-    branding = await service.get_branding_by_domain(domain)
+    try:
+        client = get_supabase_client()
+        service = OrganizationService(client)
+        branding = await service.get_branding_by_domain(domain)
+    except Exception:
+        # organizations table may not exist yet (migration pending)
+        branding = None
     if not branding:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -29,11 +29,11 @@
 
 ```mermaid
 flowchart TD
-    A([Operator navigates to /desk/history]) --> B[GET /api/desk/submissions?page=1&limit=25]
+    A([Operator navigates to /desk/history]) --> B[GET /api/submissions?page=1&limit=25]
     B --> C[Render paginated table: ref#, template, date, status]
     C --> D{Operator action}
     D -- search --> E[Type ref# or template name]
-    E --> F[GET /api/desk/submissions?search=FC-2026-05-0042]
+    E --> F[GET /api/submissions?search=FC-2026-05-0042]
     F --> C
     D -- click row --> G[Detail view: all field values read-only + metadata]
     G --> H{Action?}
@@ -60,7 +60,7 @@ sequenceDiagram
     participant Audit as Audit Log
 
     Op->>FE: Click "Reprint" on submission
-    FE->>API: POST /api/desk/submissions/:id/reprint
+    FE->>API: POST /api/submissions/:id/reprint
     API->>PDF: Render PDF with original field_values + template version
     PDF->>PDF: Add "REPRINT" diagonal watermark
     PDF->>PDF: Add footer: reprint timestamp + "Originally printed: {date}"
@@ -78,7 +78,7 @@ sequenceDiagram
 
 ```
 Operator navigates to /desk/history
-→ GET /api/desk/submissions (paginated, 25/page, newest first)
+→ GET /api/submissions (paginated, 25/page, newest first)
 → Table shows: reference_number, template_name, date, status, key_field_summary
 → Key field summary: first 3 non-empty field values for quick identification
 → Pagination controls at bottom (25/50/100 per page options)
@@ -112,7 +112,7 @@ Operator clicks a submission row
 
 ```
 Operator clicks "Reprint"
-→ POST /api/desk/submissions/:id/reprint
+→ POST /api/submissions/:id/reprint
 → PDF generated with original field_values and original template version
 → "REPRINT" watermark stamped diagonally across each page
 → Footer: reprint timestamp + "Originally printed: {original_date}"

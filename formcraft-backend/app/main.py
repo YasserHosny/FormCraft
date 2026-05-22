@@ -27,6 +27,9 @@ from app.api.routes import (
     departments,
     branches,
     invitations,
+    desk,
+    drafts,
+    submissions,
 )
 
 logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO))
@@ -77,6 +80,9 @@ def create_app() -> FastAPI:
     app.include_router(branches.router, prefix="/api")
     app.include_router(invitations.router, prefix="/api")
     app.include_router(invitations.public_router, prefix="/api")
+    app.include_router(desk.router, prefix="/api")
+    app.include_router(drafts.router, prefix="/api")
+    app.include_router(submissions.router, prefix="/api")
 
     logger.info("FormCraft API v%s started", settings.APP_VERSION)
     return app

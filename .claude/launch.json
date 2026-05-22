@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend",
+      "runtimeExecutable": "uvicorn",
+      "runtimeArgs": ["app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"],
+      "port": 8000,
+      "cwd": "formcraft-backend"
+    },
+    {
+      "name": "frontend",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["ng", "serve", "--proxy-config", "proxy.conf.json", "--port", "4200"],
+      "port": 4200,
+      "cwd": "formcraft-frontend"
+    }
+  ]
+}

@@ -26,14 +26,6 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [
-    DashboardComponent,
-    TemplateCardComponent,
-    RecentTemplatesComponent,
-    PinnedTemplatesComponent,
-    DraftListComponent,
-    VersionNotificationsComponent,
-  ],
   imports: [
     SharedModule,
     RouterModule.forChild(routes),
@@ -48,6 +40,12 @@ const routes: Routes = [
     MatTooltipModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    DashboardComponent,
+    TemplateCardComponent,
+    RecentTemplatesComponent,
+    PinnedTemplatesComponent,
+    DraftListComponent,
+    VersionNotificationsComponent,
   ],
   providers: [DeskService],
 })

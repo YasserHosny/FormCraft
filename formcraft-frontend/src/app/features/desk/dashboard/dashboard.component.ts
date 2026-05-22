@@ -1,12 +1,49 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { TranslateService } from '@ngx-translate/core';
-import { DeskService, DashboardData, TemplateCard } from '../../services/desk.service';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { DeskService, DashboardData, TemplateCard } from '../services/desk.service';
+import { TemplateCardComponent } from '../components/template-card/template-card.component';
+import { RecentTemplatesComponent } from '../components/recent-templates/recent-templates.component';
+import { PinnedTemplatesComponent } from '../components/pinned-templates/pinned-templates.component';
+import { DraftListComponent } from '../components/draft-list/draft-list.component';
+import { VersionNotificationsComponent } from '../components/version-notifications/version-notifications.component';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'fc-dashboard',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatIconModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    MatPaginatorModule,
+    MatSnackBarModule,
+    TranslateModule,
+    TemplateCardComponent,
+    RecentTemplatesComponent,
+    PinnedTemplatesComponent,
+    DraftListComponent,
+    VersionNotificationsComponent,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
