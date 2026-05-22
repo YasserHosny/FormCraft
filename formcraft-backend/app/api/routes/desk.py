@@ -56,16 +56,25 @@ async def get_dashboard(
     """Get operator dashboard with templates, recent, pinned, and notifications."""
     client = get_supabase_client()
     service = DeskService(client)
-    return await service.get_dashboard(
-        operator_id=current_user.id,
-        org_id=None,
-        search=search,
-        category=category,
-        country=country,
-        language=language,
-        page=page,
-        limit=limit,
-    )
+    try:
+        return await service.get_dashboard(
+            operator_id=current_user.id,
+            org_id=None,
+            search=search,
+            category=category,
+            country=country,
+            language=language,
+            page=page,
+            limit=limit,
+        )
+    except Exception as exc:
+        msg = str(exc)
+        if "schema cache" in msg or "does not exist" in msg or "PGRST" in msg:
+            raise HTTPException(
+                status_code=503,
+                detail="Desk dashboard requires database migrations that have not been applied yet.",
+            )
+        raise
 
 
 @router.post("/pins", status_code=status.HTTP_201_CREATED)

@@ -196,6 +196,10 @@ class UserService:
 
     async def update_last_login(self, user_id: UUID) -> None:
         """Update the last_login_at timestamp (fire-and-forget from login flow)."""
-        self.client.table("profiles").update(
-            {"last_login_at": datetime.now(timezone.utc).isoformat()}
-        ).eq("id", str(user_id)).execute()
+        try:
+            self.client.table("profiles").update(
+                {"last_login_at": datetime.now(timezone.utc).isoformat()}
+            ).eq("id", str(user_id)).execute()
+        except Exception:
+            # last_login_at column may not exist yet (migration pending)
+            pass

@@ -552,12 +552,6 @@
     "add_row": "إضافة صف",
     "validation_error": "يرجى ملء جميع الخلايا المطلوبة"
   },
-  "designer": {
-    "elements": {
-      "signature": "توقيع",
-      "table": "جدول"
-    }
-  },
   "org": {
     "title": "إعدادات المؤسسة",
     "name_ar": "الاسم بالعربية",

@@ -1,7 +1,8 @@
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
@@ -83,6 +84,36 @@ def create_app() -> FastAPI:
     app.include_router(desk.router, prefix="/api")
     app.include_router(drafts.router, prefix="/api")
     app.include_router(submissions.router, prefix="/api")
+
+    # Global handler for Supabase/PostgREST errors (missing tables/columns
+    # from unapplied migrations) — returns a clear 503 instead of 500.
+    _SCHEMA_CODES = ("PGRST204", "PGRST205", "42703", "42P01")
+
+    def _is_schema_error(exc: Exception) -> bool:
+        msg = str(exc)
+        if any(code in msg for code in _SCHEMA_CODES):
+            return True
+        # Check nested exceptions in ExceptionGroups
+        if hasattr(exc, "exceptions"):
+            return any(_is_schema_error(e) for e in exc.exceptions)
+        if exc.__cause__:
+            return _is_schema_error(exc.__cause__)
+        return False
+
+    @app.exception_handler(Exception)
+    async def _supabase_schema_error_handler(request: Request, exc: Exception):
+        if _is_schema_error(exc):
+            msg = str(exc)[:300]
+            logger.warning("Schema error (migration pending): %s", msg[:200])
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "detail": "This feature requires a database migration that has not been applied yet.",
+                    "error": msg[:200],
+                },
+            )
+        # Re-raise anything else so default handling applies
+        raise exc
 
     logger.info("FormCraft API v%s started", settings.APP_VERSION)
     return app

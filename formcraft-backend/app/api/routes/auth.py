@@ -68,12 +68,21 @@ async def login(body: LoginRequest, request: Request):
     user_id = str(response.user.id)
 
     # Check if user profile is active
-    profile_result = (
-        client.table("profiles")
-        .select("id,is_active,org_id,role,display_name")
-        .eq("id", user_id)
-        .execute()
-    )
+    try:
+        profile_result = (
+            client.table("profiles")
+            .select("id,is_active,org_id,role,display_name")
+            .eq("id", user_id)
+            .execute()
+        )
+    except Exception:
+        # org_id column may not exist yet (migration 027 pending)
+        profile_result = (
+            client.table("profiles")
+            .select("id,is_active,role,display_name")
+            .eq("id", user_id)
+            .execute()
+        )
     profiles = profile_result.data or []
 
     if not profiles:
