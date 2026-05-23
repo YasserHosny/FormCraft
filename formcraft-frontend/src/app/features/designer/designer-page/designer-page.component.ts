@@ -46,6 +46,10 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   detectionsDocked = false;
   detectionsPosition = { x: 320, y: 130 };
   detectionTypes: string[] = ['text', 'date', 'currency', 'number', 'signature', 'checkbox'];
+  existingDetectionCount = 0;
+  showReplaceConfirm = false;
+  detectionHistory: DetectionResponse[] = [];
+  showDetectionHistory = false;
   palettePinned = true;
   propertyPinned = true;
   paletteOpen = false;
@@ -151,6 +155,9 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
     } else if (ctrl && event.key === 'a') {
       event.preventDefault();
       this.canvasService.selectAll();
+    } else if (ctrl && event.key === 'g') {
+      event.preventDefault();
+      this.canvasService.toggleDebugGrid();
     }
   }
 
@@ -213,8 +220,61 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
       this.runDetectionFromPath();
       return;
     }
+    // T045: Check for existing pending detections before opening import panel
+    this.formDetectionService.listDetections(this.templateId).subscribe({
+      next: (detections: DetectionResponse[]) => {
+        const pendingCount = detections.reduce(
+          (sum, d) => sum + (d.detected_fields?.filter((f: DetectedField) => f.status === 'pending').length || 0),
+          0
+        );
+        if (pendingCount > 0) {
+          this.existingDetectionCount = pendingCount;
+          this.showReplaceConfirm = true;
+        } else {
+          this.showImportPanel = true;
+          this.showDetectionsPanel = false;
+        }
+      },
+      error: () => {
+        // On error, just open import panel
+        this.showImportPanel = true;
+        this.showDetectionsPanel = false;
+      },
+    });
+  }
+
+  confirmReplaceDetections(): void {
+    this.showReplaceConfirm = false;
     this.showImportPanel = true;
     this.showDetectionsPanel = false;
+  }
+
+  cancelReplaceDetections(): void {
+    this.showReplaceConfirm = false;
+  }
+
+  /** T047: Load and display detection history for this template. */
+  toggleDetectionHistory(): void {
+    this.showDetectionHistory = !this.showDetectionHistory;
+    if (this.showDetectionHistory) {
+      this.loadDetectionHistory();
+    }
+  }
+
+  loadDetectionHistory(): void {
+    this.formDetectionService.listDetections(this.templateId).subscribe({
+      next: (detections: DetectionResponse[]) => {
+        this.detectionHistory = detections;
+      },
+    });
+  }
+
+  viewHistoricDetection(detection: DetectionResponse): void {
+    this.detections = detection.detected_fields;
+    this.detectionId = detection.id;
+    this.canvasService.setDetections(this.detections);
+    this.showDetectionsPanel = true;
+    this.showDetectionHistory = false;
   }
 
   submitForReview(): void {
@@ -534,6 +594,18 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
         this.canvasService.clearDetections();
       },
     });
+  }
+
+  /** T046: Clear all pending detection overlays without affecting accepted elements. */
+  clearDetections(): void {
+    this.detections = [];
+    this.canvasService.clearDetections();
+    this.showDetectionsPanel = false;
+    // Delete the detection record from server if it exists
+    if (this.detectionId) {
+      this.formDetectionService.deleteDetection(this.detectionId).subscribe();
+      this.detectionId = '';
+    }
   }
 
   acceptSingle(index: number): void {

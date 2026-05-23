@@ -87,6 +87,16 @@
         (drop)="onCanvasDrop($event)"
       ></div>
 
+      <!-- T045: Replace detection confirmation dialog -->
+      <div class="replace-confirm-panel" *ngIf="showReplaceConfirm">
+        <mat-icon color="warn">warning</mat-icon>
+        <p>{{ 'designer.import.replaceDetections' | translate:{ count: existingDetectionCount } }}</p>
+        <div class="actions">
+          <button mat-flat-button color="warn" (click)="confirmReplaceDetections()">{{ 'designer.import.replace' | translate }}</button>
+          <button mat-button (click)="cancelReplaceDetections()">{{ 'designer.import.cancel' | translate }}</button>
+        </div>
+      </div>
+
       <div class="import-panel" *ngIf="showImportPanel">
         <h4>Import Cheque</h4>
         <div class="file-drop" (click)="fileInput.click()">
@@ -132,8 +142,21 @@
           </button>
         </div>
         <div class="actions">
-          <button mat-flat-button color="primary" (click)="acceptAll()">Accept All</button>
-          <button mat-button color="warn" (click)="rejectAll()">Reject All</button>
+          <button mat-flat-button color="primary" (click)="acceptAll()">{{ 'designer.detection.acceptAll' | translate }}</button>
+          <button mat-button color="warn" (click)="rejectAll()">{{ 'designer.detection.rejectAll' | translate }}</button>
+          <button mat-button (click)="clearDetections()">{{ 'designer.import.clearDetections' | translate }}</button>
+          <button mat-icon-button (click)="toggleDetectionHistory()" matTooltip="{{ 'designer.import.detectionHistory' | translate }}">
+            <mat-icon>history</mat-icon>
+          </button>
+        </div>
+        <!-- T047: Detection history panel -->
+        <div class="detection-history" *ngIf="showDetectionHistory">
+          <h5>{{ 'designer.import.previousImports' | translate }}</h5>
+          <div *ngIf="detectionHistory.length === 0" class="no-history">{{ 'designer.import.noHistory' | translate }}</div>
+          <div *ngFor="let h of detectionHistory" class="history-card" (click)="viewHistoricDetection(h)">
+            <span class="history-date">{{ h.created_at | date:'short' }}</span>
+            <span class="history-count">{{ h.detected_fields.length }} {{ 'designer.import.fieldsDetected' | translate }}</span>
+          </div>
         </div>
         <div *ngFor="let d of detections; let i = index" class="detection-card">
           <div class="detection-row">

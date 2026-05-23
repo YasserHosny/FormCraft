@@ -1,6 +1,6 @@
 # FormCraft Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-05-07
+Auto-generated from all feature plans. Last updated: 2026-05-23
 
 ## Active Technologies
 
@@ -22,10 +22,10 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.12 (backend), TypeScript / Angular 17 (frontend): Follow standard conventions
 
 ## Recent Changes
+- 025-form-import-ocr: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
 - 001-customer-feedback: Added Python 3.12 (backend), TypeScript / Angular 17 (frontend) + FastAPI, Supabase (PostgreSQL + Storage + Auth), Angular Material
 - 013-feedback-rich-media: Added MediaRecorder API (VideoRecorderService), multi-image sequential upload, Supabase Storage bucket updated to 100 MB / video MIME types, feedback_images table (migration 010)
-- 014-feedback-threading: Added Supabase Realtime (WebSocket) for live thread updates and notifications, feedback_replies + feedback_notifications tables (migration 011), FeedbackRealtimeService, shared ThreadComponent, /my-feedback route (AuthGuard), notification badge in nav
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

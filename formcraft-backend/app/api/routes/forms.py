@@ -2,6 +2,7 @@
 
 import logging
 import mimetypes
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from pathlib import Path
 from uuid import UUID
 
@@ -19,6 +20,7 @@ from app.models.form_detection import (
     FormDetectionResponse,
 )
 from app.models.user import UserProfile
+from app.core.audit import AuditLogger
 from app.services.ocr import AzureOCRClient, BoundingBoxConverter, FieldClassifier
 from app.services.template_service import TemplateService
 
@@ -52,9 +54,77 @@ def _get_local_import_path() -> Path:
     return file_path
 
 
+OCR_TIMEOUT_SECONDS = 30
+
+
+def _compute_iou(a: dict, b: dict) -> float:
+    """Compute Intersection over Union for two bounding boxes {x, y, width, height}."""
+    ax1, ay1 = a["x"], a["y"]
+    ax2, ay2 = ax1 + a["width"], ay1 + a["height"]
+    bx1, by1 = b["x"], b["y"]
+    bx2, by2 = bx1 + b["width"], by1 + b["height"]
+
+    ix1 = max(ax1, bx1)
+    iy1 = max(ay1, by1)
+    ix2 = min(ax2, bx2)
+    iy2 = min(ay2, by2)
+
+    if ix2 <= ix1 or iy2 <= iy1:
+        return 0.0
+
+    inter = (ix2 - ix1) * (iy2 - iy1)
+    area_a = a["width"] * a["height"]
+    area_b = b["width"] * b["height"]
+    union = area_a + area_b - inter
+    return inter / union if union > 0 else 0.0
+
+
+def _deduplicate_detections(
+    fields: list[DetectedField], iou_threshold: float = 0.8
+) -> list[DetectedField]:
+    """Merge detections with >iou_threshold bbox overlap, keeping higher confidence."""
+    if not fields:
+        return fields
+    keep = list(fields)
+    merged = True
+    while merged:
+        merged = False
+        result = []
+        used = set()
+        for i, fi in enumerate(keep):
+            if i in used:
+                continue
+            best = fi
+            for j in range(i + 1, len(keep)):
+                if j in used:
+                    continue
+                iou = _compute_iou(
+                    best.bbox if hasattr(best, "bbox") else best.model_dump()["bbox"],
+                    keep[j].bbox if hasattr(keep[j], "bbox") else keep[j].model_dump()["bbox"],
+                )
+                if iou >= iou_threshold:
+                    used.add(j)
+                    merged = True
+                    if keep[j].confidence > best.confidence:
+                        best = keep[j]
+            result.append(best)
+        keep = result
+    return keep
+
+
 def _process_import(template_id: UUID, image_bytes: bytes, page_index: int) -> FormDetectionResponse:
     ocr_client = AzureOCRClient()
-    ocr_result = ocr_client.analyze_layout(image_bytes)
+
+    # T050: Wrap OCR call with a 30-second timeout
+    try:
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(ocr_client.analyze_layout, image_bytes)
+            ocr_result = future.result(timeout=OCR_TIMEOUT_SECONDS)
+    except FuturesTimeoutError:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="OCR analysis timed out. Please try again with a smaller or clearer image.",
+        )
 
     if not ocr_result.get("page_dimensions"):
         raise HTTPException(
@@ -70,12 +140,36 @@ def _process_import(template_id: UUID, image_bytes: bytes, page_index: int) -> F
         dpi=dpi,
     )
 
+    # Try to fetch target page dimensions for page-aware coordinate mapping
+    target_width_mm: float | None = None
+    target_height_mm: float | None = None
+    try:
+        client_for_pages = get_supabase_client()
+        page_result = (
+            client_for_pages.table("pages")
+            .select("width_mm, height_mm")
+            .eq("template_id", str(template_id))
+            .order("sort_order")
+            .execute()
+        )
+        if page_result.data and page_index < len(page_result.data):
+            page_row = page_result.data[page_index]
+            target_width_mm = page_row.get("width_mm")
+            target_height_mm = page_row.get("height_mm")
+    except Exception:
+        pass  # Fall back to DPI-based conversion
+
     classifier = FieldClassifier()
     detected_fields: list[DetectedField] = []
     words = ocr_result.get("words", [])
 
     for word in words:
-        bbox_mm = converter.convert_bbox(word["bbox"])
+        if target_width_mm and target_height_mm:
+            bbox_mm = converter.convert_bbox_to_page(
+                word["bbox"], target_width_mm, target_height_mm
+            )
+        else:
+            bbox_mm = converter.convert_bbox(word["bbox"])
         nearby_labels = classifier.get_nearby_labels(
             word["bbox"], words, max_distance=100
         )
@@ -98,6 +192,9 @@ def _process_import(template_id: UUID, image_bytes: bytes, page_index: int) -> F
                 status="pending",
             )
         )
+
+    # T051: Deduplicate overlapping detections (IoU > 0.8)
+    detected_fields = _deduplicate_detections(detected_fields)
 
     page_width_mm, page_height_mm = converter.get_page_dimensions_mm()
     client = get_supabase_client()
@@ -161,7 +258,17 @@ async def import_form(
         )
 
     try:
-        return _process_import(template_id, image_bytes, page_index)
+        result = _process_import(template_id, image_bytes, page_index)
+        # T049: Audit logging for form import
+        audit = AuditLogger(get_supabase_client())
+        await audit.log_event(
+            user_id=str(current_user.id),
+            action="form_import",
+            resource_type="template",
+            resource_id=str(template_id),
+            metadata={"page_index": page_index, "detected_fields": len(result.detected_fields)},
+        )
+        return result
     except ValueError as exc:
         logger.error("Configuration error: %s", exc)
         raise HTTPException(
@@ -339,6 +446,16 @@ async def accept_detections(
         }
         created.append(await service.add_element(UUID(page_id), element_data))
 
+    # T049: Audit logging for detection accept
+    audit = AuditLogger(get_supabase_client())
+    await audit.log_event(
+        user_id=str(current_user.id),
+        action="detection_accept",
+        resource_type="detection",
+        resource_id=str(detection_id),
+        metadata={"template_id": str(template_id), "accepted_count": len(created)},
+    )
+
     return {"message": "Accepted detections", "created_elements": len(created)}
 
 
@@ -360,5 +477,14 @@ async def delete_detection(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Detection not found"
         )
+
+    # T049: Audit logging for detection clear/reject
+    audit = AuditLogger(client)
+    await audit.log_event(
+        user_id=str(current_user.id),
+        action="detection_clear",
+        resource_type="detection",
+        resource_id=str(detection_id),
+    )
 
     return {"message": "Detection deleted successfully"}

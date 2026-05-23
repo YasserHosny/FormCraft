@@ -123,6 +123,35 @@
       "snap": "Snap",
       "export_pdf": "Export PDF",
       "preview": "Preview"
+    },
+    "import": {
+      "title": "Import Form (OCR)",
+      "uploadImage": "Upload Image",
+      "selectPage": "Select Page",
+      "importing": "Analyzing form...",
+      "noFieldsDetected": "No fields detected in the uploaded image.",
+      "fieldsDetected": "{count} fields detected",
+      "ocrError": "OCR service is unavailable. The image was saved as background.",
+      "importForm": "Import Form",
+      "replaceDetections": "This page has {{count}} pending detections. Replace them?",
+      "replace": "Replace",
+      "cancel": "Cancel",
+      "clearDetections": "Clear Detections",
+      "detectionHistory": "Detection History",
+      "previousImports": "Previous Imports",
+      "noHistory": "No previous imports found."
+    },
+    "detection": {
+      "reviewDetections": "Review Detections",
+      "acceptDetection": "Accept",
+      "rejectDetection": "Reject",
+      "acceptAll": "Accept All",
+      "rejectAll": "Reject All",
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "changeType": "Change Type",
+      "confidence": "Confidence"
     }
   },
   "ai": {
