@@ -1,0 +1,34 @@
+<div class="review-timeline">
+  <h2>{{ 'timeline.title' | translate }}: {{ timeline?.template_name }}</h2>
+
+  <mat-spinner *ngIf="loading" diameter="40"></mat-spinner>
+
+  <div class="timeline-container" *ngIf="!loading && timeline">
+    <div class="timeline-item" *ngFor="let event of timeline.timeline">
+      <div class="timeline-icon">
+        <mat-icon [color]="getEventColor(event.event)">{{ getEventIcon(event.event) }}</mat-icon>
+      </div>
+      <div class="timeline-content">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>{{ event.event }}</mat-card-title>
+            <mat-card-subtitle>
+              {{ event.actor_name || event.actor_id }} ({{ event.actor_role }})
+              <br>
+              {{ event.timestamp | date:'medium' }}
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content *ngIf="event.comment">
+            <p>{{ event.comment }}</p>
+          </mat-card-content>
+          <mat-card-content *ngIf="event.element_comments?.length">
+            <h4>Element Comments</h4>
+            <div *ngFor="let ec of event.element_comments" class="element-comment">
+              <strong>{{ ec.element_key }}:</strong> {{ ec.comment }}
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div>

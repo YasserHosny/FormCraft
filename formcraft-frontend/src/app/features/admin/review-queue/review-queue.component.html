@@ -1,54 +1,105 @@
-<mat-table [dataSource]="templates" *ngIf="!loading; else loadingTpl">
-  <ng-container matColumnDef="name">
-    <mat-header-cell *matHeaderCellDef>{{ 'templates.name' | translate }}</mat-header-cell>
-    <mat-cell *matCellDef="let template">{{ template.name }}</mat-cell>
-  </ng-container>
-
-  <ng-container matColumnDef="version">
-    <mat-header-cell *matHeaderCellDef>{{ 'templates.version' | translate }}</mat-header-cell>
-    <mat-cell *matCellDef="let template">v{{ template.version }}</mat-cell>
-  </ng-container>
-
-  <ng-container matColumnDef="created_by">
-    <mat-header-cell *matHeaderCellDef>{{ 'review.submittedBy' | translate }}</mat-header-cell>
-    <mat-cell *matCellDef="let template">{{ template.created_by }}</mat-cell>
-  </ng-container>
-
-  <ng-container matColumnDef="created_at">
-    <mat-header-cell *matHeaderCellDef>{{ 'review.submittedAt' | translate }}</mat-header-cell>
-    <mat-cell *matCellDef="let template">{{ template.updated_at | date:'short' }}</mat-cell>
-  </ng-container>
-
-  <ng-container matColumnDef="status">
-    <mat-header-cell *matHeaderCellDef>{{ 'templates.status' | translate }}</mat-header-cell>
-    <mat-cell *matCellDef="let template">
-      <fc-status-badge [status]="template.status"></fc-status-badge>
-    </mat-cell>
-  </ng-container>
-
-  <ng-container matColumnDef="actions">
-    <mat-header-cell *matHeaderCellDef>{{ 'common.actions' | translate }}</mat-header-cell>
-    <mat-cell *matCellDef="let template">
-      <button mat-icon-button color="primary" (click)="approve(template)" [matTooltip]="'review.approve' | translate">
-        <mat-icon>check_circle</mat-icon>
-      </button>
-      <button mat-icon-button color="warn" (click)="reject(template)" [matTooltip]="'review.reject' | translate">
-        <mat-icon>cancel</mat-icon>
-      </button>
-    </mat-cell>
-  </ng-container>
-
-  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-</mat-table>
-
-<ng-template #loadingTpl>
-  <div class="loading-state">
-    <mat-spinner diameter="40"></mat-spinner>
-    <p>{{ 'common.loading' | translate }}</p>
+<div class="review-queue-container">
+  <div class="queue-header">
+    <h2>{{ 'reviewQueue.title' | translate }}</h2>
+    <mat-chip-listbox *ngIf="overdueCount > 0">
+      <mat-chip highlighted color="warn">
+        {{ overdueCount }} {{ 'reviewQueue.overdue' | translate }}
+      </mat-chip>
+    </mat-chip-listbox>
   </div>
-</ng-template>
 
-<div *ngIf="!loading && templates.length === 0" class="empty-state">
-  <p>{{ 'review.emptyState' | translate }}</p>
+  <div class="filter-bar">
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'reviewQueue.status' | translate }}</mat-label>
+      <mat-select [(ngModel)]="statusFilter" (selectionChange)="onFilterChange()">
+        <mat-option value="">{{ 'common.all' | translate }}</mat-option>
+        <mat-option value="submitted_for_review">{{ 'reviewQueue.submitted' | translate }}</mat-option>
+        <mat-option value="approved">{{ 'reviewQueue.approved' | translate }}</mat-option>
+        <mat-option value="rejected">{{ 'reviewQueue.rejected' | translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'reviewQueue.sortBy' | translate }}</mat-label>
+      <mat-select [(ngModel)]="sortBy" (selectionChange)="onFilterChange()">
+        <mat-option value="submitted_at">{{ 'reviewQueue.submittedAt' | translate }}</mat-option>
+        <mat-option value="days_waiting">{{ 'reviewQueue.daysWaiting' | translate }}</mat-option>
+        <mat-option value="name">{{ 'reviewQueue.name' | translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-icon-button (click)="toggleSort(sortBy)">
+      <mat-icon>{{ sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+    </button>
+  </div>
+
+  <div class="table-container">
+    <mat-spinner *ngIf="loading" diameter="40"></mat-spinner>
+
+    <table mat-table [dataSource]="items" *ngIf="!loading" class="review-table">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>{{ 'reviewQueue.templateName' | translate }}</th>
+        <td mat-cell *matCellDef="let item">{{ item.template_name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="category">
+        <th mat-header-cell *matHeaderCellDef>{{ 'reviewQueue.category' | translate }}</th>
+        <td mat-cell *matCellDef="let item">{{ item.category }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="designer">
+        <th mat-header-cell *matHeaderCellDef>{{ 'reviewQueue.designer' | translate }}</th>
+        <td mat-cell *matCellDef="let item">{{ item.designer_name || item.designer_id }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="department">
+        <th mat-header-cell *matHeaderCellDef>{{ 'reviewQueue.department' | translate }}</th>
+        <td mat-cell *matCellDef="let item">{{ item.department_name || '-' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="submittedAt">
+        <th mat-header-cell *matHeaderCellDef>{{ 'reviewQueue.submittedAt' | translate }}</th>
+        <td mat-cell *matCellDef="let item">{{ item.submitted_at | date:'short' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="daysWaiting">
+        <th mat-header-cell *matHeaderCellDef>{{ 'reviewQueue.daysWaiting' | translate }}</th>
+        <td mat-cell *matCellDef="let item">
+          <span [class.overdue]="item.is_overdue">{{ item.days_waiting }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>{{ 'reviewQueue.status' | translate }}</th>
+        <td mat-cell *matCellDef="let item">
+          <mat-chip [color]="getStatusColor(item.status)" selected>
+            {{ getStatusLabel(item.status) }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>{{ 'common.actions' | translate }}</th>
+        <td mat-cell *matCellDef="let item">
+          <button mat-icon-button color="primary" (click)="approve(item)" *ngIf="item.status === 'submitted_for_review'" matTooltip="Approve">
+            <mat-icon>check_circle</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="reject(item)" *ngIf="item.status === 'submitted_for_review'" matTooltip="Reject">
+            <mat-icon>cancel</mat-icon>
+          </button>
+          <a mat-button [routerLink]="['/templates', item.template_id]" *ngIf="item.status !== 'submitted_for_review'">
+            {{ 'common.view' | translate }}
+          </a>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.overdue-row]="row.is_overdue"></tr>
+    </table>
+
+    <div *ngIf="!loading && items.length === 0" class="empty-state">
+      <mat-icon>inbox</mat-icon>
+      <p>{{ 'reviewQueue.empty' | translate }}</p>
+    </div>
+  </div>
 </div>

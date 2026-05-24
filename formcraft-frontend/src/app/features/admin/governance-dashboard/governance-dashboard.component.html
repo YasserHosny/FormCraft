@@ -1,0 +1,58 @@
+<div class="governance-dashboard">
+  <h2>{{ 'governance.title' | translate }}</h2>
+
+  <div class="date-filter">
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'governance.since' | translate }}</mat-label>
+      <input matInput [matDatepicker]="picker" [(ngModel)]="sinceDate" (dateChange)="onDateChange()">
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+  </div>
+
+  <div class="metrics-grid" *ngIf="!loading && metrics">
+    <mat-card class="metric-card">
+      <mat-card-header>
+        <mat-card-title>{{ 'governance.pendingReviews' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="metric-value">{{ metrics.pending_count }}</div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="metric-card">
+      <mat-card-header>
+        <mat-card-title>{{ 'governance.avgTurnaround' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="metric-value">
+          {{ metrics.avg_turnaround_days !== null ? metrics.avg_turnaround_days + 'd' : '-' }}
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="metric-card">
+      <mat-card-header>
+        <mat-card-title>{{ 'governance.rejectionRate' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="metric-value" [class.low]="metrics.rejection_rate_pct < 20" [class.high]="metrics.rejection_rate_pct > 40">
+          {{ metrics.rejection_rate_pct }}%
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="metric-card">
+      <mat-card-header>
+        <mat-card-title>{{ 'governance.overdue' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="metric-value" [class.warning]="metrics.overdue_count > 0">
+          {{ metrics.overdue_count }}
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <mat-spinner *ngIf="loading" diameter="40"></mat-spinner>
+</div>

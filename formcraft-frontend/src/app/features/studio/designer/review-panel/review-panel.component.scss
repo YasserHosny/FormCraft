@@ -1,0 +1,45 @@
+.review-panel {
+  padding: 16px;
+  border-left: 3px solid #1976d2;
+  background: #fafafa;
+}
+
+.element-list {
+  margin-bottom: 16px;
+}
+
+.element-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-bottom: 4px;
+
+  &:hover {
+    background: #e3f2fd;
+  }
+
+  &.selected {
+    background: #bbdefb;
+  }
+}
+
+.element-key {
+  font-size: 14px;
+}
+
+.comment-area {
+  margin-bottom: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.action-bar {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}

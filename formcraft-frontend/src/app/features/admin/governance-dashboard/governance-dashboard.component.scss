@@ -1,0 +1,38 @@
+.governance-dashboard {
+  padding: 24px;
+}
+
+.date-filter {
+  margin-bottom: 24px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 24px;
+}
+
+.metric-card {
+  mat-card-content {
+    padding: 16px;
+  }
+}
+
+.metric-value {
+  font-size: 36px;
+  font-weight: 600;
+  text-align: center;
+  color: #333;
+
+  &.low {
+    color: #4caf50;
+  }
+
+  &.high {
+    color: #f44336;
+  }
+
+  &.warning {
+    color: #ff9800;
+  }
+}

@@ -8,7 +8,11 @@ from app.core.audit import AuditLogger
 from app.core.supabase import get_supabase_client
 from app.models.enums import Role
 from app.models.user import UserProfile
-from app.schemas.element import CreateElementRequest, ReorderElementsRequest, UpdateElementRequest
+from app.schemas.element import (
+    CreateElementRequest,
+    ReorderElementsRequest,
+    UpdateElementRequest,
+)
 from app.schemas.page import CreatePageRequest, ReorderPagesRequest, UpdatePageRequest
 from app.schemas.template import (
     CloneRequest,
@@ -135,9 +139,7 @@ async def delete_template(
 async def publish_template(
     request: Request,
     template_id: UUID,
-    current_user: Annotated[
-        UserProfile, Depends(require_role(Role.ADMIN))
-    ],
+    current_user: Annotated[UserProfile, Depends(require_role(Role.ADMIN))],
 ):
     client = get_supabase_client()
     service = TemplateService(client)
@@ -168,6 +170,9 @@ async def transition_template_status(
         new_status=body.status,
         actor_id=current_user.id,
         comment=body.comment,
+        element_comments=[c.model_dump() for c in body.element_comments]
+        if body.element_comments
+        else None,
     )
     return result
 
@@ -182,7 +187,9 @@ async def create_new_version(
 ):
     client = get_supabase_client()
     service = TemplateService(client)
-    new_template = await service.create_new_version(template_id, user_id=current_user.id)
+    new_template = await service.create_new_version(
+        template_id, user_id=current_user.id
+    )
     audit = AuditLogger(client)
     await audit.log_event(
         user_id=str(current_user.id),
@@ -207,7 +214,9 @@ async def clone_template(
     client = get_supabase_client()
     service = TemplateService(client)
     name = body.name if body else None
-    result = await service.clone_template(template_id, name=name, user_id=current_user.id)
+    result = await service.clone_template(
+        template_id, name=name, user_id=current_user.id
+    )
     return result
 
 
@@ -357,10 +366,12 @@ async def update_element(
                     .eq("page_id", str(page_id))
                     .neq("id", str(element_id))
                     .execute()
-                    .data or []
+                    .data
+                    or []
                 )
                 valid_keys = {
-                    el["key"] for el in siblings
+                    el["key"]
+                    for el in siblings
                     if el.get("type") in ("number", "currency")
                 }
                 if source_key not in valid_keys:
@@ -400,10 +411,7 @@ async def validate_dependencies(
     client = get_supabase_client()
     # Elements are keyed by page_id, not template_id — fetch pages first
     pages_result = (
-        client.table("pages")
-        .select("id")
-        .eq("template_id", str(template_id))
-        .execute()
+        client.table("pages").select("id").eq("template_id", str(template_id)).execute()
     )
     page_ids = [p["id"] for p in (pages_result.data or [])]
     elements: list[dict] = []

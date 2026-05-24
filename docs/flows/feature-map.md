@@ -1,6 +1,6 @@
 # FormCraft — Feature Map
 
-> System-level view of how all 26 features connect, which roles own them, and how data flows between modules.
+> System-level view of how all 28 features connect, which roles own them, and how data flows between modules.
 > Last updated: 2026-05-24
 
 ---
@@ -35,6 +35,8 @@ graph TD
     F24["F24 · Reference Data"]
     F25["F25 · Multi-Tenancy"]
     F26["F26 · Form Import & OCR"]
+    F27["F27 · Analytics & Reporting"]
+    F28["F28 · Approval Workflow"]
 
     F01 --> F02
     F01 --> F03
@@ -74,6 +76,17 @@ graph TD
     F04 -.->|"audit events"| F08
     F09 -.->|"wraps"| F05
     F09 -.->|"wraps"| F06
+    F01 --> F27
+    F25 -.->|"org scoping"| F27
+    F18 -.->|"submission data"| F27
+    F03 -.->|"template data"| F27
+    F06 -.->|"PDF export"| F27
+    F02 -.->|"RTL support"| F27
+    F19 -.->|"version tracking"| F28
+    F25 -.->|"org scoping"| F28
+    F01 -.->|"auth / roles"| F28
+    F08 -.->|"audit trail"| F28
+    F02 -.->|"RTL support"| F28
 ```
 
 ---
@@ -108,6 +121,8 @@ graph TD
 | F24 Reference Data | ✅ | ✅ manage lists | ✅ bind dropdowns | ✅ use | ✅ use | — | — |
 | F25 Multi-Tenancy | ✅ create orgs | ✅ org admin | ✅ scoped | ✅ scoped | ✅ scoped | ✅ scoped | — |
 | F26 Form Import & OCR | ✅ | ✅ | ✅ import/review | — | — | — | — |
+| F27 Analytics | — | ✅ all dashboards | — | ✅ dept-scoped | ✅ own stats widget | — | — |
+| F28 Approval Workflow | — | ✅ publish/configure | ✅ submit/withdraw | ✅ review/approve/reject | — | — | — |
 
 ---
 
@@ -125,6 +140,7 @@ graph LR
         desk["/desk"]
         deskFill["/desk/fill/:templateId"]
         deskHistory["/desk/history"]
+        deskStats["/desk/my-stats"]
     end
 
     subgraph "Mode: Design Studio /studio"
@@ -142,6 +158,9 @@ graph LR
         adminRefData["/admin/reference-data"]
         adminPrinter["/admin/printer-profiles"]
         auditLogs["/admin/audit-logs"]
+        adminAnalytics["/admin/analytics"]
+        adminReviewQueue["/admin/review-queue"]
+        adminGovernance["/admin/governance"]
     end
 
     subgraph "Any Authenticated"
@@ -156,6 +175,7 @@ graph LR
     branding -->|"F25"| login
     desk -->|"F16"| deskFill
     deskFill -->|"F17"| deskHistory
+    desk -->|"F27"| deskStats
     studioTemplates -->|"F03 F19"| designer
     designer -->|"F04 F21 F24"| designer
     adminFeedback -->|"F11 F12 F14"| adminFeedback
@@ -167,6 +187,9 @@ graph LR
     adminInvitations -->|"F25"| adminInvitations
     adminOrgSettings -->|"F25"| adminOrgSettings
     auditLogs -->|"F08"| auditLogs
+    adminAnalytics -->|"F27"| adminAnalytics
+    adminReviewQueue -->|"F28"| adminReviewQueue
+    adminGovernance -->|"F28"| adminGovernance
     myFeedback -->|"F14"| myFeedback
 ```
 
@@ -207,6 +230,10 @@ erDiagram
     profiles ||--o{ template_feedback : submits
     template_feedback }o--|| templates : "references version"
     profiles ||--o{ audit_logs : generates
+    templates ||--o{ template_reviews : reviewed
+    template_reviews }o--|| profiles : "reviewed by"
+    departments ||--o| department_default_reviewers : "default reviewer"
+    department_default_reviewers }o--|| profiles : "assigned to"
 ```
 
 ---
@@ -243,3 +270,7 @@ erDiagram
 | Reference Lists | `/api/reference-lists/*` | ✅ | admin (manage), any auth (dropdown) |
 | Branding | `/api/auth/branding/{domain}` | — | public |
 | Form Import/OCR | `/api/forms/*` | ✅ | admin / designer |
+| Analytics | `/api/analytics/*` | ✅ | admin (all), branch_manager (dept-scoped) |
+| Operator Stats | `/api/desk/my-stats` | ✅ | operator |
+| Review Queue | `/api/admin/review-queue/*` | ✅ | admin (all), branch_manager (dept-scoped) |
+| Default Reviewers | `/api/admin/departments/*/default-reviewer` | ✅ | admin |

@@ -22,9 +22,15 @@ class UpdateTemplateRequest(BaseModel):
     updated_at: str
 
 
+class ElementComment(BaseModel):
+    element_key: str
+    comment: str
+
+
 class TransitionRequest(BaseModel):
     status: str
     comment: str | None = None
+    element_comments: list[ElementComment] | None = None
 
 
 class CloneRequest(BaseModel):
@@ -38,6 +44,7 @@ class TemplateReviewResponse(BaseModel):
     reviewer_name: str | None = None
     action: str
     comment: str | None = None
+    element_comments: list[ElementComment] | None = None
     created_at: str
 
 
