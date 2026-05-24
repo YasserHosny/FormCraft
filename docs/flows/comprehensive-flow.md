@@ -1,7 +1,7 @@
 # FormCraft — Comprehensive Platform Flow
 
-> End-to-end flow across all 25 features, tracing every major user journey from platform setup through daily operations.
-> Last updated: 2026-05-22
+> End-to-end flow across all 26 features, tracing every major user journey from platform setup through daily operations.
+> Last updated: 2026-05-24
 
 ---
 
@@ -25,7 +25,8 @@ flowchart TD
         B5[F24 Bind dropdowns to Reference Data]
         B6[F22 Configure conditional visibility & validation]
         B7[F05 AI suggests optimal field types]
-        B8[F19 Submit for Review → Approve → Publish]
+        B8[F19 Clone version → Publish]
+        B9[F26 Import from scanned form via OCR]
     end
 
     subgraph "Phase 3: Admin Configuration"
@@ -62,6 +63,8 @@ flowchart TD
     A5 --> D1
     A2 --> B1
     B1 --> B2 --> B3 & B4 & B5 & B6
+    B1 --> B9
+    B9 --> B2
     B3 --> B7
     B6 --> B8
     B8 --> D2
@@ -98,8 +101,8 @@ Org Admin opens /admin/settings
 → Uploads logo → Supabase Storage org-logos/{org_id}/
 → Sets primary_color, custom_domain, default language
 → Configures workflow settings:
-    approval_workflow (on/off), hijri_date_support,
-    draft_expiry_days, data_retention_months, max_batch_size
+    hijri_date_support, draft_expiry_days
+    [PLANNED: approval_workflow (on/off), data_retention_months, max_batch_size]
 → PATCH /api/org-settings
 → Custom domain: /auth/branding/{domain} returns org branding for login page
 ```
@@ -201,22 +204,46 @@ Designer configures per-element:
 Backend re-validates all conditions on submission (server-side enforcement)
 ```
 
-### 2.7 Template versioning and review (F19)
+### 2.7 Template versioning (F19)
 
 ```
-Designer finishes edits → clicks "Submit for Review"
-→ Status: draft → submitted_for_review (template becomes read-only)
-→ Reviewer (admin/branch_manager) reviews:
-    Approve → status: approved
-    Reject with comment → status: draft (designer sees comment)
-→ Admin publishes: status → published (immutable from this point)
+Designer finishes edits → Admin publishes: status → published
 → Version number set; Form Desk shows this as active version
 
-Future changes: "Create New Version" → copies all to new draft (v2)
+New version: "Create New Version" → copies all pages + elements to new draft (v2)
 → v1 remains active until v2 published → v1 auto-deprecated
 → Full lineage tracked via lineage_id + parent_version_id
+→ Audit: TEMPLATE_PUBLISHED, _ARCHIVED, _DEPRECATED
+
+[PLANNED — not yet implemented]:
+→ Submit for Review workflow (submit → review → approve/reject → publish)
 → Diff view: compare any two versions element-by-element
-→ Audit: TEMPLATE_SUBMITTED, _APPROVED, _REJECTED, _PUBLISHED, _ARCHIVED, _DEPRECATED
+```
+
+### 2.8 Form import via OCR (F26)
+
+```
+Designer in Design Studio → clicks "Import from Scan"
+→ Upload form image (PNG/JPEG/PDF)
+→ POST /api/forms/import/:templateId (multipart)
+→ Azure Document Intelligence analyzes document (30s timeout)
+→ Backend pipeline:
+    1. BoundingBoxConverter: normalize coords to mm (DPI + page-aware)
+    2. FieldClassifier: infer field types (text, number, date, currency, etc.)
+       - Arabic text detection, Hijri date patterns
+    3. IoU deduplication: merge overlapping detections (threshold > 0.5)
+    4. Boundary clipping: ensure all boxes within page dimensions
+→ Response: array of detected fields with positions and suggested types
+
+Frontend detection review panel:
+→ Overlay on canvas showing bounding boxes with confidence scores
+→ Per-detection actions: Accept / Reject / Clear
+→ Accept: POST /api/forms/:id/detections/:did/accept → element created on canvas
+→ Delete: DELETE /api/forms/detections/:did
+→ History: GET /api/forms/:id/detections → list all detections
+→ Debug grid: Ctrl+G toggle for pixel-level position debugging
+→ Replace confirmation: warns before replacing existing elements
+→ Audit: FORM_IMPORTED, DETECTION_ACCEPTED logged
 ```
 
 ---
@@ -450,6 +477,7 @@ flowchart LR
         E --> S[Signature/Table F21]
         E --> R[Ref Binding F24]
         E --> V[Conditions F22]
+        OCR[OCR Import F26] --> E
     end
 
     subgraph "Operations"
@@ -500,4 +528,6 @@ flowchart LR
 | Realtime notification delivery | < 5 seconds | F14 |
 | Submission history (1000 records) | < 1 second | F18 |
 | CSV import preview | < 3 seconds | F24 |
+| OCR single form detection | < 30 seconds | F26 |
+| Detection review panel load | < 1 second | F26 |
 | Audit log query | < 1 second | F08 |

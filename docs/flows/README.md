@@ -1,7 +1,7 @@
 # FormCraft — Feature Flows
 
-> Structured documentation of every user journey, system flow, and wireflow across all 25 features.
-> Last updated: 2026-05-22
+> Structured documentation of every user journey, system flow, and wireflow across all 26 features.
+> Last updated: 2026-05-24
 
 ---
 
@@ -11,7 +11,7 @@
 |------|---------------|
 | [feature-map.md](feature-map.md) | System-level feature dependency graph, role-feature matrix |
 | [user-flows.md](user-flows.md) | Cross-cutting flows: role hierarchy, error handling, RTL/bilingual |
-| [comprehensive-flow.md](comprehensive-flow.md) | End-to-end platform flow across all 25 features |
+| [comprehensive-flow.md](comprehensive-flow.md) | End-to-end platform flow across all 26 features |
 | [f01-auth.md](f01-auth.md) | Authentication & User Management |
 | [f02-i18n.md](f02-i18n.md) | Internationalization & RTL Support |
 | [f03-templates.md](f03-templates.md) | Template Domain Model |
@@ -37,6 +37,7 @@
 | [f23-overlay-print-mode.md](f23-overlay-print-mode.md) | Overlay Print Mode & Printer Profiles |
 | [f24-reference-data.md](f24-reference-data.md) | Reference Data Manager |
 | [f25-multi-tenancy.md](f25-multi-tenancy.md) | Multi-Tenancy (Orgs, Departments, Branches) |
+| [f26-form-import-ocr.md](f26-form-import-ocr.md) | Form Import & OCR Detection |
 
 ---
 
@@ -67,7 +68,8 @@ Auth (F01) ───────────────────────
  │        ├── Search & Labels (F12)
  │        ├── Rich Media (F13)
  │        └── Threading (F14)
- └── Multi-Tenancy (F25) ──► Orgs, Departments, Branches
+ ├── Multi-Tenancy (F25) ──► Orgs, Departments, Branches
+ └── Form Import / OCR (F26) ◄── Design Studio (F04)
 ```
 
 ---

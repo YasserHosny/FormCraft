@@ -1,6 +1,7 @@
 # FormCraft — Feature Map
 
-> System-level view of how all 25 features connect, which roles own them, and how data flows between modules.
+> System-level view of how all 26 features connect, which roles own them, and how data flows between modules.
+> Last updated: 2026-05-24
 
 ---
 
@@ -33,6 +34,7 @@ graph TD
     F23["F23 · Overlay Print Mode"]
     F24["F24 · Reference Data"]
     F25["F25 · Multi-Tenancy"]
+    F26["F26 · Form Import & OCR"]
 
     F01 --> F02
     F01 --> F03
@@ -64,6 +66,9 @@ graph TD
     F25 -.->|"org scoping"| F24
     F21 -.->|"new types"| F06
     F22 -.->|"conditions"| F21
+    F04 --> F26
+    F26 -.->|"creates elements"| F04
+    F25 -.->|"org scoping"| F26
     F01 -.->|"audit events"| F08
     F03 -.->|"audit events"| F08
     F04 -.->|"audit events"| F08
@@ -102,6 +107,7 @@ graph TD
 | F23 Overlay Print | ✅ | ✅ profiles | ✅ overlay flag | ✅ print | ✅ print | — | — |
 | F24 Reference Data | ✅ | ✅ manage lists | ✅ bind dropdowns | ✅ use | ✅ use | — | — |
 | F25 Multi-Tenancy | ✅ create orgs | ✅ org admin | ✅ scoped | ✅ scoped | ✅ scoped | ✅ scoped | — |
+| F26 Form Import & OCR | ✅ | ✅ | ✅ import/review | — | — | — | — |
 
 ---
 
@@ -236,3 +242,4 @@ erDiagram
 | Printer Profiles | `/api/printer-profiles/*` | ✅ | admin |
 | Reference Lists | `/api/reference-lists/*` | ✅ | admin (manage), any auth (dropdown) |
 | Branding | `/api/auth/branding/{domain}` | — | public |
+| Form Import/OCR | `/api/forms/*` | ✅ | admin / designer |
