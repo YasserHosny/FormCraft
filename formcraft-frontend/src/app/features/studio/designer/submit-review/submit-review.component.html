@@ -1,0 +1,87 @@
+<div class="submit-review-container">
+  <!-- Status Banner -->
+  <div class="status-banner" *ngIf="template">
+    <mat-chip [color]="getStatusColor()" selected>
+      {{ getStatusLabel() }}
+    </mat-chip>
+    <span *ngIf="isReadOnly" class="read-only-indicator">
+      <mat-icon>lock</mat-icon> Read Only
+    </span>
+  </div>
+
+  <!-- Rejection Comment Card -->
+  <mat-card *ngIf="rejectionComment" class="rejection-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar color="warn">warning</mat-icon>
+      <mat-card-title>Rejection Feedback</mat-card-title>
+      <mat-card-subtitle>
+        From {{ rejectionReviewer || 'Reviewer' }} on {{ rejectionTimestamp | date:'short' }}
+      </mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <p>{{ rejectionComment }}</p>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons" *ngIf="template">
+    <button
+      mat-raised-button
+      color="primary"
+      *ngIf="showSubmitButton"
+      (click)="submitForReview.emit()"
+    >
+      <mat-icon>send</mat-icon>
+      Submit for Review
+    </button>
+
+    <button
+      mat-raised-button
+      color="accent"
+      *ngIf="showPublishButton"
+      (click)="publish.emit()"
+    >
+      <mat-icon>publish</mat-icon>
+      Publish
+    </button>
+
+    <button
+      mat-raised-button
+      *ngIf="showWithdrawButton"
+      (click)="withdraw.emit()"
+    >
+      <mat-icon>undo</mat-icon>
+      Withdraw
+    </button>
+
+    <button
+      mat-raised-button
+      color="primary"
+      *ngIf="showApproveReject"
+      (click)="onApprove()"
+    >
+      <mat-icon>check</mat-icon>
+      Approve
+    </button>
+
+    <button
+      mat-raised-button
+      color="warn"
+      *ngIf="showApproveReject"
+      (click)="onReject()"
+    >
+      <mat-icon>close</mat-icon>
+      Reject
+    </button>
+
+    <button
+      mat-raised-button
+      color="accent"
+      *ngIf="showPublishApproved"
+      (click)="publish.emit()"
+    >
+      <mat-icon>publish</mat-icon>
+      Publish
+    </button>
+  </div>
+</div>

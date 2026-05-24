@@ -7,10 +7,10 @@ from fastapi import HTTPException, status
 from supabase import Client
 
 TRANSITION_MAP: dict[str, list[str]] = {
-    "draft": ["submitted_for_review"],
-    "submitted_for_review": ["approved", "rejected"],
+    "draft": ["submitted_for_review", "published"],
+    "submitted_for_review": ["approved", "rejected", "draft"],
     "approved": ["published"],
-    "rejected": ["draft"],
+    "rejected": ["draft", "submitted_for_review"],
     "published": ["archived", "deprecated"],
     "archived": ["published"],
     "deprecated": ["archived"],
@@ -18,10 +18,13 @@ TRANSITION_MAP: dict[str, list[str]] = {
 
 ROLE_TRANSITIONS: dict[str, list[str]] = {
     "draft->submitted_for_review": ["designer", "admin"],
+    "draft->published": ["designer", "admin"],
     "submitted_for_review->approved": ["admin", "branch_manager"],
     "submitted_for_review->rejected": ["admin", "branch_manager"],
+    "submitted_for_review->draft": ["designer", "admin"],
     "approved->published": ["admin"],
     "rejected->draft": ["designer", "admin"],
+    "rejected->submitted_for_review": ["designer", "admin"],
     "published->archived": ["admin"],
     "published->deprecated": ["admin"],
     "archived->published": ["admin"],
@@ -51,7 +54,12 @@ class TemplateService:
     # --- Lifecycle ---
 
     async def transition_status(
-        self, template_id: UUID, new_status: str, actor_id: UUID, comment: str | None = None
+        self,
+        template_id: UUID,
+        new_status: str,
+        actor_id: UUID,
+        comment: str | None = None,
+        element_comments: list[dict] | None = None,
     ) -> dict:
         template = await self.get_template(template_id)
         current_status = template.get("status")
@@ -69,6 +77,15 @@ class TemplateService:
                 f"Cannot transition from '{current_status}' to '{new_status}'",
             )
 
+        # Approval-disabled shortcut: draft -> published when approval is disabled
+        if current_status == "draft" and new_status == "published":
+            org_settings = await self._get_org_settings(template.get("org_id"))
+            if org_settings.get("approval_workflow_enabled", True):
+                raise HTTPException(
+                    status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    "Approval workflow requires review before publishing",
+                )
+
         transition_key = f"{current_status}->{new_status}"
         allowed_roles = ROLE_TRANSITIONS.get(transition_key, [])
         actor_profile = (
@@ -83,6 +100,15 @@ class TemplateService:
             raise HTTPException(
                 status.HTTP_403_FORBIDDEN,
                 f"Only {', '.join(allowed_roles)} can perform this transition",
+            )
+
+        # Self-review prevention: actor cannot approve/reject their own template
+        if new_status in ("approved", "rejected") and str(
+            template.get("created_by")
+        ) == str(actor_id):
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN,
+                "Cannot review your own template",
             )
 
         if new_status == "rejected" and not comment:
@@ -102,12 +128,20 @@ class TemplateService:
 
         from app.core.audit import AuditLogger
 
+        action_name = f"TEMPLATE_{new_status.upper()}"
+        if new_status == "draft" and current_status == "submitted_for_review":
+            action_name = "TEMPLATE_WITHDRAWN"
+
         await AuditLogger(self.client).log_event(
             user_id=str(actor_id),
-            action=f"TEMPLATE_{new_status.upper()}",
+            action=action_name,
             resource_type="template",
             resource_id=str(template_id),
-            metadata={"from_status": current_status, "to_status": new_status, "comment": comment},
+            metadata={
+                "from_status": current_status,
+                "to_status": new_status,
+                "comment": comment,
+            },
         )
 
         if new_status in ("approved", "rejected"):
@@ -116,11 +150,29 @@ class TemplateService:
                 "reviewer_id": str(actor_id),
                 "action": new_status,
                 "comment": comment,
+                "element_comments": element_comments,
                 "org_id": template.get("org_id"),
             }
             self.client.table("template_reviews").insert(review_data).execute()
 
         return result.data[0]
+
+    async def _get_org_settings(self, org_id: UUID | None) -> dict:
+        if not org_id:
+            return {}
+        try:
+            result = (
+                self.client.table("organizations")
+                .select("settings")
+                .eq("id", str(org_id))
+                .single()
+                .execute()
+            )
+            if result.data and result.data.get("settings"):
+                return result.data["settings"]
+        except Exception:
+            pass
+        return {}
 
     # --- Templates ---
 
@@ -237,9 +289,7 @@ class TemplateService:
     async def delete_template(self, template_id: UUID) -> None:
         template = await self.get_template(template_id)
         self._check_editable(template)
-        self.client.table("templates").delete().eq(
-            "id", str(template_id)
-        ).execute()
+        self.client.table("templates").delete().eq("id", str(template_id)).execute()
 
     async def publish_template(self, template_id: UUID) -> dict:
         result = (
@@ -291,10 +341,7 @@ class TemplateService:
         template = await self.get_template(UUID(page.data["template_id"]))
         self._check_editable(template)
         result = (
-            self.client.table("pages")
-            .update(data)
-            .eq("id", str(page_id))
-            .execute()
+            self.client.table("pages").update(data).eq("id", str(page_id)).execute()
         )
         if not result.data:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Page not found")
@@ -369,12 +416,24 @@ class TemplateService:
         except Exception as exc:
             if "PGRST204" in str(exc) or "schema cache" in str(exc):
                 _BASE_ELEMENT_COLS = {
-                    "page_id", "type", "key", "label_ar", "label_en",
-                    "x_mm", "y_mm", "width_mm", "height_mm",
-                    "validation", "formatting", "required", "direction",
+                    "page_id",
+                    "type",
+                    "key",
+                    "label_ar",
+                    "label_en",
+                    "x_mm",
+                    "y_mm",
+                    "width_mm",
+                    "height_mm",
+                    "validation",
+                    "formatting",
+                    "required",
+                    "direction",
                     "sort_order",
                 }
-                element_data = {k: v for k, v in element_data.items() if k in _BASE_ELEMENT_COLS}
+                element_data = {
+                    k: v for k, v in element_data.items() if k in _BASE_ELEMENT_COLS
+                }
                 result = self.client.table("elements").insert(element_data).execute()
             else:
                 raise
@@ -410,9 +469,18 @@ class TemplateService:
         except Exception as exc:
             if "PGRST204" in str(exc) or "schema cache" in str(exc):
                 _BASE_ELEMENT_COLS = {
-                    "type", "key", "label_ar", "label_en",
-                    "x_mm", "y_mm", "width_mm", "height_mm",
-                    "validation", "formatting", "required", "direction",
+                    "type",
+                    "key",
+                    "label_ar",
+                    "label_en",
+                    "x_mm",
+                    "y_mm",
+                    "width_mm",
+                    "height_mm",
+                    "validation",
+                    "formatting",
+                    "required",
+                    "direction",
                     "sort_order",
                 }
                 data = {k: v for k, v in data.items() if k in _BASE_ELEMENT_COLS}
@@ -447,9 +515,7 @@ class TemplateService:
             if page.data:
                 template = await self.get_template(UUID(page.data["template_id"]))
                 self._check_editable(template)
-        self.client.table("elements").delete().eq(
-            "id", str(element_id)
-        ).execute()
+        self.client.table("elements").delete().eq("id", str(element_id)).execute()
 
     async def reorder_pages(self, template_id: UUID, page_ids: list[UUID]) -> None:
         template = await self.get_template(template_id)
@@ -460,19 +526,19 @@ class TemplateService:
         if len(existing_page_ids) != len(requested_page_ids):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
-                "Page reorder must include all existing pages exactly once"
+                "Page reorder must include all existing pages exactly once",
             )
 
         if set(existing_page_ids) != set(requested_page_ids):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
-                "Page reorder must include all existing pages exactly once"
+                "Page reorder must include all existing pages exactly once",
             )
 
         if len(requested_page_ids) != len(set(requested_page_ids)):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
-                "Page reorder cannot contain duplicate page IDs"
+                "Page reorder cannot contain duplicate page IDs",
             )
 
         self.client.table("pages").update({"sort_order": 999}).eq(
@@ -563,7 +629,10 @@ class TemplateService:
             action="TEMPLATE_VERSIONED",
             resource_type="template",
             resource_id=str(template_id),
-            metadata={"new_template_id": new_template["id"], "new_version": new_version},
+            metadata={
+                "new_template_id": new_template["id"],
+                "new_version": new_version,
+            },
         )
 
         return await self.get_template(UUID(new_template["id"]))
@@ -675,7 +744,9 @@ class TemplateService:
             )
             creator_name = None
             if creator_result.data:
-                creator_name = creator_result.data.get("display_name") or creator_result.data.get("id")
+                creator_name = creator_result.data.get(
+                    "display_name"
+                ) or creator_result.data.get("id")
 
             published_at = None
             if v.get("status") == "published":
@@ -691,17 +762,19 @@ class TemplateService:
                 if reviews.data:
                     published_at = reviews.data[0]["created_at"]
 
-            versions.append({
-                "id": v["id"],
-                "version": v["version"],
-                "status": v["status"],
-                "created_by": v["created_by"],
-                "created_by_name": creator_name,
-                "created_at": v["created_at"],
-                "published_at": published_at,
-                "element_count": element_count,
-                "page_count": page_count,
-            })
+            versions.append(
+                {
+                    "id": v["id"],
+                    "version": v["version"],
+                    "status": v["status"],
+                    "created_by": v["created_by"],
+                    "created_by_name": creator_name,
+                    "created_at": v["created_at"],
+                    "published_at": published_at,
+                    "element_count": element_count,
+                    "page_count": page_count,
+                }
+            )
 
         return {"lineage_id": str(lineage_id), "versions": versions}
 
@@ -738,17 +811,26 @@ class TemplateService:
         common_keys = set(elems_a.keys()) & set(elems_b.keys())
 
         added = [
-            {"key": k, "type": elems_b[k]["type"], "label_ar": elems_b[k].get("label_ar", ""), "label_en": elems_b[k].get("label_en", ""), "page_sort_order": _find_page_sort_order(template_b, elems_b[k])}
+            {
+                "key": k,
+                "type": elems_b[k]["type"],
+                "label_ar": elems_b[k].get("label_ar", ""),
+                "label_en": elems_b[k].get("label_en", ""),
+                "page_sort_order": _find_page_sort_order(template_b, elems_b[k]),
+            }
             for k in sorted(added_keys)
         ]
-        removed = [
-            {"key": k, "type": elems_a[k]["type"]}
-            for k in sorted(removed_keys)
-        ]
+        removed = [{"key": k, "type": elems_a[k]["type"]} for k in sorted(removed_keys)]
 
         comparable_props = [
-            "x_mm", "y_mm", "width_mm", "height_mm",
-            "label_ar", "label_en", "required", "direction",
+            "x_mm",
+            "y_mm",
+            "width_mm",
+            "height_mm",
+            "label_ar",
+            "label_en",
+            "required",
+            "direction",
         ]
 
         modified = []
@@ -761,9 +843,21 @@ class TemplateService:
                 if val_a != val_b:
                     changes.append({"property": prop, "from": val_a, "to": val_b})
             if ea.get("validation", {}) != eb.get("validation", {}):
-                changes.append({"property": "validation", "from": ea.get("validation"), "to": eb.get("validation")})
+                changes.append(
+                    {
+                        "property": "validation",
+                        "from": ea.get("validation"),
+                        "to": eb.get("validation"),
+                    }
+                )
             if ea.get("formatting", {}) != eb.get("formatting", {}):
-                changes.append({"property": "formatting", "from": ea.get("formatting"), "to": eb.get("formatting")})
+                changes.append(
+                    {
+                        "property": "formatting",
+                        "from": ea.get("formatting"),
+                        "to": eb.get("formatting"),
+                    }
+                )
             if changes:
                 modified.append({"key": key, "changes": changes})
 
@@ -777,15 +871,31 @@ class TemplateService:
             page_changes = []
             for prop in ["width_mm", "height_mm"]:
                 if pa.get(prop) != pb.get(prop):
-                    page_changes.append({"property": prop, "from": pa.get(prop), "to": pb.get(prop)})
+                    page_changes.append(
+                        {"property": prop, "from": pa.get(prop), "to": pb.get(prop)}
+                    )
             if pa.get("background_asset") != pb.get("background_asset"):
-                page_changes.append({"property": "background_asset", "from": pa.get("background_asset"), "to": pb.get("background_asset")})
+                page_changes.append(
+                    {
+                        "property": "background_asset",
+                        "from": pa.get("background_asset"),
+                        "to": pb.get("background_asset"),
+                    }
+                )
             if page_changes:
-                page_modified.append({"sort_order": sort_order, "changes": page_changes})
+                page_modified.append(
+                    {"sort_order": sort_order, "changes": page_changes}
+                )
 
         return {
-            "base_version": {"id": str(template_id_a), "version": template_a["version"]},
-            "compare_version": {"id": str(template_id_b), "version": template_b["version"]},
+            "base_version": {
+                "id": str(template_id_a),
+                "version": template_a["version"],
+            },
+            "compare_version": {
+                "id": str(template_id_b),
+                "version": template_b["version"],
+            },
             "summary": {
                 "elements_added": len(added),
                 "elements_removed": len(removed),
@@ -827,16 +937,21 @@ class TemplateService:
             )
             reviewer_name = None
             if reviewer_result.data:
-                reviewer_name = reviewer_result.data.get("display_name") or reviewer_result.data.get("id")
-            reviews.append({
-                "id": r["id"],
-                "template_id": r["template_id"],
-                "reviewer_id": r["reviewer_id"],
-                "reviewer_name": reviewer_name,
-                "action": r["action"],
-                "comment": r.get("comment"),
-                "created_at": r["created_at"],
-            })
+                reviewer_name = reviewer_result.data.get(
+                    "display_name"
+                ) or reviewer_result.data.get("id")
+            reviews.append(
+                {
+                    "id": r["id"],
+                    "template_id": r["template_id"],
+                    "reviewer_id": r["reviewer_id"],
+                    "reviewer_name": reviewer_name,
+                    "action": r["action"],
+                    "comment": r.get("comment"),
+                    "element_comments": r.get("element_comments"),
+                    "created_at": r["created_at"],
+                }
+            )
 
         return reviews
 

@@ -1,0 +1,41 @@
+<div class="review-panel" *ngIf="isActive">
+  <h3>Review Panel</h3>
+
+  <div class="element-list">
+    <div
+      *ngFor="let element of elements"
+      class="element-item"
+      [class.selected]="selectedElementKey === element.key"
+      (click)="onElementClick(element)"
+    >
+      <span class="element-key">{{ element.key }}</span>
+      <mat-chip *ngIf="getCommentCount(element.key) > 0" selected>
+        {{ getCommentCount(element.key) }}
+      </mat-chip>
+    </div>
+  </div>
+
+  <div class="comment-area" *ngIf="selectedElementKey">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Comment for {{ selectedElementKey }}</mat-label>
+      <textarea matInput [(ngModel)]="activeComment" rows="3"></textarea>
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="saveElementComment()">
+      Save Comment
+    </button>
+  </div>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Overall Comment</mat-label>
+    <textarea matInput [(ngModel)]="overallComment" rows="4"></textarea>
+  </mat-form-field>
+
+  <div class="action-bar">
+    <button mat-raised-button color="primary" (click)="onApprove()">
+      <mat-icon>check</mat-icon> Approve
+    </button>
+    <button mat-raised-button color="warn" (click)="onReject()">
+      <mat-icon>close</mat-icon> Reject
+    </button>
+  </div>
+</div>
