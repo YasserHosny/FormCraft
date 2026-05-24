@@ -22,7 +22,7 @@ CREATE INDEX idx_reference_lists_org_active ON reference_lists(org_id)
 ALTER TABLE reference_lists ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY reference_lists_org_isolation ON reference_lists
-  USING (org_id = current_setting('app.current_org_id')::UUID);
+  USING (org_id = current_setting('app.current_org_id', true)::UUID);
 
 -- Reference Entries table
 CREATE TABLE reference_entries (
@@ -44,7 +44,7 @@ CREATE INDEX idx_reference_entries_org ON reference_entries(org_id);
 ALTER TABLE reference_entries ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY reference_entries_org_isolation ON reference_entries
-  USING (org_id = current_setting('app.current_org_id')::UUID);
+  USING (org_id = current_setting('app.current_org_id', true)::UUID);
 
 COMMENT ON TABLE reference_lists IS
   'Centrally managed reference data lists with typed column schemas.';

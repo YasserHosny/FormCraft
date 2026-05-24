@@ -185,7 +185,7 @@ BEGIN
       SELECT 1 FROM pg_policies WHERE tablename = tbl AND policyname = tbl || '_org_isolation'
     ) THEN
       EXECUTE format(
-        'CREATE POLICY %I ON %I USING (org_id = current_setting(''app.current_org_id'')::UUID)',
+        'CREATE POLICY %I ON %I USING (org_id = current_setting(''app.current_org_id'', true)::UUID)',
         tbl || '_org_isolation', tbl
       );
     END IF;
