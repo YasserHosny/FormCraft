@@ -1,10 +1,12 @@
 # FormCraft Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-05-23
+Auto-generated from all feature plans. Last updated: 2026-05-24
 
 ## Active Technologies
+- Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Auth), Angular Material, WeasyPrint (PDF export), ng2-charts / Chart.js (frontend charting) (027-analytics-reporting)
+- Supabase PostgreSQL — live aggregation queries against existing tables (submissions, templates, profiles, departments, branches) (027-analytics-reporting)
 
-- Python 3.12 (backend), TypeScript / Angular 17 (frontend) + FastAPI, Supabase (PostgreSQL + Storage + Auth), Angular Material (001-customer-feedback)
+- Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Storage + Auth), Angular Material (001-customer-feedback)
 
 ## Project Structure
 
@@ -19,13 +21,13 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 
 ## Code Style
 
-Python 3.12 (backend), TypeScript / Angular 17 (frontend): Follow standard conventions
+Python 3.12 (backend), TypeScript / Angular 19 (frontend): Follow standard conventions
 
 ## Recent Changes
+- 027-analytics-reporting: Added Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Auth), Angular Material, WeasyPrint (PDF export), ng2-charts / Chart.js (frontend charting)
 - 025-form-import-ocr: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
-- 001-customer-feedback: Added Python 3.12 (backend), TypeScript / Angular 17 (frontend) + FastAPI, Supabase (PostgreSQL + Storage + Auth), Angular Material
-- 013-feedback-rich-media: Added MediaRecorder API (VideoRecorderService), multi-image sequential upload, Supabase Storage bucket updated to 100 MB / video MIME types, feedback_images table (migration 010)
+- 001-customer-feedback: Added Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Storage + Auth), Angular Material
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
