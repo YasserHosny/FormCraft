@@ -46,6 +46,10 @@ async def get_my_profile(
         language=current_user.language,
         display_name=current_user.display_name,
         is_active=current_user.is_active,
+        org_id=current_user.org_id,
+        department_id=current_user.department_id,
+        branch_id=current_user.branch_id,
+        is_platform_admin=current_user.is_platform_admin,
     )
 
 

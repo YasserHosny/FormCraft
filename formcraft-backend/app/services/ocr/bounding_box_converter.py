@@ -54,7 +54,7 @@ class BoundingBoxConverter:
 
     def convert_bbox(self, bbox_px: dict) -> BBox:
         """
-        Convert bounding box from pixels to mm.
+        Convert bounding box from pixels to mm, clipped to page bounds.
 
         Args:
             bbox_px: {x, y, width, height} in pixels
@@ -62,11 +62,89 @@ class BoundingBoxConverter:
         Returns:
             {x, y, width, height} in mm
         """
+        x = round(self.px_to_mm(bbox_px["x"]), 2)
+        y = round(self.px_to_mm(bbox_px["y"]), 2)
+        w = round(self.px_to_mm(bbox_px["width"]), 2)
+        h = round(self.px_to_mm(bbox_px["height"]), 2)
+
+        # T052: Clip to page bounds
+        x = max(0.0, min(x, self.page_width_mm))
+        y = max(0.0, min(y, self.page_height_mm))
+        if x + w > self.page_width_mm:
+            w = round(self.page_width_mm - x, 2)
+        if y + h > self.page_height_mm:
+            h = round(self.page_height_mm - y, 2)
+
         return BBox(
-            x=round(self.px_to_mm(bbox_px["x"]), 2),
-            y=round(self.px_to_mm(bbox_px["y"]), 2),
-            width=round(self.px_to_mm(bbox_px["width"]), 2),
-            height=round(self.px_to_mm(bbox_px["height"]), 2),
+            x=x,
+            y=y,
+            width=max(w, 0.0),
+            height=max(h, 0.0),
+        )
+
+    def convert_bbox_to_page(
+        self,
+        bbox_px: dict,
+        target_width_mm: float,
+        target_height_mm: float,
+    ) -> BBox:
+        """Convert bounding box from pixels to mm, scaled to a target page size.
+
+        Instead of using DPI-based conversion, this scales pixel coordinates
+        directly to the target page dimensions.  When the image aspect ratio
+        differs from the page aspect ratio the image is letterboxed /
+        pillarboxed (centred) and coordinates are adjusted accordingly.
+
+        Args:
+            bbox_px: {x, y, width, height} in pixels
+            target_width_mm: Target page width in millimetres
+            target_height_mm: Target page height in millimetres
+
+        Returns:
+            {x, y, width, height} in mm, clipped to page bounds
+        """
+        img_aspect = self.image_width_px / self.image_height_px
+        page_aspect = target_width_mm / target_height_mm
+
+        if abs(img_aspect - page_aspect) < 0.01:
+            # Aspect ratios match — simple proportional scaling
+            scale_x = target_width_mm / self.image_width_px
+            scale_y = target_height_mm / self.image_height_px
+            offset_x = 0.0
+            offset_y = 0.0
+        elif img_aspect > page_aspect:
+            # Image is wider — fit width, letterbox vertically
+            scale_x = target_width_mm / self.image_width_px
+            scale_y = scale_x  # uniform scale
+            rendered_height = self.image_height_px * scale_y
+            offset_x = 0.0
+            offset_y = (target_height_mm - rendered_height) / 2
+        else:
+            # Image is taller — fit height, pillarbox horizontally
+            scale_y = target_height_mm / self.image_height_px
+            scale_x = scale_y  # uniform scale
+            rendered_width = self.image_width_px * scale_x
+            offset_x = (target_width_mm - rendered_width) / 2
+            offset_y = 0.0
+
+        x = bbox_px["x"] * scale_x + offset_x
+        y = bbox_px["y"] * scale_y + offset_y
+        w = bbox_px["width"] * scale_x
+        h = bbox_px["height"] * scale_y
+
+        # Clip to page bounds
+        x = max(0.0, min(x, target_width_mm))
+        y = max(0.0, min(y, target_height_mm))
+        if x + w > target_width_mm:
+            w = target_width_mm - x
+        if y + h > target_height_mm:
+            h = target_height_mm - y
+
+        return BBox(
+            x=round(x, 2),
+            y=round(y, 2),
+            width=round(max(w, 0), 2),
+            height=round(max(h, 0), 2),
         )
 
     def get_page_dimensions_mm(self) -> tuple[float, float]:

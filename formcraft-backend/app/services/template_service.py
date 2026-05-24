@@ -1,7 +1,7 @@
 """Template, Page, and Element CRUD operations via Supabase."""
 
 from datetime import datetime, timezone
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import HTTPException, status
 from supabase import Client
@@ -125,22 +125,17 @@ class TemplateService:
     # --- Templates ---
 
     async def create_template(self, data: dict, user_id: UUID) -> dict:
+        new_id = str(uuid4())
         template_data = {
             **data,
+            "id": new_id,
             "created_by": str(user_id),
             "status": "draft",
             "version": 1,
+            "lineage_id": new_id,
         }
         result = self.client.table("templates").insert(template_data).execute()
         template = result.data[0]
-
-        try:
-            self.client.table("templates").update(
-                {"lineage_id": template["id"]}
-            ).eq("id", template["id"]).execute()
-        except Exception:
-            # lineage_id column may not exist yet (migration 020 pending)
-            pass
 
         page_data = {
             "template_id": template["id"],
@@ -578,7 +573,9 @@ class TemplateService:
     ) -> dict:
         source = await self.get_template(template_id)
         clone_name = name or f"{source['name']} (Copy)"
+        new_id = str(uuid4())
         new_template_data = {
+            "id": new_id,
             "name": clone_name,
             "description": source.get("description", ""),
             "category": source.get("category", ""),
@@ -588,17 +585,10 @@ class TemplateService:
             "version": 1,
             "created_by": str(user_id),
             "org_id": source.get("org_id"),
+            "lineage_id": new_id,
         }
         result = self.client.table("templates").insert(new_template_data).execute()
         new_template = result.data[0]
-
-        try:
-            self.client.table("templates").update(
-                {"lineage_id": new_template["id"]}
-            ).eq("id", new_template["id"]).execute()
-        except Exception:
-            # lineage_id column may not exist yet (migration 020 pending)
-            pass
 
         for page in source.get("pages", []):
             page_data = {

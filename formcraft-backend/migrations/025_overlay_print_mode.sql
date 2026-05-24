@@ -11,7 +11,7 @@ CREATE TABLE template_print_settings (
 
 ALTER TABLE template_print_settings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY template_print_settings_org_isolation ON template_print_settings
-  USING (org_id = current_setting('app.current_org_id')::UUID);
+  USING (org_id = current_setting('app.current_org_id', true)::UUID);
 
 -- Printer profiles
 CREATE TABLE printer_profiles (
@@ -35,7 +35,7 @@ CREATE INDEX idx_printer_profiles_org ON printer_profiles(org_id);
 
 ALTER TABLE printer_profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY printer_profiles_org_isolation ON printer_profiles
-  USING (org_id = current_setting('app.current_org_id')::UUID);
+  USING (org_id = current_setting('app.current_org_id', true)::UUID);
 
 -- Add include_in_overlay to elements
 ALTER TABLE elements

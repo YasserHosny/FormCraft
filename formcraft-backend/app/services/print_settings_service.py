@@ -17,7 +17,7 @@ class PrintSettingsService:
             .maybe_single()
             .execute()
         )
-        return result.data if result.data else None
+        return result.data if result and result.data else None
 
     async def upsert_settings(self, template_id: UUID, print_mode: str, org_id: UUID) -> dict:
         data = {

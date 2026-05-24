@@ -55,6 +55,8 @@ export class CanvasService implements OnDestroy {
   private pageHeightMm = 297;
   private detections: { bbox: { x: number; y: number; width: number; height: number }; type?: string }[] = [];
   private readonly pageOffsetPx = 20;
+  private debugGridVisible = false;
+  private debugGridGroup: Konva.Group | null = null;
 
   getZoom(): number {
     return this._zoom.value;
@@ -204,6 +206,100 @@ export class CanvasService implements OnDestroy {
     this.renderDetections();
   }
 
+  /** T039: Toggle mm ruler debug grid overlay at 10mm intervals (Ctrl+G). */
+  toggleDebugGrid(): boolean {
+    this.debugGridVisible = !this.debugGridVisible;
+    this.renderDebugGrid();
+    return this.debugGridVisible;
+  }
+
+  isDebugGridVisible(): boolean {
+    return this.debugGridVisible;
+  }
+
+  private renderDebugGrid(): void {
+    if (!this.detectionLayer) return;
+
+    // Remove existing debug grid
+    if (this.debugGridGroup) {
+      this.debugGridGroup.destroy();
+      this.debugGridGroup = null;
+    }
+
+    if (!this.debugGridVisible) {
+      this.detectionLayer.draw();
+      return;
+    }
+
+    const zoom = this._zoom.value;
+    const intervalMm = 10;
+    const ox = this.pageOffsetPx;
+    const oy = this.pageOffsetPx;
+    const pageWPx = mmToPx(this.pageWidthMm, this.dpi, zoom);
+    const pageHPx = mmToPx(this.pageHeightMm, this.dpi, zoom);
+
+    this.debugGridGroup = new Konva.Group({ listening: false });
+
+    // Vertical lines + labels
+    for (let mm = 0; mm <= this.pageWidthMm; mm += intervalMm) {
+      const xPx = mmToPx(mm, this.dpi, zoom) + ox;
+      this.debugGridGroup.add(
+        new Konva.Line({
+          points: [xPx, oy, xPx, oy + pageHPx],
+          stroke: '#e53935',
+          strokeWidth: 0.5,
+          opacity: 0.5,
+          listening: false,
+        })
+      );
+      if (mm > 0 && mm < this.pageWidthMm) {
+        this.debugGridGroup.add(
+          new Konva.Text({
+            x: xPx + 1,
+            y: oy + 1,
+            text: `${mm}`,
+            fontSize: 8,
+            fontFamily: 'monospace',
+            fill: '#e53935',
+            opacity: 0.7,
+            listening: false,
+          })
+        );
+      }
+    }
+
+    // Horizontal lines + labels
+    for (let mm = 0; mm <= this.pageHeightMm; mm += intervalMm) {
+      const yPx = mmToPx(mm, this.dpi, zoom) + oy;
+      this.debugGridGroup.add(
+        new Konva.Line({
+          points: [ox, yPx, ox + pageWPx, yPx],
+          stroke: '#e53935',
+          strokeWidth: 0.5,
+          opacity: 0.5,
+          listening: false,
+        })
+      );
+      if (mm > 0 && mm < this.pageHeightMm) {
+        this.debugGridGroup.add(
+          new Konva.Text({
+            x: ox + 1,
+            y: yPx + 1,
+            text: `${mm}`,
+            fontSize: 8,
+            fontFamily: 'monospace',
+            fill: '#e53935',
+            opacity: 0.7,
+            listening: false,
+          })
+        );
+      }
+    }
+
+    this.detectionLayer.add(this.debugGridGroup);
+    this.detectionLayer.draw();
+  }
+
   addElement(data: Record<string, unknown>): CanvasElement {
     return this.addElementInternal(data, { recordUndo: true });
   }
@@ -320,6 +416,8 @@ export class CanvasService implements OnDestroy {
       this.detectionLayer.add(rect);
     }
     this.detectionLayer.draw();
+    // Re-render debug grid on top of detections
+    this.renderDebugGrid();
   }
 
   private getDetectionColor(type?: string): string {

@@ -123,6 +123,35 @@
       "snap": "محاذاة",
       "export_pdf": "تصدير PDF",
       "preview": "معاينة"
+    },
+    "import": {
+      "title": "استيراد نموذج (OCR)",
+      "uploadImage": "رفع صورة",
+      "selectPage": "اختر الصفحة",
+      "importing": "جاري تحليل النموذج...",
+      "noFieldsDetected": "لم يتم اكتشاف أي حقول في الصورة المرفوعة.",
+      "fieldsDetected": "تم اكتشاف {count} حقل",
+      "ocrError": "خدمة التعرف الضوئي غير متاحة. تم حفظ الصورة كخلفية.",
+      "importForm": "استيراد نموذج",
+      "replaceDetections": "تحتوي هذه الصفحة على {{count}} اكتشاف معلق. هل تريد استبدالها؟",
+      "replace": "استبدال",
+      "cancel": "إلغاء",
+      "clearDetections": "مسح الاكتشافات",
+      "detectionHistory": "سجل الاكتشافات",
+      "previousImports": "الاستيرادات السابقة",
+      "noHistory": "لا توجد استيرادات سابقة."
+    },
+    "detection": {
+      "reviewDetections": "مراجعة الاكتشافات",
+      "acceptDetection": "قبول",
+      "rejectDetection": "رفض",
+      "acceptAll": "قبول الكل",
+      "rejectAll": "رفض الكل",
+      "pending": "معلق",
+      "accepted": "مقبول",
+      "rejected": "مرفوض",
+      "changeType": "تغيير النوع",
+      "confidence": "درجة الثقة"
     }
   },
   "ai": {

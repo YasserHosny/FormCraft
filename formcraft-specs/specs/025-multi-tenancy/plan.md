@@ -1,111 +1,104 @@
-# Implementation Plan: Multi-Tenancy (Organizations, Departments, Branches)
+# Implementation Plan: [FEATURE]
 
-**Date**: 2026-05-17  
-**Feature Branch**: `024-multi-tenancy`  
-**Depends on**: All Phase 1 features (this is the Phase 2 foundation)
+**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
-## Architecture Overview
+**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
 
-Multi-tenancy formalizes the org isolation that Phase 1 prepared for (existing org_id columns, RLS policies). It introduces the organizational hierarchy (org → department → branch), user assignment, invitation workflow, and org-level settings. This is the most impactful migration in Phase 2 — all subsequent features depend on it.
+## Summary
 
+[Extract from feature spec: primary requirement + technical approach from research]
+
+## Technical Context
+
+<!--
+  ACTION REQUIRED: Replace the content in this section with the technical details
+  for the project. The structure here is presented in advisory capacity to guide
+  the iteration process.
+-->
+
+**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
+**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
+**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
+**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
+**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]  
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
+**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
+**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+
+## Constitution Check
+
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+
+[Gates determined based on constitution file]
+
+## Project Structure
+
+### Documentation (this feature)
+
+```text
+specs/[###-feature]/
+├── plan.md              # This file (/speckit.plan command output)
+├── research.md          # Phase 0 output (/speckit.plan command)
+├── data-model.md        # Phase 1 output (/speckit.plan command)
+├── quickstart.md        # Phase 1 output (/speckit.plan command)
+├── contracts/           # Phase 1 output (/speckit.plan command)
+└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                     Platform Admin Panel                               │
-│  ┌────────────────────────────────────────────────────────────────┐  │
-│  │ OrgManagementComponent (create/manage orgs)                    │  │
-│  └────────────────────────────────────────────────────────────────┘  │
-├──────────────────────────────────────────────────────────────────────┤
-│                     Org Admin Panel                                    │
-│  ┌───────────────┐  ┌──────────────┐  ┌──────────────────────────┐  │
-│  │ Departments   │  │ Branches     │  │ User Management         │  │
-│  │ CRUD          │  │ CRUD         │  │ (invite, assign, deact) │  │
-│  └───────────────┘  └──────────────┘  └──────────────────────────┘  │
-│  ┌────────────────────────────────────────────────────────────────┐  │
-│  │ Org Settings (branding, policies, white-label)                 │  │
-│  └────────────────────────────────────────────────────────────────┘  │
-├──────────────────────────────────────────────────────────────────────┤
-│                     Backend Middleware                                 │
-│  ┌────────────────────────────────────────────────────────────────┐  │
-│  │ JWT org_id claim → SET LOCAL app.current_org_id → RLS active  │  │
-│  └────────────────────────────────────────────────────────────────┘  │
-├──────────────────────────────────────────────────────────────────────┤
-│                     Database                                          │
-│  organizations ──1:N──> departments ──1:N──> branches                │
-│  organizations ──1:N──> profiles (users)                             │
-│  organizations ──1:N──> templates, submissions, reference_lists...   │
-│  RLS on ALL tables using app.current_org_id                          │
-└──────────────────────────────────────────────────────────────────────┘
+
+### Source Code (repository root)
+<!--
+  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
+  for this feature. Delete unused options and expand the chosen structure with
+  real paths (e.g., apps/admin, packages/something). The delivered plan must
+  not include Option labels.
+-->
+
+```text
+# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
+src/
+├── models/
+├── services/
+├── cli/
+└── lib/
+
+tests/
+├── contract/
+├── integration/
+└── unit/
+
+# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
+backend/
+├── src/
+│   ├── models/
+│   ├── services/
+│   └── api/
+└── tests/
+
+frontend/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   └── services/
+└── tests/
+
+# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
+api/
+└── [same as backend above]
+
+ios/ or android/
+└── [platform-specific structure: feature modules, UI flows, platform tests]
 ```
 
-## Technology Stack
+**Structure Decision**: [Document the selected structure and reference the real
+directories captured above]
 
-- **Backend**: Python 3.12, FastAPI middleware (JWT → RLS session variable), Pydantic v2
-- **Frontend**: Angular 17, Angular Material, @ngx-translate
-- **Auth**: Supabase Auth (extended with org_id in JWT custom claims)
-- **Email**: SMTP or Supabase email (for invitations)
-- **Database**: Supabase PostgreSQL with RLS
+## Complexity Tracking
 
-## Implementation Phases
+> **Fill ONLY if Constitution Check has violations that must be justified**
 
-### Phase 1: Database Migration & Backfill
-
-Create organizations, departments, branches, user_invitations tables. Add columns to profiles and templates. Seed default org. Backfill existing data. Add FK constraints.
-
-### Phase 2: Backend Middleware — Org Context
-
-FastAPI middleware that extracts org_id from JWT, sets `app.current_org_id` session variable. Platform admin bypass for cross-org operations.
-
-### Phase 3: Backend — Organization & Hierarchy CRUD
-
-Service and routes for organizations (platform admin), departments, branches.
-
-### Phase 4: Backend — User Invitation & Management
-
-Invitation service (create, send email, accept), user management (assign, deactivate, activate). Enhanced user listing with department/branch filters.
-
-### Phase 5: Backend — Template Department Scoping
-
-Template queries filter by user's department (or show all if org-wide). Template create/update accepts department_id.
-
-### Phase 6: Backend — Auth Modifications
-
-Login flow with multi-org detection, org selector response, JWT with org_id claim. Org branding endpoint for login page.
-
-### Phase 7: Frontend — Org Admin UI
-
-Admin pages for departments, branches, user management, invitations, org settings.
-
-### Phase 8: Frontend — Invitation Acceptance Flow
-
-Public pages: invitation acceptance form (set password + display name), expired invitation page.
-
-### Phase 9: Frontend — Login & Branding
-
-Org selector on login (multi-org users), org branding on login page (logo, color), org logo in nav bar.
-
-### Phase 10: Frontend — Template Scoping & Submission Tagging
-
-Template grid filters by department. New submissions auto-tagged with operator's branch_id.
-
-### Phase 11: Migration & Existing Data
-
-Ensure all existing data assigned to default org. Verify RLS doesn't break existing functionality. Add platform admin to seed user.
-
-## Technical Constraints
-
-1. **Non-breaking migration** — existing single-org deployments continue working via default org
-2. **JWT size** — org_id in claims adds ~40 bytes; acceptable
-3. **RLS performance** — org_id indexed on all tables; RLS uses index scans
-4. **Email delivery** — invitation emails must support Arabic RTL
-5. **Platform admin bypass** — uses separate RLS policy with `is_platform_admin` check
-6. **Backwards compatible API** — existing endpoints work unchanged for single-org users
-
-## Risk Mitigation
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| RLS migration breaks existing queries | All queries fail | Backfill default org BEFORE enabling RLS on new tables; test with existing data |
-| Multi-org login UX complexity | Confusion for single-org users | Only show org selector if email exists in >1 org; single-org = auto-login |
-| Invitation email delivery failures | Users can't onboard | Retry logic + admin can resend; show invitation link in admin panel as fallback |
-| Department scope overly restrictive | Users can't access needed templates | NULL department_id = org-wide (default); explicit scoping is opt-in |
-| Cross-org data leakage | Security breach | Automated test suite that creates 2 orgs and verifies isolation on every table |
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
