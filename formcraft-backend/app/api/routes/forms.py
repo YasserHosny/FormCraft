@@ -196,7 +196,13 @@ def _process_import(template_id: UUID, image_bytes: bytes, page_index: int) -> F
     # T051: Deduplicate overlapping detections (IoU > 0.8)
     detected_fields = _deduplicate_detections(detected_fields)
 
-    page_width_mm, page_height_mm = converter.get_page_dimensions_mm()
+    # Use target page dimensions when bboxes were scaled to page; otherwise fall back to image-based dimensions
+    if target_width_mm and target_height_mm:
+        page_width_mm = target_width_mm
+        page_height_mm = target_height_mm
+    else:
+        page_width_mm, page_height_mm = converter.get_page_dimensions_mm()
+
     client = get_supabase_client()
 
     insert_data = {
