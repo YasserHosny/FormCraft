@@ -1,0 +1,110 @@
+<section class="admin-page">
+  <header class="page-header">
+    <h1>{{ 'adminExport.title' | translate }}</h1>
+  </header>
+
+  <form class="filter-grid" [formGroup]="form" (ngSubmit)="previewExport()">
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'adminExport.templateId' | translate }}</mat-label>
+      <input matInput formControlName="template_id" dir="auto" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'adminExport.dateFrom' | translate }}</mat-label>
+      <input matInput type="date" formControlName="date_from" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'adminExport.dateTo' | translate }}</mat-label>
+      <input matInput type="date" formControlName="date_to" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'adminExport.branchId' | translate }}</mat-label>
+      <input matInput formControlName="branch_id" dir="auto" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'adminExport.operatorId' | translate }}</mat-label>
+      <input matInput formControlName="operator_id" dir="auto" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'templates.status' | translate }}</mat-label>
+      <input matInput formControlName="status" dir="auto" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'adminExport.format' | translate }}</mat-label>
+      <mat-select formControlName="format">
+        <mat-option value="csv">CSV</mat-option>
+        <mat-option value="xlsx">XLSX</mat-option>
+        <mat-option value="json">JSON</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'adminExport.scope' | translate }}</mat-label>
+      <mat-select formControlName="scope">
+        <mat-option value="flattened">{{ 'adminExport.flattened' | translate }}</mat-option>
+        <mat-option value="structured">{{ 'adminExport.structured' | translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="actions">
+      <button mat-raised-button color="primary" type="submit" [disabled]="loadingPreview">
+        <mat-icon>manage_search</mat-icon>
+        {{ 'adminExport.preview' | translate }}
+      </button>
+      <button
+        mat-stroked-button
+        color="primary"
+        type="button"
+        [disabled]="downloading || preview?.can_download === false"
+        (click)="downloadExport()"
+      >
+        <mat-icon>download</mat-icon>
+        {{ 'adminExport.download' | translate }}
+      </button>
+    </div>
+  </form>
+
+  <section class="preview-panel" *ngIf="preview">
+    <div>
+      <span class="metric-label">{{ 'adminExport.matchingCount' | translate }}</span>
+      <strong>{{ preview.matching_count }}</strong>
+    </div>
+    <p class="rejection" *ngIf="!preview.can_download">
+      {{ 'adminExport.oversized' | translate }}
+    </p>
+    <mat-chip-set *ngIf="preview.warnings.length">
+      <mat-chip *ngFor="let warning of preview.warnings" color="warn" highlighted>
+        {{ 'adminExport.warningKeys.' + warning | translate }}
+      </mat-chip>
+    </mat-chip-set>
+  </section>
+
+  <section class="history-section">
+    <h2>{{ 'adminExport.history' | translate }}</h2>
+    <table mat-table [dataSource]="history" class="history-table">
+      <ng-container matColumnDef="created_at">
+        <th mat-header-cell *matHeaderCellDef>{{ 'adminExport.createdAt' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.created_at | date: 'short' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="format">
+        <th mat-header-cell *matHeaderCellDef>{{ 'adminExport.format' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.format | uppercase }}</td>
+      </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>{{ 'templates.status' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.status }}</td>
+      </ng-container>
+      <ng-container matColumnDef="matching_count">
+        <th mat-header-cell *matHeaderCellDef>{{ 'adminExport.matchingCount' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.matching_count }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="['created_at', 'format', 'status', 'matching_count']"></tr>
+      <tr mat-row *matRowDef="let row; columns: ['created_at', 'format', 'status', 'matching_count']"></tr>
+    </table>
+  </section>
+</section>

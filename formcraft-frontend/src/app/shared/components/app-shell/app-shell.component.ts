@@ -19,6 +19,8 @@ const MODE_TABS: ModeTab[] = [
   { key: 'studio', icon: 'brush', route: '/templates', labelKey: 'nav.studio', roles: ['admin', 'designer'] },
   { key: 'desk', icon: 'assignment', route: '/desk', labelKey: 'nav.desk', roles: ['admin', 'designer', 'operator', 'branch_manager'] },
   { key: 'admin', icon: 'admin_panel_settings', route: '/admin', labelKey: 'nav.admin', roles: ['admin'] },
+  { key: 'adminExport', icon: 'file_download', route: '/admin/export', labelKey: 'adminExport.title', roles: ['admin'] },
+  { key: 'integrations', icon: 'hub', route: '/admin/integrations', labelKey: 'integrations.title', roles: ['admin'] },
 ];
 
 /** Returns the role-based default route for post-login redirect. */
@@ -274,6 +276,8 @@ export class AppShellComponent implements OnInit, OnDestroy {
 
   /** F15: Detect which mode tab is active based on the current URL. */
   private detectModeFromUrl(url: string): string {
+    if (url.startsWith('/admin/export')) return 'adminExport';
+    if (url.startsWith('/admin/integrations')) return 'integrations';
     if (url.startsWith('/admin')) return 'admin';
     if (url.startsWith('/desk')) return 'desk';
     // /templates and /designer are both part of "studio"

@@ -1,7 +1,9 @@
 # FormCraft — Complete Platform Functionality & Business Value
 
 > A user-centric view of every function, its business value, and the closed-cycle flows that connect them.
-> Date: 2026-05-16 | Last updated: 2026-05-16
+> Date: 2026-05-16 | Last validated: 2026-05-25
+
+Validated against `formcraft-specs/specs/001-auth-users` through `formcraft-specs/specs/040-enhanced-analytics`, with later roadmap items represented as vision-level capabilities when they do not yet have full plan/task artifacts.
 
 ---
 
@@ -23,6 +25,7 @@
      - F-CONDITIONAL: Smart Form Logic
      - F-VERSION: Template Versioning & Lifecycle
      - F-APPROVE: Template Approval Workflow
+     - F-GOVERNANCE: Template Governance
      - F-PDF: PDF Rendering Engine
      - F-REFDATA: Reference Data Manager
    - [Stage 3: OPERATE — Fill, Print, Archive](#stage-3-operate--fill-print-archive)
@@ -44,10 +47,12 @@
      - F-REPORT: Scheduled Reports
      - F-REPORT-OPS: Operational Reports
    - [Stage 5: GOVERN — Control & Secure](#stage-5-govern--control--secure)
+     - F-PLATFORM: Platform Admin Console
      - F-ORG: Organization & Tenant Management
      - F-USERS: User & Access Management
      - F-AUDIT: Audit Trail & Compliance
      - F-NOTIFY: Notification System
+     - F-USER-FEEDBACK: Product Feedback & Support Loop
    - [Stage 6: INTEGRATE — Connect & Extend](#stage-6-integrate--connect--extend)
      - F-API: REST API & Programmatic Access
      - F-WEBHOOK: Event Webhooks
@@ -102,9 +107,10 @@ Every function in FormCraft serves one continuous cycle. The platform has no dea
 
 | Role | Primary Mode | Daily Activity | Business Responsibility |
 |------|:------------:|----------------|------------------------|
+| **Platform Admin** | Platform Console | Create, monitor, suspend, and support tenant organizations | SaaS operations, tenant health, subscription oversight |
 | **Org Admin** | Admin Console | Configure org, manage users, approve templates, review analytics | Governance, compliance, operational oversight |
 | **Designer** | Design Studio | Create and iterate form templates, respond to feedback | Form accuracy, regulatory compliance, design quality |
-| **Reviewer** | Admin Console | Review submitted templates, approve or reject with comments | Quality gate, compliance verification |
+| **Reviewer capability** | Admin Console | Branch managers and admins review submitted templates, approve or reject with comments | Quality gate, compliance verification |
 | **Operator** | Form Desk | Fill forms for customers, print, manage queue | Daily operations, customer service, throughput |
 | **Branch Manager** | Admin Console | Monitor branch analytics, manage local operators | Branch performance, staffing, training |
 | **External User** | Public Portal | Fill public forms online, download receipts | Self-service, reduced branch visits |
@@ -168,16 +174,26 @@ User flow:
 ```
 User flow:
     Designer clicks "New Template"
-    -> Wizard: name, description, category, locale (AR/EN/Both), country, page size
-    -> Starting point: blank canvas / clone existing / import from scan / import package
+    -> Multi-step wizard:
+        1. Basic Info: bilingual-aware name, description, category, tags
+        2. Locale: language, country, currency, with org defaults pre-selected
+        3. Page Setup: preset/custom page size in mm, orientation, margins
+        4. Starting Point: blank canvas / clone existing / import from scan / import package
     -> Template created in "draft" status with one default page
-    -> Designer enters Design Studio canvas
+    -> Designer enters Design Studio canvas with wizard settings already applied
+
+    Starting points:
+    -> Blank Canvas: new empty template
+    -> Clone Existing: preserves pages, elements, properties, validators, conditions, bindings
+    -> Import from Scan: launches OCR detection review flow
+    -> Import Package: validates portable FormCraft package and warns about missing references
 
 Business value:
     - Structured creation prevents incomplete templates
     - Category and tagging enable searchability at scale (when org has 200+ templates)
     - Country selection auto-configures relevant validators (EG vs SA vs AE rules)
     - Clone from existing eliminates redundant work for similar forms
+    - Import package supports dev/staging/prod promotion and template reuse across orgs
 ```
 
 #### F-CANVAS: Visual Form Design (Design Studio)
@@ -324,7 +340,7 @@ Business value:
 User flow:
     Designer completes template -> clicks "Submit for Review"
     -> Template status changes to "submitted" (no longer editable)
-    -> Assigned reviewer(s) receive notification
+    -> Branch manager / admin reviewer receives notification
     -> Reviewer opens template in read-only preview mode:
         -> Views canvas layout
         -> Checks validation rules
@@ -336,6 +352,7 @@ User flow:
         Request Changes -> specific element-level notes (like code review)
     -> Admin sees approved templates -> publishes with one click
     -> Full audit trail: who submitted, who reviewed, when, what comments
+    -> Designer may withdraw before review decision; withdrawal returns template to draft
 
 Business value:
     - Compliance: no single person can create and publish a financial form
@@ -343,6 +360,42 @@ Business value:
     - Accountability: every approval decision documented
     - Banking regulation: many jurisdictions require multi-person authorization for form changes
     - Reduces errors reaching production: 4-eyes principle enforced
+```
+
+#### F-GOVERNANCE: Template Governance
+
+```
+User flow:
+    Org Admin opens /admin/governance
+    -> Single template oversight list across all statuses
+    -> Filters by status, department, category, designer, stale/active, and usage
+    -> Bulk actions:
+        Archive selected templates
+        Reassign designer
+        Change category
+    -> Published-template archive warns about recent usage impact before proceeding
+
+    Review quality tools:
+    -> Submitted templates open with read-only canvas preview
+    -> Reviewer pins comments to exact canvas coordinates in millimeters
+    -> Updated templates show version diff against the previous published version
+    -> Designer resolves comments before resubmission
+
+    Compliance dashboard:
+    -> Validator coverage %
+    -> Bilingual label %
+    -> Help text coverage %
+    -> Tab order completeness
+    -> Overall quality score
+    -> Stale templates not updated in 6+ months
+    -> Regulatory rule-change impact across affected templates
+
+Business value:
+    - Gives admins one place to manage template health across the organization
+    - Makes reviews faster because comments are anchored to the actual visual design
+    - Prevents forgotten templates from drifting out of compliance
+    - Turns quality standards into measurable governance metrics
+    - Audit trail captures bulk actions, review comments, and compliance decisions
 ```
 
 #### F-PDF: PDF Rendering Engine
@@ -762,13 +815,18 @@ User flow:
         - Fill count over time (trend line)
         - Fill time distribution (histogram)
         - Most common errors by field
+        - Field-level empty rate, error rate, and average fill time
         - Feedback volume and resolution rate
+        - Completion funnel: started -> saved draft -> printed/submitted
+        - Department and branch usage breakdown
+    -> Anomaly indicators highlight unusual spikes in errors, abandonment, or fill time
 
 Business value:
     - Identify problematic templates: high error rate = bad design, needs iteration
     - Measure regulatory response time: how fast are new versions adopted?
     - Archive decisions: data-backed evidence for retiring unused templates
     - Design benchmarking: compare fill times to identify best-practice templates
+    - Field-level analytics tells designers exactly which controls need improvement
 ```
 
 #### F-ANALYTICS-OPERATOR: Operator Performance
@@ -805,6 +863,7 @@ User flow:
         - Template quality scores across the organization
         - % of templates with full validator coverage
         - % of templates with bilingual labels
+        - Quality score distribution and templates needing attention
         - Approval workflow adherence: how many templates bypass review?
         - Audit log volume by action type
         - Customer data access patterns (privacy monitoring)
@@ -924,7 +983,8 @@ User flow:
     -> Group by any dimension
     -> Choose visualization: table, bar chart, line chart, pie chart
     -> Save as named report -> schedule for recurring delivery
-    -> Export: Excel, PDF, or both -> email or SFTP
+    -> Export: Excel, CSV, or PDF
+    -> Scheduled delivery: approved email recipients
 
     Access control:
     -> Admin: all reports, all data
@@ -949,6 +1009,40 @@ Business value:
 ### Stage 5: GOVERN — Control & Secure
 
 > **Business problem solved**: "We need to know who did what, when, and ensure that only authorized people can access sensitive forms and data."
+
+#### F-PLATFORM: Platform Admin Console
+
+```
+User flow:
+    Platform Admin opens /platform (visible only when is_platform_admin=true)
+    -> Dashboard shows platform-wide metrics:
+        Total organizations
+        Total users
+        Total submissions
+        Organizations by tier
+        Submission volume trend
+        Organizations approaching tier limits
+    -> Opens /platform/organizations:
+        Search, filter, and sort organizations by name, tier, status, country
+        View active users, templates count, submissions this month, storage usage
+    -> Creates new organization:
+        Name, default language, country, currency, subscription tier
+        First org admin invitation generated automatically
+    -> Opens organization detail:
+        Profile and branding
+        Subscription settings
+        Users overview
+        Usage statistics
+    -> Suspends or reactivates an organization when required
+    -> Every platform admin action is audit logged
+
+Business value:
+    - Replaces direct database access for platform operations
+    - Makes customer onboarding repeatable and supportable
+    - Gives SaaS operators visibility into tenant health, usage, and tier limits
+    - Separates platform-level control from organization admin routes
+    - Supports emergency suspension/reactivation with traceability
+```
 
 #### F-ORG: Organization & Tenant Management
 
@@ -990,7 +1084,7 @@ User flow:
     Roles and permissions:
     -> Admin: full access to everything within the org
     -> Designer: create/edit templates, view feedback, submit for review
-    -> Reviewer: approve/reject submitted templates (cannot publish)
+    -> Reviewer capability: branch managers and admins approve/reject submitted templates
     -> Operator: fill forms, manage drafts, view history, manage customers
     -> Viewer: read-only access to published templates and own submissions
 
@@ -1063,22 +1157,55 @@ User flow:
     -> Draft expiring soon -> owner notified
     -> Feedback received on template -> designer notified
     -> Feedback resolved -> operator notified
+    -> System announcement -> targeted users notified by role, department, or all users
 
     Delivery channels:
     -> In-app: bell icon with unread count, notification panel
-    -> Email: bilingual HTML emails with org branding
+    -> Email: bilingual HTML emails with org branding, retry on delivery failure
     -> Each user controls their preferences per notification type per channel
+    -> Email unsubscribe disables that notification type for that user
 
     Notification center (/notifications):
     -> Full history of all notifications
     -> Mark as read, mark all as read
+    -> Filter by type, read status, and date range
     -> Deep link: clicking notification navigates to relevant page
+    -> Admin can publish system announcements for all users, roles, or departments
 
 Business value:
     - No missed actions: reviewers don't forget to review, operators know about new versions
     - Reduces delays: approval workflows move faster with instant notifications
     - User control: each person sees notifications relevant to their role
     - Email fallback: critical notifications reach users even when not logged in
+```
+
+#### F-USER-FEEDBACK: Product Feedback & Support Loop
+
+```
+User flow:
+    Authenticated user opens the persistent feedback widget from any page
+    -> Types feedback text (required)
+    -> Optionally attaches media:
+        Up to five images with thumbnail previews
+        One recorded or uploaded audio message
+        Or one recorded/uploaded video message
+    -> Submission captures user identity, page URL, timestamp, text, media, and status
+    -> User receives confirmation and can later open /my-feedback
+
+    Admin feedback dashboard:
+    -> Admin views all feedback submissions with submitter, source page, text, media previews
+    -> Search by text and filter by status, submitter, date range, and labels
+    -> Create/manage labels and assign up to five labels per submission
+    -> Reply in a threaded conversation with the submitting user
+    -> User replies from /my-feedback; admin sees unread indicators
+    -> In-app notifications connect users back to the relevant thread
+
+Business value:
+    - Captures product issues where they happen, with page context
+    - Rich media makes bug reports and UX issues easier to understand
+    - Labels and filters turn raw feedback into triageable support work
+    - Threading closes the loop with the person who reported the issue
+    - Builds a continuous improvement channel for the platform itself
 ```
 
 ---
@@ -1091,9 +1218,11 @@ Business value:
 
 ```
 User flow:
-    Admin generates API key for their organization:
-    -> Scoped permissions: which endpoints the key can access
+    Admin creates an integration credential for their organization:
+    -> Names and scopes the credential
+    -> Grants only explicit capabilities
     -> Rate limits: per-key throttling
+    -> Rotation and revocation controls
     -> Expiry: optional expiration date
 
     External systems use the API to:
@@ -1111,6 +1240,7 @@ Business value:
     - Automation: no manual intervention for routine form processing
     - Partner ecosystem: third-party developers build on FormCraft API
     - Procurement requirement: APIs are mandatory for enterprise software deals
+    - Immediate revocation limits blast radius when credentials are compromised
 ```
 
 #### F-WEBHOOK: Event Webhooks
@@ -1178,12 +1308,19 @@ User flow:
     -> Filter: template, date range, department, branch, operator, status
     -> Format: CSV, Excel (.xlsx), JSON
     -> Column selection: choose which fields to include
-    -> Schedule: one-time download or recurring (daily CSV emailed to compliance)
-    -> Delivery: browser download, email attachment, or push to SFTP server
+    -> Export preview shows matching record count and field warnings
+    -> Schedule: one-time download or recurring daily/weekly export
+    -> Delivery: browser download or approved email recipients
+    -> Export history records requester, filters, format, status, delivery summary
 
     Template export/import:
     -> Export template as .formcraft package (everything: pages, elements, rules, validators)
+    -> Package also preserves conditional rules and reference binding metadata
     -> Import package into another org or environment (dev -> staging -> prod)
+    -> If lineage/name matches existing template: import as a new version
+    -> If no match exists: import as a new draft template
+    -> Missing references produce remapping or warning summary before use
+    -> Invalid/corrupted/unsupported packages are rejected with no partial template created
     -> Use case: managed deployments across environments
     -> Use case: franchise organizations sharing form standards
 
@@ -1442,6 +1579,9 @@ Every function feeds back into the system, creating a self-improving loop:
 | Reference Data | Form Desk | Signatories, beneficiaries, cost centers auto-fill from governed lists |
 | Reference Data | Operational Reports | Signatory usage report cross-references list selections |
 | Operational Reports | Governance | Daily reconciliation and AML reports satisfy compliance |
+| Template Governance | Design | Review comments, compliance scores, and stale flags drive template remediation |
+| Platform Admin Console | Organization Management | Tenant usage, tier limits, and status controls feed SaaS operations |
+| Product Feedback | Support Loop | User reports, media, labels, and replies feed platform improvement |
 | Template Versioning | Form Desk | New versions automatically available to operators |
 | OCR Import | Design Studio | Scanned forms become editable templates |
 | Overlay Print | Form Desk | Pre-printed stationery + data-only output = complete cheque |
@@ -1491,11 +1631,21 @@ Every function feeds back into the system, creating a self-improving loop:
 |-------|-----------------|-----------------|
 | Audit trail | Incomplete, manual records | Every action logged immutably |
 | Compliance proof | Scramble before audit | Real-time compliance dashboard |
+| Template governance | Manual review lists and ad hoc comments | Central governance dashboard with canvas-pinned review comments |
 | User management | Spreadsheet of who has access | Role-based, department-scoped, SSO |
 | Performance visibility | None | Per-operator, per-branch, per-template analytics |
 | Form version control | Which version is "the latest"? | Clear versioning with deprecation |
 | Data security | Trust-based | RLS + encryption + access logging |
 | Multi-branch oversight | Call each branch | Centralized dashboard, branch comparison |
+
+### For the Platform Admin (SaaS operator)
+
+| Value | Before FormCraft | After FormCraft |
+|-------|-----------------|-----------------|
+| Tenant onboarding | Direct database/API work | Create organization from `/platform` with first admin invite |
+| Tenant monitoring | Scattered support checks | Platform dashboard with org, user, submission, and tier-limit metrics |
+| Emergency control | Manual intervention | Suspend/reactivate organization with audit trail |
+| Support context | Ask customer for screenshots | Organization detail view with profile, users, subscription, and stats |
 
 ### For the Organization (strategic)
 

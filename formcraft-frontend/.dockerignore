@@ -4,5 +4,9 @@ dist
 .gitignore
 *.md
 .angular
+*.log*
+.env
+.env.*
+coverage/
 .idea
 .vscode

@@ -24,6 +24,66 @@
     "all": "All",
     "view": "View"
   },
+  "adminExport": {
+    "title": "Data Export",
+    "schedulesTitle": "Recurring Export Schedules",
+    "filters": "Filters",
+    "preview": "Preview",
+    "download": "Download",
+    "history": "Export History",
+    "format": "Format",
+    "scope": "Scope",
+    "flattened": "Flattened",
+    "structured": "Structured",
+    "matchingCount": "Matching records",
+    "oversized": "Export is too large to download directly.",
+    "warnings": "Warnings",
+    "schedule": "Schedule",
+    "frequency": "Frequency",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "emailRecipients": "Email recipients",
+    "noDataBehavior": "No-data behavior",
+    "runNow": "Run now",
+    "deliveryHistory": "Delivery history",
+    "templateId": "Template ID",
+    "dateFrom": "From date",
+    "dateTo": "To date",
+    "branchId": "Branch ID",
+    "operatorId": "Operator ID",
+    "createdAt": "Created at",
+    "warningKeys": {
+      "department_filter_unavailable_for_submissions": "Department filter is unavailable for submissions."
+    }
+  },
+  "templatePackage": {
+    "export": "Export .formcraft package",
+    "import": "Import .formcraft package",
+    "review": "Review import",
+    "newDraft": "Create new draft",
+    "newVersion": "Create new version",
+    "warnings": "Import warnings",
+    "remappingRequired": "Remapping required",
+    "invalidPackage": "Package cannot be imported."
+  },
+  "integrations": {
+    "title": "Integrations",
+    "credentials": "API credentials",
+    "createCredential": "Create credential",
+    "revokeCredential": "Revoke credential",
+    "rotateCredential": "Rotate credential",
+    "secretShownOnce": "Secret is shown once.",
+    "scopes": "Scopes",
+    "webhooks": "Webhooks",
+    "createWebhook": "Create webhook",
+    "targetUrl": "Target URL",
+    "signingSecret": "Signing secret",
+    "eventType": "Event type",
+    "testDelivery": "Test delivery",
+    "deliveryLogs": "Delivery logs",
+    "payloadPreview": "Payload preview",
+    "responseSummary": "Response summary"
+  },
   "auth": {
     "login": "Sign In",
     "logout": "Sign Out",
@@ -733,5 +793,67 @@
     "view": "View",
     "noTemplates": "No templates found",
     "all": "All"
+  },
+  "export": {
+    "title": "Data Export",
+    "preview": "Preview",
+    "download": "Download",
+    "history": "History",
+    "schedules": {
+      "title": "Export Schedules",
+      "name": "Name",
+      "frequency": "Frequency",
+      "format": "Format",
+      "status": "Status",
+      "nextRun": "Next Run",
+      "noSchedules": "No schedules found",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "create": "Create Schedule",
+      "emailRecipients": "Email Recipients",
+      "noDataBehavior": "No Data Behavior",
+      "sendEmptyFile": "Send Empty File",
+      "sendNotice": "Send Notice"
+    },
+    "filters": {
+      "template": "Template",
+      "dateFrom": "Date From",
+      "dateTo": "Date To",
+      "status": "Status",
+      "department": "Department",
+      "branch": "Branch",
+      "operator": "Operator"
+    },
+    "format": {
+      "csv": "CSV",
+      "xlsx": "Excel",
+      "json": "JSON"
+    },
+    "scope": {
+      "flattened": "Flattened",
+      "structured": "Structured"
+    },
+    "oversized": "Export exceeds limit. Narrow filters.",
+    "noRecords": "No records match filters."
+  },
+  "integrations": {
+    "title": "Integrations",
+    "credentials": {
+      "title": "API Credentials",
+      "create": "Create Credential",
+      "rotate": "Rotate",
+      "revoke": "Revoke",
+      "secretShownOnce": "Secret shown only once. Copy it now.",
+      "scopes": "Scopes"
+    },
+    "webhooks": {
+      "title": "Webhook Subscriptions",
+      "create": "Create Webhook",
+      "url": "URL",
+      "events": "Events",
+      "signingSecret": "Signing Secret",
+      "testDelivery": "Test Delivery",
+      "deliveries": "Delivery Log"
+    }
   }
 }
