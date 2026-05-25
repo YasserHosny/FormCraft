@@ -6,6 +6,7 @@ export type Lang = 'ar' | 'en';
 
 @Injectable({ providedIn: 'root' })
 export class LanguageService {
+  private readonly storageKey = 'formcraft_language';
   private currentLang: Lang = 'ar';
 
   constructor(
@@ -15,11 +16,13 @@ export class LanguageService {
 
   init(): void {
     this.translate.setDefaultLang('ar');
-    this.setLanguage('ar');
+    const storedLang = localStorage.getItem(this.storageKey);
+    this.setLanguage(this.isSupportedLang(storedLang) ? storedLang : 'ar');
   }
 
   setLanguage(lang: Lang): void {
     this.currentLang = lang;
+    localStorage.setItem(this.storageKey, lang);
     this.translate.use(lang);
     document.documentElement.lang = lang;
 
@@ -34,5 +37,9 @@ export class LanguageService {
   toggleLanguage(): void {
     const next: Lang = this.currentLang === 'ar' ? 'en' : 'ar';
     this.setLanguage(next);
+  }
+
+  private isSupportedLang(lang: string | null): lang is Lang {
+    return lang === 'ar' || lang === 'en';
   }
 }
