@@ -24,6 +24,66 @@
     "all": "الكل",
     "view": "عرض"
   },
+  "adminExport": {
+    "title": "تصدير البيانات",
+    "schedulesTitle": "جداول التصدير المتكررة",
+    "filters": "عوامل التصفية",
+    "preview": "معاينة",
+    "download": "تنزيل",
+    "history": "سجل التصدير",
+    "format": "الصيغة",
+    "scope": "النطاق",
+    "flattened": "مسطح",
+    "structured": "منظم",
+    "matchingCount": "السجلات المطابقة",
+    "oversized": "التصدير كبير جداً للتنزيل المباشر.",
+    "warnings": "تحذيرات",
+    "schedule": "جدولة",
+    "frequency": "التكرار",
+    "daily": "يومي",
+    "weekly": "أسبوعي",
+    "emailRecipients": "مستلمو البريد الإلكتروني",
+    "noDataBehavior": "إجراء عدم وجود بيانات",
+    "runNow": "تشغيل الآن",
+    "deliveryHistory": "سجل الإرسال",
+    "templateId": "معرف القالب",
+    "dateFrom": "من تاريخ",
+    "dateTo": "إلى تاريخ",
+    "branchId": "معرف الفرع",
+    "operatorId": "معرف المشغل",
+    "createdAt": "تاريخ الإنشاء",
+    "warningKeys": {
+      "department_filter_unavailable_for_submissions": "تصفية القسم غير متاحة للإرسالات."
+    }
+  },
+  "templatePackage": {
+    "export": "تصدير حزمة .formcraft",
+    "import": "استيراد حزمة .formcraft",
+    "review": "مراجعة الاستيراد",
+    "newDraft": "إنشاء مسودة جديدة",
+    "newVersion": "إنشاء إصدار جديد",
+    "warnings": "تحذيرات الاستيراد",
+    "remappingRequired": "إعادة الربط مطلوبة",
+    "invalidPackage": "لا يمكن استيراد الحزمة."
+  },
+  "integrations": {
+    "title": "التكاملات",
+    "credentials": "اعتمادات واجهة البرمجة",
+    "createCredential": "إنشاء اعتماد",
+    "revokeCredential": "إلغاء الاعتماد",
+    "rotateCredential": "تدوير الاعتماد",
+    "secretShownOnce": "يظهر السر مرة واحدة فقط.",
+    "scopes": "النطاقات",
+    "webhooks": "خطافات الويب",
+    "createWebhook": "إنشاء خطاف ويب",
+    "targetUrl": "رابط الهدف",
+    "signingSecret": "سر التوقيع",
+    "eventType": "نوع الحدث",
+    "testDelivery": "اختبار الإرسال",
+    "deliveryLogs": "سجلات الإرسال",
+    "payloadPreview": "معاينة الحمولة",
+    "responseSummary": "ملخص الاستجابة"
+  },
   "auth": {
     "login": "تسجيل الدخول",
     "logout": "تسجيل الخروج",
@@ -727,5 +787,67 @@
     "view": "عرض",
     "noTemplates": "لا توجد قوالب",
     "all": "الكل"
+  },
+  "export": {
+    "title": "تصدير البيانات",
+    "preview": "معاينة",
+    "download": "تحميل",
+    "history": "السجل",
+    "schedules": {
+      "title": "جداول التصدير",
+      "name": "الاسم",
+      "frequency": "التكرار",
+      "format": "التنسيق",
+      "status": "الحالة",
+      "nextRun": "التشغيل التالي",
+      "noSchedules": "لا توجد جداول",
+      "daily": "يومي",
+      "weekly": "أسبوعي",
+      "create": "إنشاء جدول",
+      "emailRecipients": "مستلمو البريد",
+      "noDataBehavior": "سلوك عند عدم وجود بيانات",
+      "sendEmptyFile": "إرسال ملف فارغ",
+      "sendNotice": "إرسال إشعار"
+    },
+    "filters": {
+      "template": "القالب",
+      "dateFrom": "من تاريخ",
+      "dateTo": "إلى تاريخ",
+      "status": "الحالة",
+      "department": "القسم",
+      "branch": "الفرع",
+      "operator": "المشغل"
+    },
+    "format": {
+      "csv": "CSV",
+      "xlsx": "Excel",
+      "json": "JSON"
+    },
+    "scope": {
+      "flattened": "مسطح",
+      "structured": "منظم"
+    },
+    "oversized": "التصدير يتجاوز الحد. قلل الفلاتر.",
+    "noRecords": "لا توجد سجلات تطابق الفلاتر."
+  },
+  "integrations": {
+    "title": "التكاملات",
+    "credentials": {
+      "title": "بيانات اعتماد API",
+      "create": "إنشاء بيانات اعتماد",
+      "rotate": "تدوير",
+      "revoke": "إلغاء",
+      "secretShownOnce": "السر يُعرض مرة واحدة فقط. انسخه الآن.",
+      "scopes": "النطاقات"
+    },
+    "webhooks": {
+      "title": "اشتراكات Webhook",
+      "create": "إنشاء Webhook",
+      "url": "الرابط",
+      "events": "الأحداث",
+      "signingSecret": "سر التوقيع",
+      "testDelivery": "اختبار التوصيل",
+      "deliveries": "سجل التوصيل"
+    }
   }
 }

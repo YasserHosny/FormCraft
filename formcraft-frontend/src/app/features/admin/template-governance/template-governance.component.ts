@@ -11,6 +11,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { TemplateGovernanceService } from '../../../core/services/template-governance.service';
@@ -33,6 +34,7 @@ import { GovernanceTemplate, GovernanceTemplateListResponse } from '../../../sha
     MatCheckboxModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
     TranslateModule,
   ],
   templateUrl: './template-governance.component.html',

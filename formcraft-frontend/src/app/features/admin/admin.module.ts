@@ -13,6 +13,9 @@ import { DepartmentsComponent } from './departments/departments.component';
 import { UserManagementComponent } from './users/user-management.component';
 import { InvitationsComponent } from './invitations/invitations.component';
 import { TemplateGovernanceComponent } from './template-governance/template-governance.component';
+import { DataExportComponent } from './data-export/data-export.component';
+import { ExportSchedulesComponent } from './export-schedules/export-schedules.component';
+import { IntegrationsComponent } from './integrations/integrations.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'settings', pathMatch: 'full' },
@@ -28,6 +31,9 @@ const routes: Routes = [
   { path: 'departments', component: DepartmentsComponent },
   { path: 'users', component: UserManagementComponent },
   { path: 'invitations', component: InvitationsComponent },
+  { path: 'export', component: DataExportComponent },
+  { path: 'export/schedules', component: ExportSchedulesComponent },
+  { path: 'integrations', component: IntegrationsComponent },
 ];
 
 @NgModule({
@@ -47,6 +53,9 @@ const routes: Routes = [
     UserManagementComponent,
     InvitationsComponent,
     TemplateGovernanceComponent,
+    DataExportComponent,
+    ExportSchedulesComponent,
+    IntegrationsComponent,
   ],
 })
 export class AdminModule {}

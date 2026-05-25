@@ -1,12 +1,14 @@
 # FormCraft Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-05-24
+Auto-generated from all feature plans. Last updated: 2026-05-25
 
 ## Active Technologies
 - Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Auth), Angular Material, WeasyPrint (PDF export), ng2-charts / Chart.js (frontend charting) (027-analytics-reporting)
 - Supabase PostgreSQL — live aggregation queries against existing tables (submissions, templates, profiles, departments, branches) (027-analytics-reporting)
 - Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Auth), Angular Material, WeasyPrint (timeline PDF export) (028-approval-workflow)
 - Supabase PostgreSQL — extends existing `template_reviews` table, adds `department_default_reviewers` table (028-approval-workflow)
+- Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, Python CSV/JSON libraries, `openpyxl` for workbook export, existing notification/email delivery infrastructure (032-data-export-integration)
+- Supabase PostgreSQL; extend existing `templates`, `pages`, `elements`, `form_submissions`, `profiles`, `departments`, `branches`, `audit_logs`; add export schedule/delivery, integration credential, webhook subscription/delivery tables (032-data-export-integration)
 
 - Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Storage + Auth), Angular Material (001-customer-feedback)
 
@@ -34,9 +36,9 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.12 (backend), TypeScript / Angular 19 (frontend): Follow standard conventions
 
 ## Recent Changes
+- 032-data-export-integration: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, Python CSV/JSON libraries, `openpyxl` for workbook export, existing notification/email delivery infrastructure
 - 028-approval-workflow: Added Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Auth), Angular Material, WeasyPrint (timeline PDF export)
 - 027-analytics-reporting: Added Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Auth), Angular Material, WeasyPrint (PDF export), ng2-charts / Chart.js (frontend charting)
-- 025-form-import-ocr: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
 
 <!-- MANUAL ADDITIONS START -->
