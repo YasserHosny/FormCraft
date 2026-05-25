@@ -20,7 +20,7 @@
           <mat-icon>{{ palettePinned ? 'open_in_new' : 'push_pin' }}</mat-icon>
         </button>
       </div>
-      <mat-list>
+      <mat-list class="palette-list" [dir]="currentLang === 'ar' ? 'rtl' : 'ltr'">
         <mat-list-item
           *ngFor="let el of elementTypes"
           class="palette-item"
@@ -29,8 +29,8 @@
           (click)="addElement(el.type)"
         >
           <mat-icon matListItemIcon>{{ el.icon }}</mat-icon>
-          <span matListItemTitle>{{ el.label_ar }}</span>
-          <span matListItemLine class="palette-en">{{ el.label_en }}</span>
+          <span matListItemTitle>{{ getPalettePrimaryLabel(el) }}</span>
+          <span matListItemLine class="palette-alt">{{ getPaletteSecondaryLabel(el) }}</span>
         </mat-list-item>
       </mat-list>
     </mat-sidenav>

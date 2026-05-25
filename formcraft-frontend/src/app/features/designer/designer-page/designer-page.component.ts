@@ -35,6 +35,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedElement: CanvasElement | null = null;
   isDirty = false;
   elementTypes = Object.values(ELEMENT_DEFAULTS);
+  currentLang: 'ar' | 'en' = 'ar';
 
   showImportPanel = false;
   showDetectionsPanel = false;
@@ -163,10 +164,14 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.templateId = this.route.snapshot.paramMap.get('templateId') || '';
+    this.currentLang = this.getSupportedLang(this.translate.currentLang);
     this.loadDepartments();
 
     // Auto-save: debounce dirty changes by 2 seconds
     this.subs.push(
+      this.translate.onLangChange.subscribe((event) => {
+        this.currentLang = this.getSupportedLang(event.lang);
+      }),
       this.saveSubject$.pipe(debounceTime(2000)).subscribe(() => {
         if (this.isDirty) {
           this.save();
@@ -182,6 +187,18 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       })
     );
+  }
+
+  getPalettePrimaryLabel(element: ElementDefault): string {
+    return this.currentLang === 'en' ? element.label_en : element.label_ar;
+  }
+
+  getPaletteSecondaryLabel(element: ElementDefault): string {
+    return this.currentLang === 'en' ? element.label_ar : element.label_en;
+  }
+
+  private getSupportedLang(lang: string | undefined): 'ar' | 'en' {
+    return lang === 'en' ? 'en' : 'ar';
   }
 
   ngAfterViewInit(): void {
