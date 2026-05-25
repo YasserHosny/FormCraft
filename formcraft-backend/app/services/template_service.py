@@ -176,7 +176,9 @@ class TemplateService:
 
     # --- Templates ---
 
-    async def create_template(self, data: dict, user_id: UUID) -> dict:
+    async def create_template(
+        self, data: dict, user_id: UUID, org_id: UUID | None = None
+    ) -> dict:
         new_id = str(uuid4())
         template_data = {
             **data,
@@ -185,6 +187,7 @@ class TemplateService:
             "status": "draft",
             "version": 1,
             "lineage_id": new_id,
+            "org_id": str(org_id) if org_id else None,
         }
         result = self.client.table("templates").insert(template_data).execute()
         template = result.data[0]

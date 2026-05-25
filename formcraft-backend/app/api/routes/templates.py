@@ -39,10 +39,16 @@ async def create_template(
         UserProfile, Depends(require_role(Role.ADMIN, Role.DESIGNER))
     ],
 ):
+    if not current_user.org_id:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="User must belong to an organization to create templates",
+        )
+
     client = get_supabase_client()
     service = TemplateService(client)
     template = await service.create_template(
-        data=body.model_dump(), user_id=current_user.id
+        data=body.model_dump(), user_id=current_user.id, org_id=current_user.org_id
     )
     audit = AuditLogger(client)
     await audit.log_event(
