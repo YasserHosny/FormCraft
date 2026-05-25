@@ -1,0 +1,55 @@
+<div class="batch-list-container">
+  <div class="header">
+    <h1>{{ 'BATCH.TITLE' | translate }}</h1>
+    <button mat-raised-button color="primary" (click)="createNew()">
+      <mat-icon>add</mat-icon>
+      {{ 'BATCH.NEW_JOB' | translate }}
+    </button>
+  </div>
+
+  <mat-card *ngIf="loading">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  </mat-card>
+
+  <table mat-table [dataSource]="jobs" class="mat-elevation-z1">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>{{ 'BATCH.NAME' | translate }}</th>
+      <td mat-cell *matCellDef="let job">{{ job.name }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>{{ 'BATCH.STATUS' | translate }}</th>
+      <td mat-cell *matCellDef="let job">
+        <mat-chip-listbox>
+          <mat-chip [color]="job.status === 'completed' ? 'primary' : job.status === 'failed' ? 'warn' : 'accent'" selected>
+            {{ job.status }}
+          </mat-chip>
+        </mat-chip-listbox>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="progress">
+      <th mat-header-cell *matHeaderCellDef>{{ 'BATCH.PROGRESS' | translate }}</th>
+      <td mat-cell *matCellDef="let job">
+        <mat-progress-bar mode="determinate" [value]="(job.progress / job.row_count) * 100" *ngIf="job.row_count > 0"></mat-progress-bar>
+        <span *ngIf="job.row_count === 0">—</span>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="row_count">
+      <th mat-header-cell *matHeaderCellDef>{{ 'BATCH.ROWS' | translate }}</th>
+      <td mat-cell *matCellDef="let job">{{ job.row_count }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="created_at">
+      <th mat-header-cell *matHeaderCellDef>{{ 'BATCH.CREATED' | translate }}</th>
+      <td mat-cell *matCellDef="let job">{{ job.created_at | date:'short' }}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="['name', 'status', 'progress', 'row_count', 'created_at']"></tr>
+    <tr mat-row *matRowDef="let row; columns: ['name', 'status', 'progress', 'row_count', 'created_at'];"></tr>
+  </table>
+
+  <mat-paginator [length]="total" [pageSize]="pageSize" [pageSizeOptions]="[10, 20, 50]" (page)="onPageChange($event)">
+  </mat-paginator>
+</div>

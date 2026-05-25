@@ -1,0 +1,504 @@
+openapi: 3.0.3
+info:
+  title: FormCraft Batch Operations API
+  version: "1.0.0"
+  description: Batch job creation, monitoring, download, and schedule management for FormCraft F036.
+
+servers:
+  - url: http://localhost:8000/api
+
+paths:
+  /batch-jobs:
+    get:
+      summary: List batch jobs
+      description: Returns paginated batch jobs for the current org, filterable by status.
+      tags: [Batch Jobs]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [queued, running, completed, failed, cancelled]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: List of batch jobs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/BatchJobSummary"
+                  total:
+                    type: integer
+
+    post:
+      summary: Create a batch job
+      description: Upload a data source, select a template, and start a batch job.
+      tags: [Batch Jobs]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                template_id:
+                  type: string
+                  format: uuid
+                data_source_type:
+                  type: string
+                  enum: [csv, xlsx, clipboard]
+                file:
+                  type: string
+                  format: binary
+                clipboard_data:
+                  type: string
+                column_mapping:
+                  type: string
+                  description: JSON string of {csv_col: field_key}
+                duplicate_strategy:
+                  type: string
+                  enum: [warn, skip, include]
+                  default: warn
+                download_format:
+                  type: string
+                  enum: [zip, merged_pdf, printer_queue]
+                  default: zip
+                printer_profile_id:
+                  type: string
+                  format: uuid
+      responses:
+        "201":
+          description: Batch job created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchJobDetail"
+        "422":
+          description: Validation error (e.g., file too large, invalid mapping)
+
+  /batch-jobs/{job_id}:
+    get:
+      summary: Get batch job details
+      tags: [Batch Jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Batch job detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchJobDetail"
+        "404":
+          description: Job not found
+
+  /batch-jobs/{job_id}/cancel:
+    post:
+      summary: Cancel a running batch job
+      tags: [Batch Jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Job cancelled; partial results preserved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchJobDetail"
+        "409":
+          description: Job is not running
+
+  /batch-jobs/{job_id}/download:
+    get:
+      summary: Download batch results
+      tags: [Batch Jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: format
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [zip, merged_pdf]
+      responses:
+        "200":
+          description: Binary download (ZIP or PDF)
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Job not completed or no results
+
+  /batch-jobs/{job_id}/errors:
+    get:
+      summary: Download error report CSV
+      tags: [Batch Jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Error report CSV
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /batch-jobs/{job_id}/validate:
+    post:
+      summary: Validate rows before generation
+      tags: [Batch Jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                column_mapping:
+                  type: object
+                  additionalProperties:
+                    type: string
+                duplicate_strategy:
+                  type: string
+                  enum: [warn, skip, include]
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResult"
+
+  /batch-schedules:
+    get:
+      summary: List batch schedules
+      tags: [Batch Schedules]
+      responses:
+        "200":
+          description: List of schedules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BatchScheduleSummary"
+
+    post:
+      summary: Create a batch schedule
+      tags: [Batch Schedules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchScheduleCreate"
+      responses:
+        "201":
+          description: Schedule created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchScheduleDetail"
+
+  /batch-schedules/{schedule_id}:
+    get:
+      summary: Get schedule details
+      tags: [Batch Schedules]
+      parameters:
+        - name: schedule_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Schedule detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchScheduleDetail"
+
+    put:
+      summary: Update a schedule
+      tags: [Batch Schedules]
+      parameters:
+        - name: schedule_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchScheduleUpdate"
+      responses:
+        "200":
+          description: Schedule updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchScheduleDetail"
+
+    delete:
+      summary: Delete a schedule
+      tags: [Batch Schedules]
+      parameters:
+        - name: schedule_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Deleted
+
+components:
+  schemas:
+    BatchJobSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        status:
+          type: string
+          enum: [queued, running, completed, failed, cancelled]
+        template_name:
+          type: string
+        row_count:
+          type: integer
+        success_count:
+          type: integer
+        fail_count:
+          type: integer
+        progress:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    BatchJobDetail:
+      allOf:
+        - $ref: "#/components/schemas/BatchJobSummary"
+        - type: object
+          properties:
+            template_id:
+              type: string
+              format: uuid
+            template_version:
+              type: integer
+            data_source_type:
+              type: string
+            column_mapping:
+              type: object
+            duplicate_strategy:
+              type: string
+            duplicate_count:
+              type: integer
+            download_format:
+              type: string
+            printer_profile_id:
+              type: string
+              format: uuid
+            scheduled_job_id:
+              type: string
+              format: uuid
+            started_at:
+              type: string
+              format: date-time
+            completed_at:
+              type: string
+              format: date-time
+            cancelled_at:
+              type: string
+              format: date-time
+            error_summary:
+              type: string
+
+    ValidationResult:
+      type: object
+      properties:
+        total_rows:
+          type: integer
+        valid_rows:
+          type: integer
+        invalid_rows:
+          type: integer
+        duplicate_rows:
+          type: integer
+        rows:
+          type: array
+          items:
+            type: object
+            properties:
+              row_number:
+                type: integer
+              status:
+                type: string
+                enum: [valid, invalid, duplicate]
+              field_errors:
+                type: object
+                additionalProperties:
+                  type: string
+
+    BatchScheduleSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        enabled:
+          type: boolean
+        template_name:
+          type: string
+        cron_expression:
+          type: string
+        next_run_at:
+          type: string
+          format: date-time
+        last_run_status:
+          type: string
+
+    BatchScheduleCreate:
+      type: object
+      properties:
+        name:
+          type: string
+        template_id:
+          type: string
+          format: uuid
+        enabled:
+          type: boolean
+        api_endpoint:
+          type: string
+        api_auth_type:
+          type: string
+          enum: [api_key, bearer_token]
+        api_auth_credential:
+          type: string
+        api_headers:
+          type: object
+        cron_expression:
+          type: string
+        notification_recipients:
+          type: array
+          items:
+            type: object
+        column_mapping:
+          type: object
+        download_format:
+          type: string
+        printer_profile_id:
+          type: string
+          format: uuid
+        max_rows_per_run:
+          type: integer
+      required:
+        - name
+        - template_id
+        - api_endpoint
+        - api_auth_type
+        - api_auth_credential
+        - cron_expression
+
+    BatchScheduleUpdate:
+      allOf:
+        - $ref: "#/components/schemas/BatchScheduleCreate"
+        - type: object
+
+    BatchScheduleDetail:
+      allOf:
+        - $ref: "#/components/schemas/BatchScheduleSummary"
+        - type: object
+          properties:
+            template_id:
+              type: string
+              format: uuid
+            data_source_type:
+              type: string
+            api_endpoint:
+              type: string
+            api_auth_type:
+              type: string
+            api_headers:
+              type: object
+            column_mapping:
+              type: object
+            download_format:
+              type: string
+            printer_profile_id:
+              type: string
+              format: uuid
+            max_rows_per_run:
+              type: integer
+            last_run_at:
+              type: string
+              format: date-time
+            last_run_job_id:
+              type: string
+              format: uuid
+            failure_count:
+              type: integer
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time

@@ -1,0 +1,17 @@
+<mat-stepper orientation="horizontal">
+  <mat-step [label]="'BATCH.STEP_TEMPLATE' | translate">
+    <app-step-template></app-step-template>
+  </mat-step>
+  <mat-step [label]="'BATCH.STEP_DATA_SOURCE' | translate">
+    <app-step-data-source></app-step-data-source>
+  </mat-step>
+  <mat-step [label]="'BATCH.STEP_MAPPING' | translate">
+    <app-step-column-mapper></app-step-column-mapper>
+  </mat-step>
+  <mat-step [label]="'BATCH.STEP_VALIDATION' | translate">
+    <app-step-validation></app-step-validation>
+  </mat-step>
+  <mat-step [label]="'BATCH.STEP_GENERATE' | translate">
+    <app-step-generate></app-step-generate>
+  </mat-step>
+</mat-stepper>

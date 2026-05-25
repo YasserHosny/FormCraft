@@ -28,6 +28,7 @@ const routes: Routes = [
   { path: 'customers', component: CustomerListComponent },
   { path: 'customers/new', component: CustomerDetailComponent },
   { path: 'customers/:id', component: CustomerDetailComponent },
+  { path: 'queue', loadChildren: () => import('./batch-queue/batch-queue.module').then(m => m.BatchQueueModule) },
 ];
 
 @NgModule({
