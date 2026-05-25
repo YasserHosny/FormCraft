@@ -1,0 +1,594 @@
+openapi: 3.0.3
+info:
+  title: FormCraft Template Governance API
+  version: 0.1.0
+  description: Admin template oversight, review context, element-level comments, and compliance metrics for F31.
+servers:
+  - url: /api
+security:
+  - bearerAuth: []
+paths:
+  /admin/templates:
+    get:
+      summary: List all organization templates for governance
+      tags: [Template Governance]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [all, draft, submitted_for_review, approved, rejected, published, archived, deprecated]
+            default: all
+        - in: query
+          name: department_id
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: designer_id
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: category
+          schema:
+            type: string
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: sort_by
+          schema:
+            type: string
+            enum: [name, status, department, category, version, quality_score, updated_at]
+            default: updated_at
+        - in: query
+          name: sort_dir
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+      responses:
+        "200":
+          description: Paginated governance template list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GovernanceTemplateListResponse"
+        "403":
+          description: Admin role required
+
+  /admin/templates/bulk-actions:
+    post:
+      summary: Preview or execute bulk template governance actions
+      tags: [Template Governance]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkTemplateActionRequest"
+      responses:
+        "200":
+          description: Bulk action preview or execution result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkTemplateActionResponse"
+        "400":
+          description: Invalid bulk action request
+        "403":
+          description: Admin role required
+
+  /admin/templates/compliance:
+    get:
+      summary: Get compliance dashboard metrics
+      tags: [Template Governance]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: department_id
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: category
+          schema:
+            type: string
+        - in: query
+          name: include_archived
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: Compliance dashboard metrics and flagged templates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceDashboardResponse"
+        "403":
+          description: Admin role required
+
+  /admin/review-queue/{template_id}/review-context:
+    get:
+      summary: Get read-only review context for a submitted template
+      tags: [Template Review]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: template_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Template, pages, elements, previous version diff, feedback summary, and review comments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewContextResponse"
+        "404":
+          description: Template not found
+        "422":
+          description: Template is not reviewable
+
+  /admin/review-queue/{template_id}/comments:
+    post:
+      summary: Create an element-level or general review comment
+      tags: [Template Review]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: template_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReviewCommentRequest"
+      responses:
+        "201":
+          description: Created review comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplateReviewComment"
+        "403":
+          description: Admin role required
+
+  /templates/{template_id}/review-comments:
+    get:
+      summary: List review comments visible to users with template access
+      tags: [Template Review]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: template_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [all, open, resolved]
+            default: all
+      responses:
+        "200":
+          description: Review comments for the template
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [comments]
+                properties:
+                  comments:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/TemplateReviewComment"
+
+  /templates/{template_id}/review-comments/{comment_id}/resolve:
+    post:
+      summary: Resolve a review comment with optional designer reply
+      tags: [Template Review]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: template_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: comment_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResolveReviewCommentRequest"
+      responses:
+        "200":
+          description: Resolved comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplateReviewComment"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    GovernanceTemplateListResponse:
+      type: object
+      required: [items, total, page, page_size]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/GovernanceTemplateListItem"
+        total:
+          type: integer
+        page:
+          type: integer
+        page_size:
+          type: integer
+
+    GovernanceTemplateListItem:
+      type: object
+      required:
+        - template_id
+        - name
+        - status
+        - version
+        - quality_score
+        - updated_at
+        - is_stale
+      properties:
+        template_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        designer_id:
+          type: string
+          format: uuid
+        designer_name:
+          type: string
+          nullable: true
+        status:
+          type: string
+        department_id:
+          type: string
+          format: uuid
+          nullable: true
+        department_name:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        version:
+          type: integer
+        quality_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        updated_at:
+          type: string
+          format: date-time
+        is_stale:
+          type: boolean
+
+    BulkTemplateActionRequest:
+      type: object
+      required: [template_ids, action]
+      properties:
+        template_ids:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uuid
+        action:
+          type: string
+          enum: [archive, reassign_designer, change_category]
+        dry_run:
+          type: boolean
+          default: false
+        target_designer_id:
+          type: string
+          format: uuid
+        category:
+          type: string
+
+    BulkTemplateActionResponse:
+      type: object
+      required: [dry_run, affected_count, warnings]
+      properties:
+        dry_run:
+          type: boolean
+        affected_count:
+          type: integer
+        warnings:
+          type: array
+          items:
+            type: string
+        published_count:
+          type: integer
+        monthly_operator_usage_count:
+          type: integer
+        updated_template_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    ComplianceDashboardResponse:
+      type: object
+      required:
+        - average_quality_score
+        - validator_coverage_pct
+        - bilingual_label_pct
+        - stale_template_count
+        - templates
+      properties:
+        average_quality_score:
+          type: number
+        validator_coverage_pct:
+          type: number
+        bilingual_label_pct:
+          type: number
+        help_text_coverage_pct:
+          type: number
+        tab_order_pct:
+          type: number
+        stale_template_count:
+          type: integer
+        regulatory_alert_count:
+          type: integer
+        templates:
+          type: array
+          items:
+            $ref: "#/components/schemas/TemplateComplianceMetric"
+
+    TemplateComplianceMetric:
+      type: object
+      required: [template_id, template_name, status, quality_score, is_stale]
+      properties:
+        template_id:
+          type: string
+          format: uuid
+        template_name:
+          type: string
+        status:
+          type: string
+        quality_score:
+          type: integer
+        validator_coverage_pct:
+          type: number
+        bilingual_label_pct:
+          type: number
+        help_text_coverage_pct:
+          type: number
+        tab_order_pct:
+          type: number
+        is_stale:
+          type: boolean
+        stale_since:
+          type: string
+          format: date
+          nullable: true
+        missing_validator_fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/ElementFlag"
+        missing_bilingual_label_fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/ElementFlag"
+        regulatory_alerts:
+          type: array
+          items:
+            $ref: "#/components/schemas/RegulatoryAlert"
+
+    ElementFlag:
+      type: object
+      properties:
+        element_id:
+          type: string
+          format: uuid
+        key:
+          type: string
+        label:
+          type: string
+          nullable: true
+        missing:
+          type: string
+          nullable: true
+
+    RegulatoryAlert:
+      type: object
+      required: [validator_key, change_summary, effective_date]
+      properties:
+        validator_key:
+          type: string
+        change_summary:
+          type: string
+        effective_date:
+          type: string
+          format: date
+
+    ReviewContextResponse:
+      type: object
+      required: [template, pages, open_comments, resolved_comments]
+      properties:
+        template:
+          $ref: "#/components/schemas/GovernanceTemplateListItem"
+        pages:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        previous_published_template_id:
+          type: string
+          format: uuid
+          nullable: true
+        diff_summary:
+          type: object
+          additionalProperties: true
+          nullable: true
+        designer_notes:
+          type: string
+          nullable: true
+        previous_feedback_summary:
+          type: object
+          additionalProperties: true
+          nullable: true
+        open_comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/TemplateReviewComment"
+        resolved_comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/TemplateReviewComment"
+
+    CreateReviewCommentRequest:
+      type: object
+      required: [comment_text]
+      properties:
+        element_id:
+          type: string
+          format: uuid
+          nullable: true
+        element_key:
+          type: string
+          nullable: true
+        page_id:
+          type: string
+          format: uuid
+          nullable: true
+        x_mm:
+          type: number
+          nullable: true
+        y_mm:
+          type: number
+          nullable: true
+        comment_text:
+          type: string
+          minLength: 1
+
+    ResolveReviewCommentRequest:
+      type: object
+      properties:
+        designer_reply:
+          type: string
+          nullable: true
+
+    TemplateReviewComment:
+      type: object
+      required:
+        - id
+        - template_id
+        - template_version
+        - reviewer_id
+        - comment_text
+        - status
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        template_id:
+          type: string
+          format: uuid
+        template_version:
+          type: integer
+        review_id:
+          type: string
+          format: uuid
+          nullable: true
+        reviewer_id:
+          type: string
+          format: uuid
+        reviewer_name:
+          type: string
+          nullable: true
+        element_id:
+          type: string
+          format: uuid
+          nullable: true
+        element_key:
+          type: string
+          nullable: true
+        page_id:
+          type: string
+          format: uuid
+          nullable: true
+        x_mm:
+          type: number
+          nullable: true
+        y_mm:
+          type: number
+          nullable: true
+        comment_text:
+          type: string
+        status:
+          type: string
+          enum: [open, resolved]
+        designer_reply:
+          type: string
+          nullable: true
+        resolved_by:
+          type: string
+          format: uuid
+          nullable: true
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time

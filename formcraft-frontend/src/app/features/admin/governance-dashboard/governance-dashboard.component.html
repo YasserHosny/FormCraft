@@ -1,5 +1,11 @@
 <div class="governance-dashboard">
-  <h2>{{ 'governance.title' | translate }}</h2>
+  <div class="dashboard-header">
+    <h2>{{ 'governance.title' | translate }}</h2>
+    <a mat-raised-button color="primary" routerLink="/admin/templates">
+      <mat-icon>fact_check</mat-icon>
+      {{ 'governance.viewTemplates' | translate }}
+    </a>
+  </div>
 
   <div class="date-filter">
     <mat-form-field appearance="outline">

@@ -20,7 +20,9 @@
     "back": "Back",
     "next": "Next",
     "previous": "Previous",
-    "none": "None"
+    "none": "None",
+    "all": "All",
+    "view": "View"
   },
   "auth": {
     "login": "Sign In",
@@ -690,5 +692,46 @@
     "create_org": "Create Organization",
     "user_count": "Users",
     "template_count": "Templates"
+  },
+  "governance": {
+    "title": "Governance Dashboard",
+    "since": "Since",
+    "pendingReviews": "Pending Reviews",
+    "avgTurnaround": "Avg Turnaround",
+    "rejectionRate": "Rejection Rate",
+    "overdue": "Overdue",
+    "viewTemplates": "View Templates"
+  },
+  "reviewQueue": {
+    "title": "Review Queue",
+    "overdue": "overdue",
+    "status": "Status",
+    "sortBy": "Sort By",
+    "submitted": "Submitted",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "submittedAt": "Submitted At",
+    "daysWaiting": "Days Waiting",
+    "name": "Name",
+    "templateName": "Template Name",
+    "category": "Category",
+    "designer": "Designer",
+    "department": "Department",
+    "empty": "No items in review queue"
+  },
+  "templateGovernance": {
+    "title": "Template Governance",
+    "search": "Search",
+    "status": "Status",
+    "archiveSelected": "Archive Selected",
+    "name": "Name",
+    "designer": "Designer",
+    "category": "Category",
+    "version": "Version",
+    "updated": "Updated",
+    "actions": "Actions",
+    "view": "View",
+    "noTemplates": "No templates found",
+    "all": "All"
   }
 }

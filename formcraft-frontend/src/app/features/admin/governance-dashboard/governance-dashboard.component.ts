@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { ReviewQueueService } from '../../../core/services/review-queue.service';
@@ -16,6 +19,7 @@ import { GovernanceMetrics } from '../../../shared/models/review.models';
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     FormsModule,
     MatCardModule,
     MatFormFieldModule,
@@ -23,6 +27,8 @@ import { GovernanceMetrics } from '../../../shared/models/review.models';
     MatDatepickerModule,
     MatNativeDateModule,
     MatProgressSpinnerModule,
+    MatButtonModule,
+    MatIconModule,
     TranslateModule,
   ],
   templateUrl: './governance-dashboard.component.html',
