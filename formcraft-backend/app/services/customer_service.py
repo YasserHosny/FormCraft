@@ -30,7 +30,7 @@ class CustomerService:
             .maybe_single()
             .execute()
         )
-        if existing.data:
+        if existing and existing.data:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail={
@@ -201,14 +201,15 @@ class CustomerService:
     # --- Auto-populate ---
 
     async def get_auto_populate_data(
-        self, customer_id: UUID, template_id: UUID
+        self, customer_id: UUID, template_id: UUID, org_id: UUID
     ) -> list[dict]:
         """Return field mappings for auto-populating a form from customer data."""
-        # Fetch customer directly by ID (single query instead of two)
+        # Fetch customer directly by ID scoped to org (single query)
         result = (
             self.client.table("customers")
             .select("*")
             .eq("id", str(customer_id))
+            .eq("org_id", str(org_id))
             .single()
             .execute()
         )

@@ -232,7 +232,9 @@ async def get_auto_populate_data(
 
     client = get_supabase_client()
     service = CustomerService(client)
-    mappings = await service.get_auto_populate_data(customer_id, template_id)
+    mappings = await service.get_auto_populate_data(
+        customer_id, template_id, current_user.org_id
+    )
     return {"mappings": mappings}
 
 
