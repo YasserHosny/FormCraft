@@ -20,9 +20,14 @@ import { PinnedTemplatesComponent } from './components/pinned-templates/pinned-t
 import { DraftListComponent } from './components/draft-list/draft-list.component';
 import { VersionNotificationsComponent } from './components/version-notifications/version-notifications.component';
 import { DeskService } from './services/desk.service';
+import { CustomerListComponent } from './customers/customer-list.component';
+import { CustomerDetailComponent } from './customers/customer-detail.component';
 
 const routes: Routes = [
   { path: '', component: DashboardComponent },
+  { path: 'customers', component: CustomerListComponent },
+  { path: 'customers/new', component: CustomerDetailComponent },
+  { path: 'customers/:id', component: CustomerDetailComponent },
 ];
 
 @NgModule({
@@ -46,6 +51,8 @@ const routes: Routes = [
     PinnedTemplatesComponent,
     DraftListComponent,
     VersionNotificationsComponent,
+    CustomerListComponent,
+    CustomerDetailComponent,
   ],
   providers: [DeskService],
 })
