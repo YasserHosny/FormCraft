@@ -34,6 +34,7 @@ const routes: Routes = [
   { path: 'export', component: DataExportComponent },
   { path: 'export/schedules', component: ExportSchedulesComponent },
   { path: 'integrations', component: IntegrationsComponent },
+  { path: 'reports', loadChildren: () => import('./reports/reports.module').then(m => m.ReportsModule) },
 ];
 
 @NgModule({

@@ -35,5 +35,9 @@ moto[bedrock]==5.0.27
 # Tafqeet — amount-to-words conversion
 num2words==0.5.14
 
+# Reports
+apscheduler==3.11.0
+matplotlib==3.10.0
+
 # Dev
 python-dotenv==1.0.1

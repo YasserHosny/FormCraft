@@ -78,3 +78,57 @@ class IdentifierType(StrEnum):
     COMMERCIAL_REGISTER = "commercial_register"
     PASSPORT = "passport"
     OTHER = "other"
+
+
+class ReportType(StrEnum):
+    TRANSACTION_REGISTER = "transaction_register"
+    DAILY_RECONCILIATION = "daily_reconciliation"
+    PERIOD_SUMMARY = "period_summary"
+    CUSTOM = "custom"
+    BENEFICIARY = "beneficiary"
+    VOID_REPRINT = "void_reprint"
+    SIGNATORY_USAGE = "signatory_usage"
+
+
+class ReportFrequency(StrEnum):
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+
+
+class ExportFormat(StrEnum):
+    XLSX = "xlsx"
+    CSV = "csv"
+    PDF = "pdf"
+
+
+class NoDataBehavior(StrEnum):
+    SEND_EMPTY = "send_empty"
+    SKIP_DELIVERY = "skip_delivery"
+
+
+class ScheduleStatus(StrEnum):
+    PENDING = "pending"
+    SUCCESS = "success"
+    FAILED = "failed"
+
+
+class GenerationMethod(StrEnum):
+    MANUAL = "manual"
+    SCHEDULED = "scheduled"
+
+
+class DeliveryStatus(StrEnum):
+    GENERATED = "generated"
+    DELIVERED = "delivered"
+    DELIVERY_FAILED = "delivery_failed"
+
+
+class FieldTypeTag(StrEnum):
+    AMOUNT = "amount"
+    DATE = "date"
+    CUSTOMER_NAME = "customer_name"
+    CUSTOMER_ID = "customer_id"
+    REFERENCE_NUMBER = "reference_number"
+    BENEFICIARY = "beneficiary"
+    SIGNATORY = "signatory"
