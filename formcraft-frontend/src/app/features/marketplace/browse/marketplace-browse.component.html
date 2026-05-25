@@ -1,0 +1,86 @@
+<section class="marketplace-page">
+  <header class="page-header">
+    <div>
+      <h1>{{ 'marketplace.title' | translate }}</h1>
+      <p>{{ 'marketplace.subtitle' | translate }}</p>
+    </div>
+    <button mat-raised-button color="primary" routerLink="/marketplace/publish">
+      <mat-icon>upload</mat-icon>
+      {{ 'marketplace.publish' | translate }}
+    </button>
+  </header>
+
+  <form class="filters" (ngSubmit)="load()">
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'common.search' | translate }}</mat-label>
+      <input matInput name="search" [(ngModel)]="filters.search" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'templates.country' | translate }}</mat-label>
+      <mat-select name="country" [(ngModel)]="filters.country">
+        <mat-option value="">{{ 'common.all' | translate }}</mat-option>
+        <mat-option value="EG">EG</mat-option>
+        <mat-option value="SA">SA</mat-option>
+        <mat-option value="AE">AE</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'templates.category' | translate }}</mat-label>
+      <input matInput name="category" [(ngModel)]="filters.category" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'templates.language' | translate }}</mat-label>
+      <mat-select name="language" [(ngModel)]="filters.language">
+        <mat-option value="">{{ 'common.all' | translate }}</mat-option>
+        <mat-option value="ar">AR</mat-option>
+        <mat-option value="en">EN</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'marketplace.price' | translate }}</mat-label>
+      <mat-select name="priceType" [(ngModel)]="filters.price_type">
+        <mat-option value="">{{ 'common.all' | translate }}</mat-option>
+        <mat-option value="free">{{ 'marketplace.free' | translate }}</mat-option>
+        <mat-option value="premium">{{ 'marketplace.premium' | translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'marketplace.sort' | translate }}</mat-label>
+      <mat-select name="sortBy" [(ngModel)]="filters.sort_by">
+        <mat-option value="quality_score">{{ 'marketplace.qualityScore' | translate }}</mat-option>
+        <mat-option value="download_count">{{ 'marketplace.downloads' | translate }}</mat-option>
+        <mat-option value="average_rating">{{ 'marketplace.rating' | translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <button mat-raised-button color="primary" type="submit">
+      <mat-icon>search</mat-icon>
+      {{ 'common.search' | translate }}
+    </button>
+    <button mat-button type="button" (click)="clear()">{{ 'common.clear' | translate }}</button>
+  </form>
+
+  <div class="loading" *ngIf="loading">
+    <mat-spinner diameter="36"></mat-spinner>
+  </div>
+
+  <div class="grid" *ngIf="!loading">
+    <mat-card *ngFor="let listing of listings" class="listing-card" (click)="open(listing)">
+      <mat-card-header>
+        <mat-card-title dir="auto">{{ listing.name }}</mat-card-title>
+        <mat-card-subtitle dir="auto">{{ listing.publisher_org_name || listing.publisher_org_id }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p dir="auto">{{ listing.description }}</p>
+        <div class="badges">
+          <mat-chip *ngFor="let badge of listing.compliance_badges">{{ badge }}</mat-chip>
+        </div>
+        <dl>
+          <div><dt>{{ 'templates.country' | translate }}</dt><dd>{{ listing.country }}</dd></div>
+          <div><dt>{{ 'marketplace.rating' | translate }}</dt><dd>{{ listing.average_rating || '-' }}</dd></div>
+          <div><dt>{{ 'marketplace.downloads' | translate }}</dt><dd>{{ listing.download_count }}</dd></div>
+          <div><dt>{{ 'marketplace.price' | translate }}</dt><dd>{{ listing.price_type === 'free' ? ('marketplace.free' | translate) : (listing.price_amount + ' ' + listing.currency) }}</dd></div>
+        </dl>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</section>

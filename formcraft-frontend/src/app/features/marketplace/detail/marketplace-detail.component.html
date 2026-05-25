@@ -1,0 +1,58 @@
+<section class="detail-page" *ngIf="listing">
+  <button mat-button routerLink="/marketplace">
+    <mat-icon>arrow_back</mat-icon>
+    {{ 'common.back' | translate }}
+  </button>
+
+  <header class="detail-header">
+    <div>
+      <h1 dir="auto">{{ listing.name }}</h1>
+      <p dir="auto">{{ listing.description }}</p>
+      <div class="badges">
+        <mat-chip *ngFor="let badge of listing.compliance_badges">{{ badge }}</mat-chip>
+      </div>
+    </div>
+    <div class="actions">
+      <span class="price">
+        {{ listing.price_type === 'free' ? ('marketplace.free' | translate) : (listing.price_amount + ' ' + listing.currency) }}
+      </span>
+      <button mat-raised-button color="primary" (click)="useTemplate()" [disabled]="importing">
+        <mat-icon>file_copy</mat-icon>
+        {{ 'marketplace.useTemplate' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <mat-tab-group>
+    <mat-tab label="{{ 'marketplace.canvasPreview' | translate }}">
+      <div class="preview-panel">
+        <div class="canvas-preview">
+          <div class="page-preview">
+            <span>{{ 'marketplace.readOnlyPreview' | translate }}</span>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+    <mat-tab label="{{ 'marketplace.pdfPreview' | translate }}">
+      <div class="preview-panel">
+        <a *ngIf="listing.sample_pdf_url" mat-raised-button [href]="listing.sample_pdf_url" target="_blank">
+          <mat-icon>picture_as_pdf</mat-icon>
+          {{ 'marketplace.openPdf' | translate }}
+        </a>
+        <p *ngIf="!listing.sample_pdf_url">{{ 'marketplace.noPdf' | translate }}</p>
+      </div>
+    </mat-tab>
+    <mat-tab label="{{ 'marketplace.dependencies' | translate }}">
+      <div class="preview-panel">
+        <p *ngIf="!listing.dependency_warnings.length">{{ 'marketplace.noWarnings' | translate }}</p>
+        <mat-list *ngIf="listing.dependency_warnings.length">
+          <mat-list-item *ngFor="let warning of listing.dependency_warnings">{{ warning }}</mat-list-item>
+        </mat-list>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</section>
+
+<div class="loading" *ngIf="loading">
+  <mat-spinner diameter="36"></mat-spinner>
+</div>

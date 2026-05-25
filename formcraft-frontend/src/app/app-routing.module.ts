@@ -24,6 +24,15 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'marketplace',
+    loadChildren: () =>
+      import('./features/marketplace/marketplace.module').then(
+        (m) => m.MarketplaceModule
+      ),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['admin'] },
+  },
+  {
     path: 'designer',
     loadChildren: () =>
       import('./features/designer/designer.module').then(
