@@ -70,3 +70,11 @@ class EmailStatus(StrEnum):
     SENT = "sent"
     FAILED = "failed"
     SKIPPED = "skipped"
+
+
+class IdentifierType(StrEnum):
+    NATIONAL_ID = "national_id"
+    IQAMA = "iqama"
+    COMMERCIAL_REGISTER = "commercial_register"
+    PASSPORT = "passport"
+    OTHER = "other"

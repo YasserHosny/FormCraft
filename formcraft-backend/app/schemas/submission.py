@@ -12,6 +12,7 @@ class CreateSubmissionRequest(BaseModel):
     template_version: int
     field_values: dict[str, object] = Field(default_factory=dict)
     status: str = "printed"
+    customer_id: UUID | None = None
 
 
 class SubmissionResponse(BaseModel):
@@ -102,12 +103,18 @@ class ReprintResponse(BaseModel):
     message: str = "Reprint generated"
 
 
-def generate_csv(field_values: dict, reference_number: str, template_name: str, submitted_at: str) -> str:
+def generate_csv(
+    field_values: dict, reference_number: str, template_name: str, submitted_at: str
+) -> str:
     output = io.StringIO()
     output.write("\ufeff")
     writer = csv.writer(output)
-    headers = ["reference_number", "template_name", "submitted_at"] + list(field_values.keys())
+    headers = ["reference_number", "template_name", "submitted_at"] + list(
+        field_values.keys()
+    )
     writer.writerow(headers)
-    values = [reference_number, template_name, submitted_at] + list(field_values.values())
+    values = [reference_number, template_name, submitted_at] + list(
+        field_values.values()
+    )
     writer.writerow(values)
     return output.getvalue()
