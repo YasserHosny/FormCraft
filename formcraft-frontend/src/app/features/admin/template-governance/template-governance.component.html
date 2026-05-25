@@ -1,0 +1,108 @@
+<div class="template-governance-container">
+  <div class="header">
+    <h2>{{ 'templateGovernance.title' | translate }}</h2>
+    <div class="bulk-actions" *ngIf="hasSelection()">
+      <button mat-raised-button color="warn" (click)="bulkArchive()">
+        <mat-icon>archive</mat-icon> {{ 'templateGovernance.archiveSelected' | translate }} ({{ selectedIds.size }})
+      </button>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>{{ 'templateGovernance.search' | translate }}</mat-label>
+      <input matInput [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="{{ 'templateGovernance.search' | translate }}...">
+      <mat-icon matSuffix (click)="onSearch()">search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'templateGovernance.status' | translate }}</mat-label>
+      <mat-select [(ngModel)]="statusFilter" (selectionChange)="onStatusChange()">
+        <mat-option value="">{{ 'templateGovernance.all' | translate }}</mat-option>
+        <mat-option value="draft">{{ 'templates.statuses.draft' | translate }}</mat-option>
+        <mat-option value="submitted_for_review">{{ 'templates.statuses.submitted_for_review' | translate }}</mat-option>
+        <mat-option value="approved">{{ 'templates.statuses.approved' | translate }}</mat-option>
+        <mat-option value="rejected">{{ 'templates.statuses.rejected' | translate }}</mat-option>
+        <mat-option value="published">{{ 'templates.statuses.published' | translate }}</mat-option>
+        <mat-option value="archived">{{ 'templates.statuses.archived' | translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="table-container">
+    <mat-spinner *ngIf="loading" diameter="40"></mat-spinner>
+
+    <table mat-table [dataSource]="templates" *ngIf="!loading" class="governance-table">
+      <ng-container matColumnDef="select">
+        <th mat-header-cell *matHeaderCellDef>
+          <mat-checkbox (change)="$event.checked ? selectedIds.clear() : selectedIds.clear()"></mat-checkbox>
+        </th>
+        <td mat-cell *matCellDef="let template">
+          <mat-checkbox [checked]="isSelected(template.id)" (change)="toggleSelection(template.id)"></mat-checkbox>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>{{ 'templateGovernance.name' | translate }}</th>
+        <td mat-cell *matCellDef="let template">{{ template.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>{{ 'templateGovernance.status' | translate }}</th>
+        <td mat-cell *matCellDef="let template">
+          <mat-chip [color]="getStatusColor(template.status)" selected>
+            {{ template.status }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="designer">
+        <th mat-header-cell *matHeaderCellDef>{{ 'templateGovernance.designer' | translate }}</th>
+        <td mat-cell *matCellDef="let template">
+          {{ template.designer_name || template.designer_id }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="category">
+        <th mat-header-cell *matHeaderCellDef>{{ 'templateGovernance.category' | translate }}</th>
+        <td mat-cell *matCellDef="let template">{{ template.category }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="version">
+        <th mat-header-cell *matHeaderCellDef>{{ 'templateGovernance.version' | translate }}</th>
+        <td mat-cell *matCellDef="let template">{{ template.version }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="updatedAt">
+        <th mat-header-cell *matHeaderCellDef>{{ 'templateGovernance.updated' | translate }}</th>
+        <td mat-cell *matCellDef="let template">{{ template.updated_at | date:'short' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>{{ 'templateGovernance.actions' | translate }}</th>
+        <td mat-cell *matCellDef="let template">
+          <button mat-icon-button [matTooltip]="'templateGovernance.view' | translate">
+            <mat-icon>visibility</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <mat-paginator
+      *ngIf="!loading && total > 0"
+      [length]="total"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[10, 25, 50, 100]"
+      [pageIndex]="page - 1"
+      (page)="onPageChange($event)"
+    ></mat-paginator>
+
+    <div *ngIf="!loading && templates.length === 0" class="empty-state">
+      <mat-icon>folder_off</mat-icon>
+      <p>{{ 'templateGovernance.noTemplates' | translate }}</p>
+    </div>
+  </div>
+</div>

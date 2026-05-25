@@ -20,7 +20,9 @@
     "back": "رجوع",
     "next": "التالي",
     "previous": "السابق",
-    "none": "بدون"
+    "none": "بدون",
+    "all": "الكل",
+    "view": "عرض"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -684,5 +686,46 @@
     "create_org": "إنشاء مؤسسة",
     "user_count": "المستخدمون",
     "template_count": "القوالب"
+  },
+  "governance": {
+    "title": "لوحة الحوكمة",
+    "since": "منذ",
+    "pendingReviews": "المراجعات المعلقة",
+    "avgTurnaround": "متوسط وقت الاستجابة",
+    "rejectionRate": "معدل الرفض",
+    "overdue": "متأخر",
+    "viewTemplates": "عرض القوالب"
+  },
+  "reviewQueue": {
+    "title": "قائمة المراجعة",
+    "overdue": "متأخر",
+    "status": "الحالة",
+    "sortBy": "ترتيب حسب",
+    "submitted": "مقدم",
+    "approved": "مقبول",
+    "rejected": "مرفوض",
+    "submittedAt": "تاريخ التقديم",
+    "daysWaiting": "أيام الانتظار",
+    "name": "الاسم",
+    "templateName": "اسم القالب",
+    "category": "التصنيف",
+    "designer": "المصمم",
+    "department": "القسم",
+    "empty": "لا توجد عناصر في قائمة المراجعة"
+  },
+  "templateGovernance": {
+    "title": "حوكمة القوالب",
+    "search": "بحث",
+    "status": "الحالة",
+    "archiveSelected": "أرشفة المحدد",
+    "name": "الاسم",
+    "designer": "المصمم",
+    "category": "التصنيف",
+    "version": "الإصدار",
+    "updated": "آخر تحديث",
+    "actions": "إجراءات",
+    "view": "عرض",
+    "noTemplates": "لا توجد قوالب",
+    "all": "الكل"
   }
 }

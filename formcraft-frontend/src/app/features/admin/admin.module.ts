@@ -12,6 +12,7 @@ import { OrgSettingsComponent } from './org-settings/org-settings.component';
 import { DepartmentsComponent } from './departments/departments.component';
 import { UserManagementComponent } from './users/user-management.component';
 import { InvitationsComponent } from './invitations/invitations.component';
+import { TemplateGovernanceComponent } from './template-governance/template-governance.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'settings', pathMatch: 'full' },
@@ -19,6 +20,7 @@ const routes: Routes = [
   { path: 'governance', component: GovernanceDashboardComponent },
   { path: 'review-timeline/:template_id', component: ReviewTimelineComponent },
   { path: 'template-feedback', component: TemplateFeedbackOverviewComponent },
+  { path: 'templates', component: TemplateGovernanceComponent },
   { path: 'printer-profiles', component: PrinterProfilesComponent },
   { path: 'reference-data', component: ReferenceDataListComponent },
   { path: 'reference-data/:listId/entries', component: ReferenceEntriesComponent },
@@ -44,6 +46,7 @@ const routes: Routes = [
     DepartmentsComponent,
     UserManagementComponent,
     InvitationsComponent,
+    TemplateGovernanceComponent,
   ],
 })
 export class AdminModule {}
