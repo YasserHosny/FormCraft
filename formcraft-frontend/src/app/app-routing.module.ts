@@ -65,6 +65,7 @@ const routes: Routes = [
       ),
     canActivate: [AuthGuard],
   },
+  // F15: Default redirect to /templates (Studio). Role-based redirect happens at login and in RoleGuard.
   { path: '', redirectTo: '/templates', pathMatch: 'full' },
   { path: '**', redirectTo: '/templates' },
 ];

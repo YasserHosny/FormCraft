@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { take, filter } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { OrgAdminService, OrgBranding } from '../../../core/services/org-admin.service';
+import { getDefaultRouteForRole } from '../../../shared/components/app-shell/app-shell.component';
 import { environment } from '../../../../environments/environment';
 
 interface OrgOption {
@@ -69,7 +71,8 @@ export class LoginComponent implements OnInit {
           this.orgOptions = response.organizations;
           this.showOrgSelector = true;
         } else {
-          this.router.navigate(['/templates']);
+          // F15: Redirect to role-based default mode
+          this.navigateToRoleDefault();
         }
       },
       error: () => {
@@ -84,12 +87,23 @@ export class LoginComponent implements OnInit {
     this.authService.selectOrg(orgId).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/templates']);
+        // F15: Redirect to role-based default mode
+        this.navigateToRoleDefault();
       },
       error: () => {
         this.loading = false;
         this.errorMessage = 'Organization selection failed';
       },
+    });
+  }
+
+  /** F15: Wait for user profile to load, then redirect to their role's default route. */
+  private navigateToRoleDefault(): void {
+    this.authService.currentUser$.pipe(
+      filter((u) => u !== null),
+      take(1),
+    ).subscribe((user) => {
+      this.router.navigate([getDefaultRouteForRole(user!.role)]);
     });
   }
 }

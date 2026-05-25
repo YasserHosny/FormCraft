@@ -1,4 +1,10 @@
 {
+  "nav": {
+    "studio": "Design Studio",
+    "desk": "Form Desk",
+    "admin": "Admin Console",
+    "unauthorized": "Unauthorized section"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",

@@ -1,0 +1,36 @@
+<h2 mat-dialog-title>{{ 'template_feedback.submitDialog.title' | translate }}</h2>
+<mat-dialog-content>
+  <div class="context-section">
+    <h4>{{ 'template_feedback.submitDialog.contextTitle' | translate }}</h4>
+    <div class="context-row">
+      <span class="context-label">{{ 'template_feedback.submitDialog.template' | translate }}:</span>
+      <span>{{ data.templateName }}</span>
+    </div>
+    <div class="context-row">
+      <span class="context-label">{{ 'template_feedback.submitDialog.version' | translate }}:</span>
+      <span>v{{ data.templateVersion }}</span>
+    </div>
+    <div class="context-row" *ngIf="data.pageNumber">
+      <span class="context-label">{{ 'template_feedback.submitDialog.page' | translate }}:</span>
+      <span>{{ data.pageNumber }}</span>
+    </div>
+    <div class="context-row" *ngIf="data.elementKey">
+      <span class="context-label">{{ 'template_feedback.submitDialog.field' | translate }}:</span>
+      <span>{{ data.elementLabel || data.elementKey }}</span>
+    </div>
+  </div>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'template_feedback.submitDialog.messagePlaceholder' | translate }}</mat-label>
+    <textarea matInput [formControl]="form.controls.text_content" rows="4" maxlength="2000"></textarea>
+    <mat-error *ngIf="form.controls.text_content.hasError('required')">
+      {{ 'template_feedback.submitDialog.messagePlaceholder' | translate }}
+    </mat-error>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">{{ 'common.cancel' | translate }}</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="form.invalid || submitting">
+    {{ 'template_feedback.submitDialog.submit' | translate }}
+  </button>
+</mat-dialog-actions>
