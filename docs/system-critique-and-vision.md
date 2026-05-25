@@ -11,7 +11,7 @@
 2. [Documentation Quality Assessment](#what-the-documentation-does-well)
 3. [Critical Issues](#critical-issues)
 4. [The Value Proposition](#the-value-proposition-formcraft-should-own)
-5. [Architectural Reframe: Two Product Modes](#architectural-reframe-two-product-modes)
+5. [Architectural Reframe: Four Product Modes](#architectural-reframe-two-product-modes)
 6. [Full Feature Inventory](#full-feature-inventory)
 7. [Complete Data Model](#complete-data-model)
 8. [Complete API Surface](#complete-api-surface)
@@ -137,6 +137,7 @@ F26 significantly elevates OCR from a toolbar button to a first-class feature:
 | ~~Reference data / lookups~~ | ✅ DONE | F24: Reference lists with schema, entries, org-scoped |
 | ~~Notifications~~ | ✅ DONE | F14: Notification endpoint working (`/notifications` — 200) |
 | ~~White-labeling~~ | ✅ PARTIAL | F25: Custom domain + branding endpoint exists |
+| **Platform Admin Dashboard** | ⚠️ BACKEND ONLY | PC-01: 5 API endpoints exist (`require_platform_admin()`), **no frontend UI** — needs `/platform/*` routes, guard, components, Mode 4 tab |
 | Approval workflows | ❌ TODO | Template review/approve/reject not yet implemented |
 | Template permissions | ❌ TODO | No fine-grained per-template access control |
 | Digital signatures | ❌ TODO | e-signature integration not yet built |
@@ -160,11 +161,11 @@ Closing both ends transforms FormCraft from a **design tool** into an **operatio
 
 ---
 
-## Architectural Reframe: Two Product Modes
+## Architectural Reframe: Four Product Modes
 
 ### The Core Insight
 
-FormCraft should not treat form filling as a feature bolted onto the design studio. It should be structured as **two parallel, ongoing product modes** — each with its own UX, dashboard, persona, and usage pattern. These are not sequential phases a user moves through once; they are concurrent workspaces used by different people every day.
+FormCraft should not treat form filling as a feature bolted onto the design studio. It should be structured as **four parallel product modes** — each with its own UX, dashboard, persona, and usage pattern. Three modes (Studio, Desk, Admin) are used by different people every day. The fourth (Platform) is used rarely by super-admins for cross-org management.
 
 ### Why Modes, Not Features
 
@@ -210,29 +211,46 @@ Entry:      /admin
 Core loop:  Manage users -> review templates -> approve workflows -> monitor operations -> audit -> report
 ```
 
+### Mode 4: Platform Console (new — backend exists, no frontend)
+
+The super-admin workspace for multi-org platform management.
+
+```
+Who:        Platform Admins (is_platform_admin=true on profile — NOT a role, a flag)
+When:       Rare — when onboarding new orgs, managing subscriptions, platform-wide oversight
+Entry:      /platform
+Core loop:  Create org -> configure tier -> monitor orgs -> manage platform users -> system health
+```
+
+**Key distinction**: Platform Admin is a flag (`is_platform_admin`) on the `profiles` table, independent of the `role` column. A user can be both `role: 'admin'` for their org AND `is_platform_admin: true` for cross-org management. The backend endpoints exist (`POST /api/organizations`, `GET /api/organizations`, etc.) protected by `require_platform_admin()`, but no frontend UI has been built.
+
 ### Mode Switching UX
 
 ```
-┌───────────────────────────────────────────────────────────────────┐
-│  FormCraft   [Design Studio]  [Form Desk]  [Admin]   🔔 🌐 👤    │
-│              ─────────────    ──────────   ─────               │
-│                                (active)                         │
-├───────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│  Current mode content here                                        │
-│                                                                   │
-└───────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  FormCraft   [Design Studio]  [Form Desk]  [Admin]  [Platform]   🔔 🌐 👤   │
+│              ─────────────    ──────────   ─────   ──────────              │
+│                                (active)                                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Current mode content here                                                   │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
+
+Note: [Platform] tab is ONLY visible when `is_platform_admin=true`. Most users never see it.
 
 - Top-level tabs in the main nav bar
 - Mode persists across sessions (stored in user profile preference)
 - Default mode based on role:
+    - Platform Admin -> default to Platform Console
     - Admin -> default to Admin Console
     - Designer -> default to Design Studio
     - Operator, Viewer -> default to Form Desk
     - Users can switch freely if their role permits
 - Role gates enforce access: Operators cannot reach Design Studio routes
-- URL structure: `/studio/*` for design, `/desk/*` for operations, `/admin/*` for governance
+- Platform Console requires `is_platform_admin=true` (not a role — a profile flag)
+- URL structure: `/studio/*` for design, `/desk/*` for operations, `/admin/*` for governance, `/platform/*` for platform management
 
 ---
 
@@ -889,12 +907,74 @@ Form Desk print flow (overlay mode):
     -> Result: filled data printed at exact positions on pre-printed paper
 ```
 
-### Admin Console Features
+### Platform Console Features
 
-#### AC-01: Organization Management — ✅ EXISTS (F25)
+#### PC-01: Platform Admin Dashboard (new — backend exists, NO frontend) — ❌ FRONTEND MISSING
 
 ```
-/admin/org — org-level settings and configuration
+/platform — cross-org management for platform super-admins (is_platform_admin=true)
+
+Backend API exists (all protected by require_platform_admin()):
+    POST   /api/organizations                    — create org
+    GET    /api/organizations                    — list all orgs
+    GET    /api/organizations/:id                — get org details
+    PATCH  /api/organizations/:id                — update org
+    POST   /api/organizations/:id/logo           — upload org logo
+
+Frontend needed:
+    /platform/organizations         — list all organizations with search, filter, create button
+    /platform/organizations/new     — create organization form
+    /platform/organizations/:id     — org detail: settings, stats, subscription, users overview
+
+Organization list view:
+    -> Table: org name (AR/EN), subscription tier, active users count, templates count,
+       submissions this month, status (active/suspended), created date
+    -> Search by: org name, custom domain
+    -> Filter by: subscription tier, status, country
+    -> Sort by: name, created date, user count, submission volume
+    -> Actions per row: View Details, Suspend, Reactivate
+
+Create organization:
+    -> Form: name_ar*, name_en, default_language, default_country, default_currency
+    -> Subscription tier: starter / professional / enterprise / platform
+    -> Creates org -> auto-generates first admin invitation
+    -> POST /api/organizations -> returns org_id
+    -> Next step: invite the org's first admin user
+
+Organization detail view:
+    -> Profile tab: name, logo, domain, branding, settings (read/write)
+    -> Subscription tab: current tier, limits, usage stats, upgrade/downgrade
+    -> Users tab: all users in this org (read-only overview with counts by role)
+    -> Stats tab: templates count, submissions this month/total, storage usage
+    -> Actions: Suspend org (disables all logins), Delete org (destructive, requires confirmation)
+
+Platform-wide overview (dashboard):
+    /platform — landing page with:
+    -> Total organizations, total users, total submissions (platform-wide)
+    -> Orgs by tier (pie chart)
+    -> Submission volume trend (line chart)
+    -> Recently created orgs
+    -> Orgs approaching tier limits (alerts)
+```
+
+**Key implementation notes:**
+- Platform Admin is NOT a role — it's `is_platform_admin=true` flag on `profiles` table
+- A user can be both `role: 'admin'` within their org AND `is_platform_admin: true`
+- Platform Console routes require a new `PlatformAdminGuard` checking `is_platform_admin`
+- The `/platform` tab in the nav bar is only visible when `is_platform_admin=true`
+- This is completely separate from the Org Admin's `/admin/settings` page
+
+---
+
+### Admin Console Features
+
+#### AC-01: Organization Settings — ✅ EXISTS (F25)
+
+```
+/admin/settings — org-level settings for the CURRENT organization (Org Admin, NOT Platform Admin)
+
+Note: This is the Org Admin editing THEIR OWN org's settings.
+For creating/managing MULTIPLE organizations, see PC-01 (Platform Console).
 
 Organization profile:
     -> Name (Arabic + English)
@@ -1661,12 +1741,24 @@ report_archives
 | `/api/admin/users/:id/deactivate` | POST | admin | Deactivate user account |
 | `/api/admin/users/bulk-import` | POST | admin | Import users from CSV |
 
-### Organizations & Structure
+### Platform Admin — Organization CRUD (PC-01) ⚠️ Backend exists, NO frontend
+
+| Endpoint | Method | Auth | Purpose |
+|----------|--------|:----:|---------|
+| `/api/organizations` | POST | **platform_admin** | Create new organization |
+| `/api/organizations` | GET | **platform_admin** | List all organizations |
+| `/api/organizations/:id` | GET | **platform_admin** | Get organization details |
+| `/api/organizations/:id` | PATCH | **platform_admin** | Update organization |
+| `/api/organizations/:id/logo` | POST | **platform_admin** | Upload organization logo |
+
+Note: All 5 endpoints protected by `require_platform_admin()` — checks `is_platform_admin=true` on profile. Returns 403 for non-platform-admins. **No frontend routes exist** — needs `/platform/*` module, guard, and components.
+
+### Organizations & Structure (Org Admin — within current org)
 
 | Endpoint | Method | Role | Purpose |
 |----------|--------|:----:|---------|
-| `/api/admin/org` | GET | admin | Get organization settings |
-| `/api/admin/org` | PATCH | admin | Update organization settings |
+| `/api/admin/org` | GET | admin | Get current organization settings |
+| `/api/admin/org` | PATCH | admin | Update current organization settings |
 | `/api/admin/departments` | GET | admin | List departments |
 | `/api/admin/departments` | POST | admin | Create department |
 | `/api/admin/departments/:id` | PATCH | admin | Update department |
@@ -2021,6 +2113,7 @@ The Studio is the **land** (sold once to the design team). The Desk is the **exp
 | # | Initiative | Impact | Effort | Depends On |
 |---|-----------|:------:|:------:|:----------:|
 | 2.1 | Multi-tenancy: organizations, departments, branches (AC-01) | High | High | — |
+| 2.1b | **Platform Admin Dashboard: org CRUD frontend (PC-01)** | High | Medium | 2.1 |
 | 2.2 | Enhanced user management: invitation, bulk import, departments (AC-02) | High | Medium | 2.1 |
 | 2.3 | Template approval workflow: submit -> review -> publish (AC-03) | High | Medium | 2.1 |
 | 2.4 | Reviewer role and permissions | Medium | Low | 2.3 |
@@ -2101,6 +2194,7 @@ The Studio is the **land** (sold once to the design team). The Desk is the **exp
 | # | Initiative | Vision Status | Notes |
 |---|-----------|:------------:|-------|
 | 2.1 | Multi-tenancy (AC-01) | ✅ DONE | F25 — orgs, depts, branches, RLS |
+| 2.1b | **Platform Admin Dashboard (PC-01)** | ⚠️ BACKEND ONLY | Backend API exists (`/api/organizations` 5 endpoints, `require_platform_admin()`). **No frontend UI** — no routes, no components, no guard. Needs: `/platform/*` routes, `PlatformAdminGuard`, org list/create/detail components, Mode 4 tab in app-shell |
 | 2.2 | User management (AC-02) | ✅ PARTIAL | Invitations done; bulk import not yet |
 | 2.5 | Conditional fields & logic | ✅ DONE | F22 — 3 conditional columns on elements |
 | 2.3-2.4 | Approval workflow + Reviewer role | ❌ TODO | |
@@ -2136,41 +2230,41 @@ The Studio is the **land** (sold once to the design team). The Desk is the **exp
 ## Final Architecture Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           FormCraft Platform                                │
-├─────────────────────┬─────────────────────┬─────────────────────────────────┤
-│   DESIGN STUDIO     │     FORM DESK       │     ADMIN CONSOLE              │
-│                     │                     │                                 │
-│  Template Library   │  Operator Dashboard │  Org Management                │
-│  Canvas Editor      │  Form Filler        │  User Management               │
-│  AI Suggestions     │  Drafts             │  Template Governance           │
-│  OCR Import         │  Print & Submit     │  Approval Workflows            │
-│  Tafqeet Config     │  Overlay Print ★    │  Audit & Compliance            │
-│  PDF Preview        │  Printer Calibrate ★│  Analytics (Platform)          │
-│  Version Control    │  History & Reprint  │  Operational Reports ★         │
-│  Template Feedback  │  Batch Queue        │  Report Builder ★              │
-│  Ref Data Manager ★ │  Customer Profiles  │  Notification Center           │
-│                     │  Quick Fill         │  Data Export & Import          │
-│  By: Designers      │  Ref Data Lookup ★  │  Webhooks & API Keys           │
-│  When: Occasionally │                     │  Custom Validators             │
-│                     │  By: Operators      │                                │
-│                     │  When: All day      │  By: Admins                    │
-│                     │                     │  When: Periodic                │
-├─────────────────────┴─────────────────────┴─────────────────────────────────┤
-│                        EXTERNAL / PUBLIC                                    │
-│  Public Form Portal (anonymous or OTP-verified submissions)                │
-│  Template Marketplace (cross-org sharing and purchasing)                    │
-│  REST API + Webhooks (integration with core banking, CRM, DMS)             │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                        SHARED SERVICES                                      │
-│  Auth (JWT + SSO + MFA) | i18n (AR/EN + Hijri) | PDF Engine (WeasyPrint)  │
-│  Validation (Arabic + Custom) | AI (AWS Bedrock) | Tafqeet | Notifications │
-│  Audit Logging | RLS + Encryption | Performance + Caching | File Storage   │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                        INFRASTRUCTURE                                       │
-│  Angular 19 | FastAPI | Supabase (PostgreSQL + Auth + Storage + Realtime)  │
-│  AWS Bedrock | Azure Document Intelligence | WeasyPrint | Bunny Containers │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                    FormCraft Platform                                       │
+├─────────────────────┬─────────────────────┬───────────────────────┬────────────────────────┤
+│   DESIGN STUDIO     │     FORM DESK       │   ADMIN CONSOLE       │  PLATFORM CONSOLE ★★  │
+│                     │                     │                       │  (is_platform_admin)   │
+│  Template Library   │  Operator Dashboard │  Org Settings         │                        │
+│  Canvas Editor      │  Form Filler        │  User Management      │  Org List & Create     │
+│  AI Suggestions     │  Drafts             │  Template Governance  │  Org Detail & Config   │
+│  OCR Import         │  Print & Submit     │  Approval Workflows   │  Subscription Mgmt     │
+│  Tafqeet Config     │  Overlay Print ★    │  Audit & Compliance   │  Platform Overview     │
+│  PDF Preview        │  Printer Calibrate ★│  Analytics            │  Cross-Org User View   │
+│  Version Control    │  History & Reprint  │  Operational Reports ★│                        │
+│  Template Feedback  │  Batch Queue        │  Report Builder ★     │  Backend: ✅ EXISTS    │
+│  Ref Data Manager ★ │  Customer Profiles  │  Notification Center  │  Frontend: ❌ MISSING  │
+│                     │  Quick Fill         │  Data Export & Import │                        │
+│  By: Designers      │  Ref Data Lookup ★  │  Webhooks & API Keys  │  By: Platform Admins   │
+│  When: Occasionally │                     │  Custom Validators    │  When: Rare            │
+│                     │  By: Operators      │                       │                        │
+│                     │  When: All day      │  By: Admins           │  Route: /platform/*    │
+│                     │                     │  When: Periodic       │  Guard: PlatformAdmin  │
+├─────────────────────┴─────────────────────┴───────────────────────┴────────────────────────┤
+│                        EXTERNAL / PUBLIC                                                    │
+│  Public Form Portal (anonymous or OTP-verified submissions)                                │
+│  Template Marketplace (cross-org sharing and purchasing)                                    │
+│  REST API + Webhooks (integration with core banking, CRM, DMS)                             │
+├────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                   SHARED SERVICES                                          │
+│  Auth (JWT + SSO + MFA) | i18n (AR/EN + Hijri) | PDF Engine (WeasyPrint)                  │
+│  Validation (Arabic + Custom) | AI (AWS Bedrock) | Tafqeet | Notifications                │
+│  Audit Logging | RLS + Encryption | Performance + Caching | File Storage                  │
+├────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                   INFRASTRUCTURE                                           │
+│  Angular 19 | FastAPI | Supabase (PostgreSQL + Auth + Storage + Realtime)                  │
+│  AWS Bedrock | Azure Document Intelligence | WeasyPrint | Bunny Containers                │
+└────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ```
