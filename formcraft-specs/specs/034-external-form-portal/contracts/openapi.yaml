@@ -1,0 +1,433 @@
+openapi: 3.0.3
+info:
+  title: FormCraft External Form Portal API
+  version: 0.1.0
+  description: Public accountless form discovery plus portal-session-token form access, OTP verification, submission, QR URL support, email confirmation tracking, and admin portal configuration for F034.
+servers:
+  - url: /api
+
+paths:
+  /public/forms/{org_slug}/{public_slug}:
+    get:
+      summary: Load a public form and create a pinned portal session
+      tags: [Public Portal]
+      parameters:
+        - $ref: "#/components/parameters/OrgSlug"
+        - $ref: "#/components/parameters/PublicSlug"
+      responses:
+        "200":
+          description: Public form shell, pinned template version, and session token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicFormSession"
+        "404":
+          description: Public form not found or disabled
+        "429":
+          description: Public access rate limited
+
+  /public/forms/{session_token}/otp/send:
+    post:
+      summary: Send OTP for an OTP-gated public form session
+      tags: [Public Portal]
+      parameters:
+        - $ref: "#/components/parameters/SessionToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpSendRequest"
+      responses:
+        "202":
+          description: OTP send accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtpSendResponse"
+        "400":
+          description: Contact mode not allowed for this template
+        "401":
+          description: Missing, invalid, or expired portal session token
+        "423":
+          description: OTP session locked
+        "503":
+          description: OTP provider unavailable; access remains blocked
+
+  /public/forms/{session_token}/otp/verify:
+    post:
+      summary: Verify OTP and unlock the public form session
+      tags: [Public Portal]
+      parameters:
+        - $ref: "#/components/parameters/SessionToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpVerifyRequest"
+      responses:
+        "200":
+          description: OTP verified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtpVerifyResponse"
+        "400":
+          description: Invalid or expired OTP
+        "401":
+          description: Missing, invalid, or expired portal session token
+        "423":
+          description: OTP locked after too many failures
+
+  /public/forms/{session_token}/submit:
+    post:
+      summary: Submit a public form session
+      tags: [Public Portal]
+      parameters:
+        - $ref: "#/components/parameters/SessionToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicSubmissionRequest"
+      responses:
+        "201":
+          description: Public submission accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicSubmissionResponse"
+        "400":
+          description: Validation failed
+        "401":
+          description: Missing, invalid, or expired portal session token
+        "403":
+          description: OTP or CAPTCHA required
+        "409":
+          description: Session already submitted or expired
+        "429":
+          description: Submission rate limited
+
+  /public/submissions/{reference_number}/pdf:
+    get:
+      summary: Download optional public submission PDF
+      tags: [Public Portal]
+      parameters:
+        - in: path
+          name: reference_number
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: PDF stream
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "403":
+          description: PDF download disabled or token invalid
+        "404":
+          description: Submission not found
+
+  /admin/portal/templates:
+    get:
+      summary: List templates and public portal configuration
+      tags: [Admin Portal]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Portal template configuration list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalTemplateListResponse"
+
+  /admin/portal/templates/{template_id}:
+    get:
+      summary: Get portal configuration for one template
+      tags: [Admin Portal]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TemplateId"
+      responses:
+        "200":
+          description: Portal configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalConfiguration"
+    patch:
+      summary: Update portal configuration for a template
+      tags: [Admin Portal]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TemplateId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortalConfigurationUpdate"
+      responses:
+        "200":
+          description: Updated portal configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalConfiguration"
+        "400":
+          description: Invalid portal configuration
+        "403":
+          description: Admin role required
+
+  /admin/portal/analytics:
+    get:
+      summary: Get portal submission, OTP, and rate-limit analytics
+      tags: [Admin Portal]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: template_id
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: date_from
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: date_to
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Portal analytics summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalAnalyticsResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    OrgSlug:
+      in: path
+      name: org_slug
+      required: true
+      schema:
+        type: string
+    PublicSlug:
+      in: path
+      name: public_slug
+      required: true
+      schema:
+        type: string
+    SessionToken:
+      in: path
+      name: session_token
+      required: true
+      schema:
+        type: string
+    TemplateId:
+      in: path
+      name: template_id
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    PublicFormSession:
+      type: object
+      required: [session_token, template_id, template_version, title, fields, settings]
+      properties:
+        session_token:
+          type: string
+          description: Opaque portal session token required for OTP and submit endpoints.
+        template_id:
+          type: string
+          format: uuid
+        template_version:
+          type: integer
+        title:
+          type: string
+        language_default:
+          type: string
+          enum: [ar, en]
+        fields:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        settings:
+          $ref: "#/components/schemas/PublicPortalSettings"
+
+    PublicPortalSettings:
+      type: object
+      required: [otp_required, allowed_otp_modes, captcha_enabled, allow_pdf_download]
+      properties:
+        otp_required:
+          type: boolean
+        allowed_otp_modes:
+          type: array
+          items:
+            type: string
+            enum: [sms, email]
+        captcha_enabled:
+          type: boolean
+        captcha_provider:
+          type: string
+          nullable: true
+          enum: [hcaptcha, recaptcha]
+        allow_pdf_download:
+          type: boolean
+
+    OtpSendRequest:
+      type: object
+      required: [contact_mode, contact_value]
+      properties:
+        contact_mode:
+          type: string
+          enum: [sms, email]
+        contact_value:
+          type: string
+
+    OtpSendResponse:
+      type: object
+      required: [status, expires_at]
+      properties:
+        status:
+          type: string
+          enum: [sent]
+        expires_at:
+          type: string
+          format: date-time
+
+    OtpVerifyRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+
+    OtpVerifyResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [verified]
+
+    PublicSubmissionRequest:
+      type: object
+      required: [field_values]
+      properties:
+        field_values:
+          type: object
+          additionalProperties: true
+        captcha_token:
+          type: string
+          nullable: true
+
+    PublicSubmissionResponse:
+      type: object
+      required: [reference_number]
+      properties:
+        reference_number:
+          type: string
+        pdf_download_url:
+          type: string
+          nullable: true
+        email_confirmation_status:
+          type: string
+          nullable: true
+          enum: [not_requested, queued, sent, failed]
+
+    PortalConfiguration:
+      type: object
+      required: [template_id, public_slug, enabled, verification_required, allowed_otp_modes, captcha_enabled, allow_pdf_download, send_email_confirmation, rate_limit_max, rate_limit_window_minutes]
+      properties:
+        template_id:
+          type: string
+          format: uuid
+        public_slug:
+          type: string
+        public_url:
+          type: string
+        public_qr_svg:
+          type: string
+          nullable: true
+          description: Derived QR code SVG encoding the public_url for admin preview/download.
+        enabled:
+          type: boolean
+        verification_required:
+          type: boolean
+        allowed_otp_modes:
+          type: array
+          items:
+            type: string
+            enum: [sms, email]
+        captcha_enabled:
+          type: boolean
+        captcha_provider:
+          type: string
+          nullable: true
+          enum: [hcaptcha, recaptcha]
+        allow_pdf_download:
+          type: boolean
+        send_email_confirmation:
+          type: boolean
+        rate_limit_max:
+          type: integer
+          minimum: 1
+        rate_limit_window_minutes:
+          type: integer
+          minimum: 1
+
+    PortalConfigurationUpdate:
+      allOf:
+        - $ref: "#/components/schemas/PortalConfiguration"
+
+    PortalTemplateListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalConfiguration"
+
+    PortalAnalyticsResponse:
+      type: object
+      required: [submission_count, otp_sent_count, otp_failure_count, rate_limited_count, email_confirmation_failure_count]
+      properties:
+        submission_count:
+          type: integer
+        otp_sent_count:
+          type: integer
+        otp_failure_count:
+          type: integer
+        rate_limited_count:
+          type: integer
+        email_confirmation_failure_count:
+          type: integer
