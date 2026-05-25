@@ -1,0 +1,52 @@
+<section class="publish-page">
+  <button mat-button routerLink="/marketplace">
+    <mat-icon>arrow_back</mat-icon>
+    {{ 'common.back' | translate }}
+  </button>
+
+  <h1>{{ 'marketplace.publish' | translate }}</h1>
+
+  <form class="publish-form" (ngSubmit)="submit()">
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'marketplace.templateId' | translate }}</mat-label>
+      <input matInput name="templateId" required [(ngModel)]="form.template_id" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'templates.description' | translate }}</mat-label>
+      <textarea matInput name="description" rows="4" [(ngModel)]="form.description"></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'marketplace.tags' | translate }}</mat-label>
+      <input matInput name="tags" [(ngModel)]="form.tags" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'marketplace.previewImages' | translate }}</mat-label>
+      <input matInput name="previewImages" [(ngModel)]="form.preview_image_urls" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'marketplace.complianceBadges' | translate }}</mat-label>
+      <input matInput name="badges" [(ngModel)]="form.compliance_badges" />
+    </mat-form-field>
+
+    <div class="pricing">
+      <mat-radio-group name="priceType" [(ngModel)]="form.price_type">
+        <mat-radio-button value="free">{{ 'marketplace.free' | translate }}</mat-radio-button>
+        <mat-radio-button value="premium">{{ 'marketplace.premium' | translate }}</mat-radio-button>
+      </mat-radio-group>
+
+      <mat-form-field appearance="outline" *ngIf="form.price_type === 'premium'">
+        <mat-label>{{ 'marketplace.amount' | translate }}</mat-label>
+        <input matInput type="number" name="amount" min="1" [(ngModel)]="form.price_amount" />
+      </mat-form-field>
+    </div>
+
+    <button mat-raised-button color="primary" type="submit" [disabled]="saving || !form.template_id">
+      <mat-icon>send</mat-icon>
+      {{ 'marketplace.submitForReview' | translate }}
+    </button>
+  </form>
+</section>

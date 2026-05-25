@@ -42,6 +42,7 @@ from app.api.routes import (
     report_schedules,
     public_portal,
     admin_portal,
+    marketplace,
 )
 
 logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO))
@@ -106,6 +107,8 @@ def create_app() -> FastAPI:
     app.include_router(report_schedules.router, prefix="/api")
     app.include_router(public_portal.router, prefix="/api")
     app.include_router(admin_portal.router, prefix="/api/admin")
+    app.include_router(marketplace.router, prefix="/api")
+    app.include_router(marketplace.admin_router, prefix="/api/admin")
 
     # Global handler for Supabase/PostgREST errors (missing tables/columns
     # from unapplied migrations) — returns a clear 503 instead of 500.

@@ -1,0 +1,78 @@
+.detail-page {
+  padding: 24px;
+}
+
+.detail-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin: 16px 0 24px;
+}
+
+.detail-header h1 {
+  font-size: 30px;
+  margin: 0 0 8px;
+}
+
+.detail-header p {
+  color: rgba(0, 0, 0, 0.64);
+  margin: 0;
+  max-width: 760px;
+}
+
+.actions {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.price {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.preview-panel {
+  padding: 24px 0;
+}
+
+.canvas-preview {
+  display: flex;
+  justify-content: center;
+}
+
+.page-preview {
+  align-items: center;
+  aspect-ratio: 210 / 297;
+  background: #fafafa;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  display: flex;
+  justify-content: center;
+  max-height: 620px;
+  width: min(100%, 438px);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+@media (max-width: 720px) {
+  .detail-header {
+    flex-direction: column;
+  }
+
+  .actions {
+    align-items: stretch;
+    width: 100%;
+  }
+}
