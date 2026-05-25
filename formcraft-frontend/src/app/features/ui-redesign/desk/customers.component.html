@@ -1,0 +1,97 @@
+<fc-page-header title="دليل العملاء" subtitle="٢٨٤١ ملف عميل · ٢٧٩٢ نشط · ٤٩ موقوف · ٤ تكرارات محتملة">
+  <div actions>
+    <button class="fc-btn outline"><mat-icon>file_download</mat-icon>تصدير CSV</button>
+    <button class="fc-btn outline"><mat-icon>merge_type</mat-icon>دمج التكرارات<span class="dup-badge">٤</span></button>
+    <button class="fc-btn primary"><mat-icon>person_add</mat-icon>إضافة عميل</button>
+  </div>
+</fc-page-header>
+
+<!-- Filter bar -->
+<div class="filter-bar">
+  <div class="fc-search-box">
+    <mat-icon>search</mat-icon>
+    <input placeholder="ابحث برقم الهوية، الجوال، الاسم، أو البريد..." />
+  </div>
+  <div class="fc-filter-pill"><span class="label-key">الحالة:</span><span>نشط</span><mat-icon>expand_more</mat-icon></div>
+  <div class="fc-filter-pill"><span class="label-key">نوع الهوية:</span><span>الكل</span><mat-icon>expand_more</mat-icon></div>
+  <div class="fc-filter-pill"><span class="label-key">الفرع:</span><span>جميع الفروع</span><mat-icon>expand_more</mat-icon></div>
+  <div class="fc-filter-pill"><span class="label-key">آخر تعامل:</span><span>هذا الشهر</span><mat-icon>expand_more</mat-icon></div>
+  <button class="fc-btn ghost sm"><mat-icon>filter_alt</mat-icon>المزيد</button>
+  <span class="grow"></span>
+  <button class="fc-btn ghost sm"><mat-icon>sort</mat-icon>آخر تعامل ↓</button>
+</div>
+
+<!-- Stats strip -->
+<div class="stat-strip">
+  <div class="stat-item" *ngFor="let s of stats">
+    <div class="stat-label">{{ s.label }}</div>
+    <div class="stat-value" [class.warn]="s.warn">{{ s.value }}</div>
+    <div class="stat-sub" [class.up]="s.up">{{ s.delta || s.sub }}</div>
+  </div>
+</div>
+
+<!-- Customer table -->
+<div class="table-container">
+  <table class="fc-table">
+    <thead>
+      <tr>
+        <th class="col-check"><div class="checkbox"></div></th>
+        <th>العميل</th>
+        <th>نوع الهوية</th>
+        <th>رقم الهوية</th>
+        <th>الجوال</th>
+        <th>الفرع</th>
+        <th class="col-center">نماذج</th>
+        <th>آخر تعامل</th>
+        <th class="col-status">الحالة</th>
+        <th class="col-actions"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let c of customers" [class.dup-row]="c.dup">
+        <td><div class="checkbox"></div></td>
+        <td>
+          <div class="customer-cell">
+            <fc-avatar [name]="c.name" size="md" [color]="c.color"></fc-avatar>
+            <div class="customer-info">
+              <div class="customer-name-row">
+                <span class="name">{{ c.name }}</span>
+                <span class="tag premium" *ngIf="c.tag === 'متميز'"><mat-icon>star</mat-icon>{{ c.tag }}</span>
+                <span class="tag corporate" *ngIf="c.tag === 'مؤسسي'"><mat-icon>business</mat-icon>{{ c.tag }}</span>
+                <span class="tag duplicate" *ngIf="c.tag === 'تكرار محتمل'"><mat-icon>warning</mat-icon>{{ c.tag }}</span>
+              </div>
+              <span class="customer-en">{{ c.en }}</span>
+            </div>
+          </div>
+        </td>
+        <td class="text-secondary">{{ c.idType }}</td>
+        <td class="fc-num">{{ c.id }}</td>
+        <td class="fc-num">{{ c.phone }}</td>
+        <td class="text-secondary">{{ c.branch }}</td>
+        <td class="col-center"><span class="forms-count fc-num">{{ c.forms }}</span></td>
+        <td class="text-secondary">{{ c.last }}</td>
+        <td><fc-status-chip [status]="c.status"></fc-status-chip></td>
+        <td>
+          <div class="action-btns">
+            <button class="fc-icon-btn" title="عرض"><mat-icon>visibility</mat-icon></button>
+            <button class="fc-icon-btn" title="تعبئة نموذج"><mat-icon>edit_document</mat-icon></button>
+            <button class="fc-icon-btn"><mat-icon>more_horiz</mat-icon></button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <span class="page-info">عرض <b class="fc-num">١ - ١١</b> من <b class="fc-num">٢٨٤١</b> عميل</span>
+    <div class="page-controls">
+      <div class="fc-filter-pill"><span class="label-key">السطور بالصفحة:</span><span>٥٠</span><mat-icon>expand_more</mat-icon></div>
+      <button class="fc-icon-btn" disabled><mat-icon>first_page</mat-icon></button>
+      <button class="fc-icon-btn"><mat-icon>chevron_right</mat-icon></button>
+      <span class="page-number fc-num">صفحة 1 من 57</span>
+      <button class="fc-icon-btn"><mat-icon>chevron_left</mat-icon></button>
+      <button class="fc-icon-btn"><mat-icon>last_page</mat-icon></button>
+    </div>
+  </div>
+</div>

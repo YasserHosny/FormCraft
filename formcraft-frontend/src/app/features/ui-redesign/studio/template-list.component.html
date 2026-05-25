@@ -1,0 +1,89 @@
+<fc-page-header title="النماذج" subtitle="إدارة قوالب النماذج المؤسسية وإصداراتها · 47 قالباً · 12 منشوراً · 6 قيد المراجعة">
+  <div actions>
+    <button class="fc-btn outline"><mat-icon>file_download</mat-icon>تصدير</button>
+    <button class="fc-btn outline"><mat-icon>upload_file</mat-icon>استيراد PDF</button>
+    <button class="fc-btn primary"><mat-icon>add</mat-icon>إنشاء نموذج جديد</button>
+  </div>
+</fc-page-header>
+
+<!-- Filter bar -->
+<div class="filter-bar">
+  <div class="fc-search-box">
+    <mat-icon>search</mat-icon>
+    <input placeholder="ابحث في النماذج بالاسم أو الرمز أو الإدارة..." />
+  </div>
+  <div class="fc-filter-pill">
+    <span class="label-key">الحالة:</span><span>الكل</span><mat-icon>expand_more</mat-icon>
+  </div>
+  <div class="fc-filter-pill">
+    <span class="label-key">الإدارة:</span><span>جميع الإدارات</span><mat-icon>expand_more</mat-icon>
+  </div>
+  <span class="grow"></span>
+  <div class="view-toggle">
+    <button class="fc-icon-btn active"><mat-icon>grid_view</mat-icon></button>
+    <button class="fc-icon-btn"><mat-icon>view_list</mat-icon></button>
+  </div>
+</div>
+
+<!-- Status tabs -->
+<div class="status-tabs">
+  <div *ngFor="let tab of statusTabs"
+       class="status-tab"
+       [class.active]="activeTab === tab.key"
+       (click)="activeTab = tab.key">
+    {{ tab.label }}
+    <span class="tab-count" [class.active]="activeTab === tab.key">{{ tab.count }}</span>
+  </div>
+</div>
+
+<!-- Template grid -->
+<div class="template-grid">
+  <div class="template-card" *ngFor="let t of filteredTemplates">
+    <div class="card-preview">
+      <div class="paper-mock">
+        <div class="line title-line"></div>
+        <div class="line short-line"></div>
+        <div class="spacer"></div>
+        <div class="field-row two-col">
+          <div class="field-mock"></div>
+          <div class="field-mock"></div>
+        </div>
+        <div class="field-mock"></div>
+        <div class="field-row three-col">
+          <div class="field-mock"></div>
+          <div class="field-mock"></div>
+          <div class="field-mock"></div>
+        </div>
+      </div>
+      <div class="preview-status">
+        <fc-status-chip [status]="t.status"></fc-status-chip>
+      </div>
+      <div class="preview-meta">{{ t.code }} · {{ t.pages }} {{ t.pages > 1 ? 'صفحات' : 'صفحة' }}</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">{{ t.name }}</div>
+      <div class="card-meta">
+        <span>{{ t.dept }}</span>
+        <span>·</span>
+        <span class="fc-num">{{ t.version }}</span>
+      </div>
+      <div class="card-footer">
+        <div class="author-info">
+          <fc-avatar [name]="t.by" size="sm" [color]="t.color"></fc-avatar>
+          <span class="author-name">{{ t.by }}</span>
+          <span class="updated">· {{ t.updated }}</span>
+        </div>
+        <span class="submissions" *ngIf="t.submissions > 0">
+          <mat-icon>task_alt</mat-icon>
+          <span class="fc-num">{{ formatSubmissions(t.submissions) }}</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fc-fab">
+  <mat-icon>add</mat-icon>
+  نموذج جديد
+</button>

@@ -90,6 +90,14 @@ const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: { roles: ['admin', 'designer'] },
   },
+  // UI Redesign prototype (standalone, no auth guard for dev)
+  {
+    path: 'ui',
+    loadChildren: () =>
+      import('./features/ui-redesign/ui-redesign.routes').then(
+        (m) => m.UI_REDESIGN_ROUTES
+      ),
+  },
   // F15: Default redirect to /templates (Studio). Role-based redirect happens at login and in RoleGuard.
   { path: '', redirectTo: '/templates', pathMatch: 'full' },
   { path: '**', redirectTo: '/templates' },

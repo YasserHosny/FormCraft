@@ -1,0 +1,22 @@
+<aside class="fc-sidebar">
+  <ng-container *ngFor="let group of groups">
+    <div class="group-label" *ngIf="group.label">{{ group.label }}</div>
+    <a *ngFor="let item of group.items"
+       class="fc-side-link"
+       [routerLink]="item.route || null"
+       routerLinkActive="active"
+       [routerLinkActiveOptions]="{ exact: true }">
+      <mat-icon>{{ item.icon }}</mat-icon>
+      <span>{{ item.label }}</span>
+      <span class="count" *ngIf="item.count !== undefined">{{ item.count }}</span>
+    </a>
+  </ng-container>
+
+  <div class="sidebar-spacer"></div>
+
+  <div class="sidebar-footer">
+    <mat-icon>language</mat-icon>
+    <span class="lang-label">اللغة: العربية</span>
+    <span class="lang-alt">EN</span>
+  </div>
+</aside>

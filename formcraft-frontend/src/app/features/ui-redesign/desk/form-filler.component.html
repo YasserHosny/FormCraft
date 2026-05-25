@@ -1,0 +1,204 @@
+<!-- Sub-toolbar -->
+<div class="sub-toolbar">
+  <button class="fc-icon-btn"><mat-icon>arrow_forward</mat-icon></button>
+  <div class="form-info">
+    <div class="form-title">طلب فتح حساب جاري للأفراد</div>
+    <div class="form-meta">
+      <span>AC-001 · v4.2</span>
+      <span>·</span>
+      <span class="meta-time"><mat-icon>schedule</mat-icon>بدأت قبل ٢ دقيقة</span>
+    </div>
+  </div>
+  <span class="grow"></span>
+
+  <!-- Customer pill -->
+  <div class="customer-pill" (click)="openCustomerPicker()">
+    <fc-avatar name="فاطمة القحطاني" size="sm" color="c2"></fc-avatar>
+    <div class="pill-info">
+      <span class="pill-name">فاطمة بنت عبدالله القحطاني</span>
+      <span class="pill-id fc-num">ID 2841-9035-1882</span>
+    </div>
+    <button class="fc-icon-btn sm"><mat-icon>close</mat-icon></button>
+  </div>
+
+  <button class="fc-btn outline"><mat-icon>save</mat-icon>حفظ كمسودة</button>
+  <button class="fc-btn outline"><mat-icon>print</mat-icon>طباعة PDF</button>
+  <button class="fc-btn primary"><mat-icon>check</mat-icon>إرسال</button>
+</div>
+
+<!-- Progress bar -->
+<div class="progress-strip">
+  <span class="progress-label-text">إكمال النموذج:</span>
+  <div class="progress-track">
+    <div class="progress-value" style="width: 64%"></div>
+  </div>
+  <span class="progress-count fc-num">24 / 38</span>
+  <span class="auto-save"><mat-icon>cloud_done</mat-icon>محفوظ تلقائياً</span>
+  <span class="separator"></span>
+  <button class="fc-btn ghost sm"><mat-icon>keyboard</mat-icon>اختصارات</button>
+</div>
+
+<!-- Main layout -->
+<div class="filler-layout">
+  <!-- Form paper canvas -->
+  <div class="canvas-area">
+    <div class="paper">
+      <!-- Form header -->
+      <div class="paper-header">
+        <div class="bank-logo">EDB</div>
+        <div class="bank-info">
+          <div class="bank-name">مصرف الإمارات للتنمية</div>
+          <div class="bank-branch">فرع أبوظبي الرئيسي · ص.ب ١٢٢١، أبوظبي</div>
+          <div class="form-name">طلب فتح حساب جاري — للأفراد</div>
+        </div>
+        <div class="qr-placeholder"></div>
+      </div>
+
+      <div class="paper-ref">
+        <span>رقم المرجع: <b class="fc-num">REF-2026-3842</b></span>
+        <span>التاريخ: <b class="fc-num">2026-05-25</b></span>
+      </div>
+
+      <!-- Sections -->
+      <ng-container *ngFor="let section of sections">
+        <div class="section-head">
+          <span class="section-num">{{ section.number }}</span>
+          <span class="section-title">{{ section.title }}</span>
+          <span class="section-complete" *ngIf="section.complete"><mat-icon>check_circle</mat-icon>مكتمل</span>
+        </div>
+        <div class="fields-grid" [style.grid-template-columns]="'repeat(' + section.columns + ', 1fr)'">
+          <div class="form-field"
+               *ngFor="let f of section.fields"
+               [style.grid-column]="f.span ? '1 / -1' : null">
+            <div class="field-header">
+              <span class="field-label">{{ f.label }}<span class="required" *ngIf="f.valid !== undefined"> *</span></span>
+              <mat-icon class="field-valid" *ngIf="f.valid">check_circle</mat-icon>
+              <mat-icon class="field-error" *ngIf="f.error">error</mat-icon>
+            </div>
+            <div class="field-input"
+                 [class.filled]="f.filled"
+                 [class.valid]="f.valid"
+                 [class.error]="f.error">
+              <span class="field-value" [class.placeholder]="!f.value">{{ f.value || f.placeholder }}</span>
+              <span class="field-suffix" *ngIf="f.suffix">{{ f.suffix }}</span>
+              <span class="auto-badge" *ngIf="f.filled">↻ تلقائي</span>
+            </div>
+            <span class="field-hint" *ngIf="f.hint" [class.error]="f.error">{{ f.hint }}</span>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Section 3: Declarations -->
+      <div class="section-head">
+        <span class="section-num">٣</span>
+        <span class="section-title">الإقرارات والتوقيع</span>
+      </div>
+      <div class="declarations-box">
+        <label class="declaration-item">
+          <div class="checkbox checked"><mat-icon>check</mat-icon></div>
+          <span>أُقرّ بصحة جميع البيانات الواردة أعلاه وأتحمّل المسؤولية القانونية عن صحتها.</span>
+        </label>
+        <label class="declaration-item">
+          <div class="checkbox checked"><mat-icon>check</mat-icon></div>
+          <span>أوافق على شروط وأحكام فتح الحساب الجاري للأفراد المعتمدة لدى المصرف.</span>
+        </label>
+        <label class="declaration-item">
+          <div class="checkbox"></div>
+          <span>أرغب في إصدار بطاقة الصراف الآلي مع الحساب الجديد.</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right summary panel -->
+  <aside class="side-panel">
+    <div class="panel-section">
+      <div class="panel-label">أقسام النموذج</div>
+      <div class="nav-item" *ngFor="let s of sideSections" [class.active]="s.state === 'active'">
+        <span class="nav-num" [class.done]="s.state === 'done'" [class.active]="s.state === 'active'">
+          <mat-icon *ngIf="s.state === 'done'">check</mat-icon>
+          <ng-container *ngIf="s.state !== 'done'">{{ s.number }}</ng-container>
+        </span>
+        <span class="nav-label">{{ s.label }}</span>
+        <span class="nav-count fc-num">{{ s.count }}</span>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-label">تنبيهات</div>
+      <div class="alert-box error">
+        <mat-icon>error</mat-icon>
+        <div><b>المسمى الوظيفي</b> حقل مطلوب — لم يُملأ بعد.</div>
+      </div>
+      <div class="alert-box warn">
+        <mat-icon>warning</mat-icon>
+        <div>لم يوقّع العميل بعد. يمكن التوقيع رقمياً أو بعد الطباعة.</div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-label">اختصارات</div>
+      <div class="shortcut-row" *ngFor="let s of shortcuts">
+        <span class="shortcut-label">{{ s.label }}</span>
+        <kbd>{{ s.key }}</kbd>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- Customer picker dialog -->
+<div class="dialog-overlay" *ngIf="showCustomerPicker" (click)="closeCustomerPicker()">
+  <div class="dialog-box" (click)="$event.stopPropagation()">
+    <div class="dialog-header">
+      <div class="dialog-icon"><mat-icon>person_search</mat-icon></div>
+      <div class="dialog-title-area">
+        <h3>اختيار عميل</h3>
+        <span>ابحث برقم الهوية أو الاسم — الحقول المطابقة ستُعبأ تلقائياً</span>
+      </div>
+      <button class="fc-icon-btn" (click)="closeCustomerPicker()"><mat-icon>close</mat-icon></button>
+    </div>
+
+    <div class="dialog-search">
+      <div class="search-input">
+        <mat-icon>search</mat-icon>
+        <input placeholder="اكتب رقم الهوية، الجوال، أو الاسم..." value="فاطمة" />
+        <kbd>↵</kbd>
+      </div>
+      <div class="recent-chips">
+        <span class="recent-label">الأخيرون:</span>
+        <span class="recent-chip" *ngFor="let name of recentCustomers">{{ name }}</span>
+      </div>
+    </div>
+
+    <div class="dialog-results">
+      <div class="results-count">٣ نتائج</div>
+      <div class="customer-row" *ngFor="let c of customerResults" [class.selected]="c.selected">
+        <div class="selection-bar" *ngIf="c.selected"></div>
+        <fc-avatar [name]="c.name" size="md" [color]="c.color"></fc-avatar>
+        <div class="customer-details">
+          <div class="customer-top">
+            <span class="customer-name">{{ c.name }}</span>
+            <fc-status-chip status="published"></fc-status-chip>
+          </div>
+          <span class="customer-en">{{ c.en }}</span>
+          <div class="customer-meta-row">
+            <span><mat-icon>badge</mat-icon><span class="fc-num">{{ c.id }}</span></span>
+            <span><mat-icon>phone</mat-icon><span class="fc-num">{{ c.phone }}</span></span>
+            <span><mat-icon>description</mat-icon>{{ c.forms }} نماذج</span>
+            <span class="last-visit">آخر زيارة: {{ c.last }}</span>
+          </div>
+        </div>
+        <button class="fc-btn primary sm" *ngIf="c.selected"><mat-icon>check</mat-icon>اختياره</button>
+        <button class="fc-btn outline sm" *ngIf="!c.selected">اختيار</button>
+      </div>
+    </div>
+
+    <div class="dialog-footer">
+      <button class="fc-btn outline"><mat-icon>person_add</mat-icon>إنشاء عميل جديد</button>
+      <div class="footer-actions">
+        <button class="fc-btn ghost" (click)="closeCustomerPicker()">إلغاء</button>
+        <button class="fc-btn primary"><mat-icon>check</mat-icon>تأكيد الاختيار</button>
+      </div>
+    </div>
+  </div>
+</div>
