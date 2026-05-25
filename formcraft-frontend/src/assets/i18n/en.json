@@ -914,5 +914,26 @@
       "testDelivery": "Test Delivery",
       "deliveries": "Delivery Log"
     }
+  },
+  "search": {
+    "placeholder": "Search templates, submissions, customers...",
+    "aria_label": "Global search",
+    "results_label": "Search results",
+    "recent": "Recent searches",
+    "no_results": "No results found",
+    "group_templates": "Templates",
+    "group_submissions": "Submissions",
+    "group_customers": "Customers"
+  },
+  "quickfill": {
+    "dialog_title": "Quick Fill — Select Customer",
+    "search_placeholder": "Search by name, ID, or phone",
+    "results_label": "Customer search results",
+    "no_results": "No customers found",
+    "unknown_name": "Unknown",
+    "recent_submissions": "recent forms",
+    "select_customer": "Select Customer",
+    "auto_filled_label": "Auto-filled",
+    "save_to_profile": "Save to Profile"
   }
 }

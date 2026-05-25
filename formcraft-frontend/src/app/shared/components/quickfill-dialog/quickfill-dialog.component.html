@@ -1,0 +1,68 @@
+<h2 mat-dialog-title>{{ 'quickfill.dialog_title' | translate }}</h2>
+
+<mat-dialog-content>
+  <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+    <mat-label>{{ 'quickfill.search_placeholder' | translate }}</mat-label>
+    <input
+      matInput
+      type="text"
+      [(ngModel)]="query"
+      (input)="onInput()"
+      [attr.aria-label]="'quickfill.search_placeholder' | translate"
+      autocomplete="off"
+    />
+    <mat-icon matPrefix>search</mat-icon>
+    <mat-spinner *ngIf="loading" matSuffix diameter="20"></mat-spinner>
+  </mat-form-field>
+
+  <div class="customer-results" role="listbox" [attr.aria-label]="'quickfill.results_label' | translate">
+    <div *ngIf="!loading && !customers.length && query.length >= 2" class="empty-state">
+      {{ 'quickfill.no_results' | translate }}
+    </div>
+
+    <div
+      *ngFor="let customer of customers"
+      class="customer-card"
+      [class.selected]="selectedCustomerId === customer.id"
+      role="option"
+      [attr.aria-selected]="selectedCustomerId === customer.id"
+      (click)="selectCustomer(customer)"
+      tabindex="0"
+      (keydown.enter)="selectCustomer(customer)"
+    >
+      <div class="customer-header">
+        <mat-icon class="customer-avatar">person</mat-icon>
+        <div class="customer-name">
+          {{ customer.name_ar || customer.name_en || ('quickfill.unknown_name' | translate) }}
+        </div>
+      </div>
+      <div class="customer-meta">
+        <span class="meta-item">
+          <mat-icon>badge</mat-icon>
+          {{ customer.identifier }}
+        </span>
+        <span class="meta-item" *ngIf="customer.contact_phone">
+          <mat-icon>phone</mat-icon>
+          {{ customer.contact_phone }}
+        </span>
+        <span class="meta-item" *ngIf="customer.recent_submissions_count">
+          <mat-icon>assignment</mat-icon>
+          {{ customer.recent_submissions_count }}
+          {{ 'quickfill.recent_submissions' | translate }}
+        </span>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">{{ 'common.cancel' | translate }}</button>
+  <button
+    mat-raised-button
+    color="primary"
+    [disabled]="!selectedCustomerId"
+    (click)="confirm()"
+  >
+    {{ 'quickfill.select_customer' | translate }}
+  </button>
+</mat-dialog-actions>

@@ -6,6 +6,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
 import { FeedbackRealtimeService } from '../../../features/feedback/services/feedback-realtime.service';
 import { MyFeedbackService } from '../../../features/my-feedback/services/my-feedback.service';
 import { OrgAdminService } from '../../../core/services/org-admin.service';
+import { GlobalSearchBarComponent } from './global-search/global-search-bar.component';
 
 interface ModeTab {
   key: string;
@@ -60,6 +61,11 @@ export function getDefaultRouteForRole(role: string): string {
             <span class="mode-tab-label">{{ tab.labelKey | translate }}</span>
           </a>
         </nav>
+      </ng-container>
+
+      <!-- F037: Global Search Bar -->
+      <ng-container *ngIf="user && showSearchBar">
+        <fc-global-search-bar class="global-search-bar"></fc-global-search-bar>
       </ng-container>
 
       <span class="spacer"></span>
@@ -164,6 +170,11 @@ export function getDefaultRouteForRole(role: string): string {
     .spacer {
       flex: 1 1 auto;
     }
+    .global-search-bar {
+      margin: 0 16px;
+      max-width: 400px;
+      width: 100%;
+    }
     .shell-content {
       height: calc(100vh - 64px);
       overflow: auto;
@@ -185,6 +196,8 @@ export class AppShellComponent implements OnInit, OnDestroy {
   visibleTabs: ModeTab[] = [];
   /** F15: Currently active mode key (studio, desk, admin) */
   activeMode = '';
+  /** F037: Show global search bar for desk and studio modes */
+  showSearchBar = false;
 
   private destroy$ = new Subject<void>();
 
@@ -204,9 +217,11 @@ export class AppShellComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$),
     ).subscribe((e) => {
       this.activeMode = this.detectModeFromUrl(e.urlAfterRedirects || e.url);
+      this.showSearchBar = this.activeMode === 'desk' || this.activeMode === 'studio';
     });
     // Set initial active mode
     this.activeMode = this.detectModeFromUrl(this.router.url);
+    this.showSearchBar = this.activeMode === 'desk' || this.activeMode === 'studio';
 
     this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((u) => {
       this.user = u;
