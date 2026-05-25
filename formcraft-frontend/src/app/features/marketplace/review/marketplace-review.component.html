@@ -1,0 +1,32 @@
+<section class="review-page">
+  <button mat-button [routerLink]="['/marketplace', listingId]">
+    <mat-icon>arrow_back</mat-icon>
+    {{ 'common.back' | translate }}
+  </button>
+
+  <h1>{{ 'marketplace.rateReview' | translate }}</h1>
+
+  <form class="review-form" (ngSubmit)="submit()">
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'marketplace.importId' | translate }}</mat-label>
+      <input matInput name="importId" required [(ngModel)]="form.import_id" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'marketplace.rating' | translate }}</mat-label>
+      <mat-select name="rating" [(ngModel)]="form.rating">
+        <mat-option *ngFor="let rating of [1, 2, 3, 4, 5]" [value]="rating">{{ rating }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'marketplace.reviewText' | translate }}</mat-label>
+      <textarea matInput name="reviewText" rows="5" [(ngModel)]="form.review_text"></textarea>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" type="submit" [disabled]="saving || !form.import_id">
+      <mat-icon>star</mat-icon>
+      {{ 'marketplace.submitReview' | translate }}
+    </button>
+  </form>
+</section>

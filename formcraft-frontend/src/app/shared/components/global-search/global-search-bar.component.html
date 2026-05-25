@@ -1,0 +1,63 @@
+<div class="global-search-container" role="search" aria-label="{{ 'search.aria_label' | translate }}">
+  <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+    <mat-label>{{ 'search.placeholder' | translate }}</mat-label>
+    <input
+      #searchInput
+      matInput
+      type="text"
+      [(ngModel)]="query"
+      (input)="onInput()"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+      (keydown)="onKeydown($event)"
+      [attr.aria-label]="'search.aria_label' | translate"
+      autocomplete="off"
+    />
+    <mat-icon matPrefix>search</mat-icon>
+    <mat-spinner *ngIf="loading" matSuffix diameter="20"></mat-spinner>
+  </mat-form-field>
+
+  <div class="search-results" *ngIf="showResults" role="listbox" [attr.aria-label]="'search.results_label' | translate">
+    <!-- Recent searches when query is empty -->
+    <div *ngIf="!query && recentSearches.length" class="recent-searches">
+      <div class="group-header">{{ 'search.recent' | translate }}</div>
+      <div
+        *ngFor="let recent of recentSearches; let i = index"
+        class="result-item"
+        role="option"
+        (mousedown)="query = recent; onInput(); $event.preventDefault()"
+      >
+        <mat-icon>history</mat-icon>
+        <span>{{ recent }}</span>
+      </div>
+    </div>
+
+    <!-- Grouped results -->
+    <ng-container *ngIf="query">
+      <div *ngIf="!results.length && !loading" class="empty-state">
+        {{ 'search.no_results' | translate }}
+      </div>
+
+      <ng-container *ngFor="let type of ['template', 'submission', 'customer']">
+        <ng-container *ngIf="resultsByType(type).length">
+          <div class="group-header">{{ groupLabel(type) | translate }}</div>
+          <div
+            *ngFor="let result of resultsByType(type); let i = index"
+            class="result-item"
+            [class.selected]="selectedIndex === globalIndex(result)"
+            role="option"
+            (mousedown)="selectResult(result); $event.preventDefault()"
+          >
+            <mat-icon *ngIf="result.type === 'template'">description</mat-icon>
+            <mat-icon *ngIf="result.type === 'submission'">assignment</mat-icon>
+            <mat-icon *ngIf="result.type === 'customer'">person</mat-icon>
+            <div class="result-meta">
+              <div class="result-title">{{ result.title }}</div>
+              <div class="result-subtitle">{{ result.subtitle }}</div>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

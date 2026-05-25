@@ -32,6 +32,7 @@ import { RouterModule } from '@angular/router';
 import { AutoDirDirective } from './directives/auto-dir.directive';
 import { AppShellComponent } from './components/app-shell/app-shell.component';
 import { ThreadComponent } from './components/thread/thread.component';
+import { GlobalSearchBarComponent } from './components/global-search/global-search-bar.component';
 
 const MATERIAL_MODULES = [
   MatButtonModule,
@@ -62,7 +63,7 @@ const MATERIAL_MODULES = [
 
 @NgModule({
   declarations: [AutoDirDirective, AppShellComponent, ThreadComponent],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, RouterModule, ...MATERIAL_MODULES],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, RouterModule, GlobalSearchBarComponent, ...MATERIAL_MODULES],
   exports: [
     CommonModule,
     FormsModule,

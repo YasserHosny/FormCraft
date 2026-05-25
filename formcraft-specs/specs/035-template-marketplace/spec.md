@@ -5,6 +5,16 @@
 **Status**: Draft  
 **Vision Reference**: EXT-02
 
+## Clarifications
+
+### Session 2026-05-26
+
+- Q: How should imported templates behave when the publisher updates the marketplace listing later? → A: Imported templates remain immutable snapshots; updates are offered as optional re-imports.
+- Q: How should premium template payments be implemented for this increment? → A: Use a pluggable payment-provider adapter with internal transaction and revenue-share records; no live gateway dependency is required for MVP.
+- Q: How should premium template refunds be handled? → A: Refunds are manual admin adjustments recorded as transaction reversals; imported drafts remain available unless an admin revokes them.
+- Q: What happens when a publisher organization's subscription lapses? → A: Active listings are suspended from marketplace discovery and purchase/import while existing consumer imports remain usable.
+- Q: How should cross-org cloning handle org-specific reference data, validators, and custom fields? → A: Strip org-owned identifiers, require reference remapping before activation, and disable unsupported validators/fields with warnings.
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Browse & Import Templates (Priority: P1)
@@ -21,6 +31,7 @@ As an org admin, I need to browse a curated marketplace of form templates, previ
 2. **Given** admin clicks a template card, **When** the preview opens, **Then** a read-only canvas view and sample PDF are shown.
 3. **Given** admin clicks "Use Template" on a free template, **When** confirmed, **Then** the template is cloned into the admin's org as a new draft with all elements, validators, and bindings intact.
 4. **Given** the imported template references org-specific reference data, **When** import completes, **Then** a mapping wizard helps remap bindings to the consumer org's reference lists.
+5. **Given** a publisher updates a marketplace listing after another org imported it, **When** the consumer views the imported template, **Then** the draft remains an immutable snapshot and the update is available only through optional re-import.
 
 ---
 
@@ -37,6 +48,7 @@ As an org admin, I need to publish a finalized template to the marketplace with 
 1. **Given** admin selects a published template, **When** they click "Publish to Marketplace", **Then** a form shows: description, tags, preview images upload, compliance standard checkboxes, pricing (free/premium with amount).
 2. **Given** admin submits the listing, **When** the FormCraft review team approves it, **Then** the template appears in the marketplace with the org's attribution.
 3. **Given** admin publishes a premium template at $50, **When** another org purchases it, **Then** a 70/30 revenue share is recorded (70% publisher, 30% platform).
+4. **Given** a publisher organization's subscription lapses, **When** the marketplace catalog is refreshed, **Then** the publisher's active listings are suspended from discovery and new purchase/import while existing consumer imports remain usable.
 
 ---
 
@@ -58,10 +70,10 @@ As a marketplace user, I need to rate and review templates I've imported so I ca
 
 ### Edge Cases
 
-- What happens when a publisher updates a marketplace template that others have already imported?
-- How does the system handle premium template refunds?
-- What happens when a publisher's org subscription lapses but their templates are in the marketplace?
-- How does cross-org cloning handle org-specific validators or custom fields?
+- Publisher updates to marketplace templates do not mutate existing consumer drafts; consumers may optionally re-import the updated listing as a new draft.
+- Premium template refunds are manual admin transaction reversals and do not delete imported drafts unless an admin explicitly revokes access.
+- Publisher subscription lapses suspend active listings from discovery and new purchase/import; existing imports remain usable.
+- Cross-org cloning strips org-owned identifiers, requires reference remapping before activation, and disables unsupported validators or custom fields with warnings.
 
 ## Requirements
 
@@ -71,18 +83,23 @@ As a marketplace user, I need to rate and review templates I've imported so I ca
 - **FR-002**: Marketplace MUST support filtering by country, category, language, compliance standard, and price.
 - **FR-003**: Template previews MUST show read-only canvas view and sample PDF.
 - **FR-004**: "Use Template" MUST clone the template into the consumer org as a new draft with org-specific data stripped.
+- **FR-004a**: Imported templates MUST be immutable snapshots; marketplace listing updates MUST NOT mutate existing consumer drafts.
 - **FR-005**: System MUST support a publisher flow with description, tags, images, compliance certifications, and pricing.
 - **FR-006**: Marketplace listings MUST be reviewed and approved by the FormCraft team before going live.
 - **FR-007**: System MUST support ratings (1-5 stars) and text reviews from verified importers.
 - **FR-008**: System MUST track download counts and display them on listings.
 - **FR-009**: Premium templates MUST support payment processing with 70/30 revenue share.
+- **FR-009a**: Premium template payments MUST use a pluggable provider adapter and persist transaction, refund, and revenue-share states internally.
 - **FR-010**: All marketplace transactions MUST be recorded in the audit log.
+- **FR-011**: Publisher listings MUST be suspended from discovery and new imports when the publisher organization is not marketplace-eligible.
+- **FR-012**: Cross-org import MUST require reference remapping before activation and MUST disable unsupported validators/custom fields with visible warnings.
 
 ### Key Entities
 
 - **Marketplace Listing**: Template reference, publisher org, description, tags, images, compliance badges, price, approval status, download count, average rating.
 - **Marketplace Review**: Reviewer org, rating (1-5), review text, date, verified import flag.
-- **Marketplace Transaction**: Listing, consumer org, price, revenue share, payment status, import timestamp.
+- **Marketplace Transaction**: Listing, consumer org, price, revenue share, payment status, refund/reversal state, import timestamp.
+- **Marketplace Import**: Listing snapshot, consumer org, draft template reference, remapping status, disabled dependency warnings, imported version.
 
 ## Success Criteria
 

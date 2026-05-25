@@ -22,7 +22,8 @@
     "previous": "Previous",
     "none": "None",
     "all": "All",
-    "view": "View"
+    "view": "View",
+    "clear": "Clear"
   },
   "adminExport": {
     "title": "Data Export",
@@ -83,6 +84,43 @@
     "deliveryLogs": "Delivery logs",
     "payloadPreview": "Payload preview",
     "responseSummary": "Response summary"
+  },
+  "marketplace": {
+    "title": "Template Marketplace",
+    "subtitle": "Browse approved templates and import them as organization drafts.",
+    "publish": "Publish to Marketplace",
+    "price": "Price",
+    "free": "Free",
+    "premium": "Premium",
+    "sort": "Sort",
+    "qualityScore": "Quality score",
+    "downloads": "Downloads",
+    "rating": "Rating",
+    "useTemplate": "Use Template",
+    "canvasPreview": "Canvas preview",
+    "pdfPreview": "PDF preview",
+    "readOnlyPreview": "Read-only template preview",
+    "openPdf": "Open PDF",
+    "noPdf": "No sample PDF available",
+    "dependencies": "Dependencies",
+    "noWarnings": "No dependency warnings",
+    "templateId": "Template ID",
+    "tags": "Tags",
+    "previewImages": "Preview image URLs",
+    "complianceBadges": "Compliance badges",
+    "amount": "Amount",
+    "submitForReview": "Submit for review",
+    "rateReview": "Rate and review",
+    "importId": "Import ID",
+    "reviewText": "Review text",
+    "submitReview": "Submit review",
+    "purchaseFailed": "Purchase failed",
+    "imported": "Template imported",
+    "importFailed": "Import failed",
+    "submitted": "Listing submitted",
+    "submitFailed": "Listing submission failed",
+    "reviewSaved": "Review saved",
+    "reviewFailed": "Review failed"
   },
   "auth": {
     "login": "Sign In",
@@ -958,5 +996,26 @@
       "customSizeRequired": "Custom width and height are required",
       "marginRange": "Margin must be between 0 and 50 mm"
     }
+  },
+  "search": {
+    "placeholder": "Search templates, submissions, customers...",
+    "aria_label": "Global search",
+    "results_label": "Search results",
+    "recent": "Recent searches",
+    "no_results": "No results found",
+    "group_templates": "Templates",
+    "group_submissions": "Submissions",
+    "group_customers": "Customers"
+  },
+  "quickfill": {
+    "dialog_title": "Quick Fill — Select Customer",
+    "search_placeholder": "Search by name, ID, or phone",
+    "results_label": "Customer search results",
+    "no_results": "No customers found",
+    "unknown_name": "Unknown",
+    "recent_submissions": "recent forms",
+    "select_customer": "Select Customer",
+    "auto_filled_label": "Auto-filled",
+    "save_to_profile": "Save to Profile"
   }
 }

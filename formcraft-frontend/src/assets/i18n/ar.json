@@ -22,7 +22,8 @@
     "previous": "السابق",
     "none": "بدون",
     "all": "الكل",
-    "view": "عرض"
+    "view": "عرض",
+    "clear": "مسح"
   },
   "adminExport": {
     "title": "تصدير البيانات",
@@ -83,6 +84,43 @@
     "deliveryLogs": "سجلات الإرسال",
     "payloadPreview": "معاينة الحمولة",
     "responseSummary": "ملخص الاستجابة"
+  },
+  "marketplace": {
+    "title": "سوق القوالب",
+    "subtitle": "استعرض القوالب المعتمدة واستوردها كمسودات للمؤسسة.",
+    "publish": "نشر في السوق",
+    "price": "السعر",
+    "free": "مجاني",
+    "premium": "مدفوع",
+    "sort": "الترتيب",
+    "qualityScore": "درجة الجودة",
+    "downloads": "التنزيلات",
+    "rating": "التقييم",
+    "useTemplate": "استخدام القالب",
+    "canvasPreview": "معاينة اللوحة",
+    "pdfPreview": "معاينة PDF",
+    "readOnlyPreview": "معاينة قالب للقراءة فقط",
+    "openPdf": "فتح PDF",
+    "noPdf": "لا توجد عينة PDF",
+    "dependencies": "الاعتماديات",
+    "noWarnings": "لا توجد تحذيرات اعتماديات",
+    "templateId": "معرف القالب",
+    "tags": "الوسوم",
+    "previewImages": "روابط صور المعاينة",
+    "complianceBadges": "شارات الامتثال",
+    "amount": "المبلغ",
+    "submitForReview": "إرسال للمراجعة",
+    "rateReview": "تقييم ومراجعة",
+    "importId": "معرف الاستيراد",
+    "reviewText": "نص المراجعة",
+    "submitReview": "إرسال المراجعة",
+    "purchaseFailed": "فشلت عملية الشراء",
+    "imported": "تم استيراد القالب",
+    "importFailed": "فشل الاستيراد",
+    "submitted": "تم إرسال الإدراج",
+    "submitFailed": "فشل إرسال الإدراج",
+    "reviewSaved": "تم حفظ المراجعة",
+    "reviewFailed": "فشل حفظ المراجعة"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -952,5 +990,26 @@
       "customSizeRequired": "العرض والارتفاع المخصصان مطلوبان",
       "marginRange": "يجب أن يكون الهامش بين 0 و 50 مم"
     }
+  },
+  "search": {
+    "placeholder": "ابحث في النماذج والتسليمات والعملاء...",
+    "aria_label": "البحث العام",
+    "results_label": "نتائج البحث",
+    "recent": "عمليات البحث الأخيرة",
+    "no_results": "لم يُعثر على نتائج",
+    "group_templates": "النماذج",
+    "group_submissions": "التسليمات",
+    "group_customers": "العملاء"
+  },
+  "quickfill": {
+    "dialog_title": "التعبئة السريعة — اختر عميل",
+    "search_placeholder": "ابحث بالاسم أو الهوية أو الهاتف",
+    "results_label": "نتائج البحث عن العملاء",
+    "no_results": "لم يُعثر على عملاء",
+    "unknown_name": "غير معروف",
+    "recent_submissions": "نماذج حديثة",
+    "select_customer": "اختر العميل",
+    "auto_filled_label": "مملوء تلقائياً",
+    "save_to_profile": "حفظ في الملف الشخصي"
   }
 }

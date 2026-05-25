@@ -1,0 +1,18 @@
+.review-page {
+  padding: 24px;
+}
+
+h1 {
+  font-size: 28px;
+  margin: 16px 0 24px;
+}
+
+.review-form {
+  display: grid;
+  gap: 16px;
+  max-width: 640px;
+}
+
+button[type='submit'] {
+  justify-self: start;
+}
