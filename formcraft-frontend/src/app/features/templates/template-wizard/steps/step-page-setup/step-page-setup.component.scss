@@ -1,0 +1,41 @@
+.step-page-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  width: 100%;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.half-width {
+  width: 48%;
+}
+
+.custom-size {
+  display: flex;
+  gap: 16px;
+}
+
+.orientation-label,
+.margins-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.orientation-group {
+  display: flex;
+  gap: 24px;
+}
+
+.margins-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}

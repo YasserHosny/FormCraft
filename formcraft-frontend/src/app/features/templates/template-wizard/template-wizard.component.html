@@ -1,0 +1,49 @@
+<div class="wizard-container">
+  <h1 class="wizard-title">{{ 'templateWizard.title' | translate }}</h1>
+
+  <mat-stepper linear (selectionChange)="onStepChange($event)" #stepper>
+    <!-- Step 1: Basic Info -->
+    <mat-step [stepControl]="basicInfoForm" [label]="'templateWizard.stepBasicInfo' | translate">
+      <fc-step-basic-info
+        [form]="basicInfoForm"
+        [categories]="categories"
+        (clearState)="onClearState()"
+      ></fc-step-basic-info>
+      <div class="step-actions">
+        <button mat-raised-button color="primary" matStepperNext [disabled]="basicInfoForm.invalid">
+          {{ 'common.next' | translate }}
+        </button>
+      </div>
+    </mat-step>
+
+    <!-- Step 2: Locale -->
+    <mat-step [stepControl]="localeForm" [label]="'templateWizard.stepLocale' | translate">
+      <fc-step-locale [form]="localeForm"></fc-step-locale>
+      <div class="step-actions">
+        <button mat-button matStepperPrevious>{{ 'common.back' | translate }}</button>
+        <button mat-raised-button color="primary" matStepperNext [disabled]="localeForm.invalid">
+          {{ 'common.next' | translate }}
+        </button>
+      </div>
+    </mat-step>
+
+    <!-- Step 3: Page Setup -->
+    <mat-step [stepControl]="pageSetupForm" [label]="'templateWizard.stepPageSetup' | translate">
+      <fc-step-page-setup [form]="pageSetupForm"></fc-step-page-setup>
+      <div class="step-actions">
+        <button mat-button matStepperPrevious>{{ 'common.back' | translate }}</button>
+        <button mat-raised-button color="primary" matStepperNext [disabled]="pageSetupForm.invalid">
+          {{ 'common.next' | translate }}
+        </button>
+      </div>
+    </mat-step>
+
+    <!-- Step 4: Starting Point -->
+    <mat-step [stepControl]="startingPointForm" [label]="'templateWizard.stepStartingPoint' | translate">
+      <fc-step-starting-point [form]="startingPointForm" (create)="onCreate()"></fc-step-starting-point>
+      <div class="step-actions">
+        <button mat-button matStepperPrevious>{{ 'common.back' | translate }}</button>
+      </div>
+    </mat-step>
+  </mat-stepper>
+</div>

@@ -1,0 +1,43 @@
+.step-starting-point {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.option-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+  border: 2px solid transparent;
+}
+
+.option-card:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.option-card.selected {
+  border-color: #1976d2;
+  background-color: rgba(25, 118, 210, 0.08);
+}
+
+.option-card mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 8px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}

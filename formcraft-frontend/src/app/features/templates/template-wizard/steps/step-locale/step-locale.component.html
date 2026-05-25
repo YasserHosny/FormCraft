@@ -1,0 +1,28 @@
+<form [formGroup]="form" class="step-locale">
+  <div class="form-row">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'templateWizard.languageLabel' | translate }}</mat-label>
+      <mat-select formControlName="language">
+        <mat-option *ngFor="let lang of languages" [value]="lang.value">{{ lang.label }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="form-row">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'templateWizard.countryLabel' | translate }}</mat-label>
+      <mat-select formControlName="country">
+        <mat-option *ngFor="let c of countries" [value]="c.value">{{ c.label }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="form-row">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'templateWizard.currencyLabel' | translate }}</mat-label>
+      <mat-select formControlName="currency">
+        <mat-option *ngFor="let curr of currencies" [value]="curr">{{ curr }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</form>

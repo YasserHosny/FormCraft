@@ -37,6 +37,11 @@ class Page(BaseModel):
     template_id: UUID
     width_mm: float = 210
     height_mm: float = 297
+    orientation: str = "portrait"
+    margin_top_mm: float = 10.0
+    margin_bottom_mm: float = 10.0
+    margin_left_mm: float = 10.0
+    margin_right_mm: float = 10.0
     background_asset: str | None = None
     sort_order: int = 0
     created_at: datetime
@@ -53,6 +58,8 @@ class Template(BaseModel):
     version: int = 1
     language: Language = Language.AR
     country: Country = Country.EG
+    currency: str = "EGP"
+    tags: list[str] = []
     created_at: datetime
     updated_at: datetime
     created_by: UUID

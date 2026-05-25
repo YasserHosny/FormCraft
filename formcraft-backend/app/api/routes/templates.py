@@ -15,8 +15,11 @@ from app.schemas.element import (
 )
 from app.schemas.page import CreatePageRequest, ReorderPagesRequest, UpdatePageRequest
 from app.schemas.template import (
+    ClonePreviewResponse,
     CloneRequest,
     CreateTemplateRequest,
+    OrgCategoryListResponse,
+    PackageImportPreviewResponse,
     TransitionRequest,
     UpdateTemplateRequest,
 )
@@ -216,10 +219,16 @@ async def clone_template(
         UserProfile, Depends(require_role(Role.ADMIN, Role.DESIGNER))
     ],
     body: CloneRequest | None = None,
+    preview: bool = Query(False),
 ):
     client = get_supabase_client()
     service = TemplateService(client)
     name = body.name if body else None
+    if preview:
+        result = await service.preview_clone(
+            template_id, user_id=current_user.id
+        )
+        return result
     result = await service.clone_template(
         template_id, name=name, user_id=current_user.id
     )
@@ -478,4 +487,46 @@ async def update_print_settings(
         template_id=template_id,
         print_mode=body.print_mode,
         org_id=current_user.org_id,
+    )
+
+
+# --- Org Categories ---
+
+
+@router.get("/org-categories")
+async def list_org_categories(
+    current_user: Annotated[UserProfile, Depends(get_current_user)],
+):
+    if not current_user.org_id:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="User must belong to an organization",
+        )
+    client = get_supabase_client()
+    result = (
+        client.table("org_categories")
+        .select("id, name, is_system_default")
+        .eq("org_id", str(current_user.org_id))
+        .order("sort_order")
+        .execute()
+    )
+    items = result.data or []
+    return OrgCategoryListResponse(
+        items=[{"id": i["id"], "name": i["name"], "is_system_default": i["is_system_default"]} for i in items]
+    )
+
+
+# --- Package Import ---
+
+
+@router.post("/import-package")
+async def import_package_preview(
+    request: Request,
+    current_user: Annotated[
+        UserProfile, Depends(require_role(Role.ADMIN, Role.DESIGNER))
+    ],
+):
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail="Package import preview not yet implemented",
     )

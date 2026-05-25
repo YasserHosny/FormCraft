@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TemplateService } from '../../../core/services/template.service';
-import { TemplateCreateDialogComponent } from '../template-create-dialog/template-create-dialog.component';
 import { CloneDialogComponent } from '../clone-dialog/clone-dialog.component';
 
 @Component({
@@ -35,15 +34,7 @@ export class TemplateListComponent implements OnInit {
   }
 
   createTemplate(): void {
-    const dialogRef = this.dialog.open(TemplateCreateDialogComponent, {
-      width: '520px',
-      disableClose: true,
-    });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.loadTemplates();
-      }
-    });
+    this.router.navigate(['/templates/new']);
   }
 
   createNewVersion(template: any): void {

@@ -1,0 +1,19 @@
+<div [formGroup]="form" class="step-starting-point">
+  <div class="options-grid">
+    <mat-card
+      *ngFor="let option of options"
+      class="option-card"
+      [class.selected]="form.get('type')?.value === option.value"
+      (click)="form.patchValue({ type: option.value })"
+    >
+      <mat-icon>{{ option.icon }}</mat-icon>
+      <span>{{ option.label | translate }}</span>
+    </mat-card>
+  </div>
+
+  <div class="actions">
+    <button mat-raised-button color="primary" (click)="onCreate()" [disabled]="form.invalid">
+      {{ 'templateWizard.createButton' | translate }}
+    </button>
+  </div>
+</div>

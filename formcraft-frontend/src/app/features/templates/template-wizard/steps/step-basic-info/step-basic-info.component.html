@@ -1,0 +1,62 @@
+<form [formGroup]="form" class="step-basic-info">
+  <div class="form-row">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'templateWizard.nameLabel' | translate }}</mat-label>
+      <input matInput formControlName="name" [placeholder]="'templateWizard.namePlaceholder' | translate" fcAutoDir />
+      <mat-error *ngIf="form.get('name')?.hasError('required')">
+        {{ 'templateWizard.validation.nameRequired' | translate }}
+      </mat-error>
+      <mat-error *ngIf="form.get('name')?.hasError('maxlength')">
+        {{ 'templateWizard.validation.nameMaxLength' | translate }}
+      </mat-error>
+    </mat-form-field>
+  </div>
+
+  <div class="form-row">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'templateWizard.descriptionLabel' | translate }}</mat-label>
+      <textarea matInput formControlName="description" [placeholder]="'templateWizard.descriptionPlaceholder' | translate" rows="3"></textarea>
+      <mat-error *ngIf="form.get('description')?.hasError('maxlength')">
+        {{ 'templateWizard.validation.descriptionMaxLength' | translate }}
+      </mat-error>
+    </mat-form-field>
+  </div>
+
+  <div class="form-row">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'templateWizard.categoryLabel' | translate }}</mat-label>
+      <mat-select formControlName="category">
+        <mat-option *ngFor="let cat of categories" [value]="cat.name">{{ cat.name }}</mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.get('category')?.hasError('required')">
+        {{ 'common.required' | translate }}
+      </mat-error>
+    </mat-form-field>
+  </div>
+
+  <div class="form-row">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'templateWizard.tagsLabel' | translate }}</mat-label>
+      <mat-chip-grid #chipGrid aria-label="Tag selection">
+        <mat-chip-row *ngFor="let tag of form.value.tags" (removed)="removeTag(tag)">
+          {{ tag }}
+          <button matChipRemove [attr.aria-label]="'remove ' + tag">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip-row>
+        <input
+          [matChipInputFor]="chipGrid"
+          [matChipInputSeparatorKeyCodes]="[13, 188]"
+          (matChipInputTokenEnd)="addTag($event)"
+          [placeholder]="'templateWizard.tagsPlaceholder' | translate"
+        />
+      </mat-chip-grid>
+    </mat-form-field>
+  </div>
+
+  <div class="form-row actions">
+    <button mat-button type="button" color="warn" (click)="onClear()">
+      {{ 'templateWizard.clearAndStartOver' | translate }}
+    </button>
+  </div>
+</form>

@@ -1,16 +1,34 @@
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.models.enums import Country, Language, TemplateStatus
 
 
+class Margins(BaseModel):
+    top: float = Field(10.0, ge=0, le=50)
+    bottom: float = Field(10.0, ge=0, le=50)
+    left: float = Field(10.0, ge=0, le=50)
+    right: float = Field(10.0, ge=0, le=50)
+
+
+class PageSetup(BaseModel):
+    page_size: str = "A4"
+    custom_width_mm: float | None = Field(None, ge=50, le=1000)
+    custom_height_mm: float | None = Field(None, ge=50, le=1000)
+    orientation: str = "portrait"
+    margins: Margins = Margins()
+
+
 class CreateTemplateRequest(BaseModel):
-    name: str
-    description: str = ""
-    category: str = "general"
+    name: str = Field(..., max_length=100)
+    description: str = Field("", max_length=500)
+    category: str = Field("general", max_length=100)
     language: Language = Language.AR
     country: Country = Country.EG
+    currency: str = Field("EGP", max_length=10)
+    tags: list[str] = Field(default_factory=list, max_length=10)
+    page_setup: PageSetup | None = None
 
 
 class UpdateTemplateRequest(BaseModel):
@@ -112,6 +130,8 @@ class TemplateListResponse(BaseModel):
     parent_version_id: UUID | None = None
     language: Language
     country: Country
+    currency: str
+    tags: list[str]
     created_at: str
     updated_at: str
 
@@ -119,3 +139,33 @@ class TemplateListResponse(BaseModel):
 class TemplateResponse(TemplateListResponse):
     created_by: UUID
     pages: list = []
+
+
+class ClonePreviewResponse(BaseModel):
+    template_id: UUID
+    name: str
+    thumbnail_url: str | None = None
+    page_count: int
+    element_count: int
+    reference_binding_warnings: list[dict] = []
+
+
+class PackageImportPreviewResponse(BaseModel):
+    name: str
+    page_count: int
+    element_count: int
+    formcraft_version: str
+    version_compatible: bool
+    version_warning: str | None = None
+    missing_bindings: list[dict] = []
+    can_import: bool
+
+
+class OrgCategoryResponse(BaseModel):
+    id: UUID
+    name: str
+    is_system_default: bool
+
+
+class OrgCategoryListResponse(BaseModel):
+    items: list[OrgCategoryResponse]

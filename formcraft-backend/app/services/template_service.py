@@ -180,6 +180,7 @@ class TemplateService:
         self, data: dict, user_id: UUID, org_id: UUID | None = None
     ) -> dict:
         new_id = str(uuid4())
+        page_setup = data.pop("page_setup", None) or {}
         template_data = {
             **data,
             "id": new_id,
@@ -192,10 +193,35 @@ class TemplateService:
         result = self.client.table("templates").insert(template_data).execute()
         template = result.data[0]
 
+        page_size = page_setup.get("page_size", "A4")
+        orientation = page_setup.get("orientation", "portrait")
+        margins = page_setup.get("margins", {})
+
+        preset_sizes = {
+            "A4": (210, 297),
+            "A3": (297, 420),
+            "Letter": (216, 279),
+            "Legal": (216, 356),
+        }
+
+        if page_size == "Custom":
+            width = page_setup.get("custom_width_mm", 210)
+            height = page_setup.get("custom_height_mm", 297)
+        else:
+            width, height = preset_sizes.get(page_size, (210, 297))
+
+        if orientation == "landscape":
+            width, height = height, width
+
         page_data = {
             "template_id": template["id"],
-            "width_mm": 210,
-            "height_mm": 297,
+            "width_mm": width,
+            "height_mm": height,
+            "orientation": orientation,
+            "margin_top_mm": margins.get("top", 10.0),
+            "margin_bottom_mm": margins.get("bottom", 10.0),
+            "margin_left_mm": margins.get("left", 10.0),
+            "margin_right_mm": margins.get("right", 10.0),
             "sort_order": 0,
         }
         self.client.table("pages").insert(page_data).execute()
@@ -583,6 +609,8 @@ class TemplateService:
             "category": source.get("category", ""),
             "language": source.get("language", "ar"),
             "country": source.get("country", "EG"),
+            "currency": source.get("currency", "EGP"),
+            "tags": source.get("tags", []),
             "status": "draft",
             "version": new_version,
             "created_by": str(user_id),
@@ -600,6 +628,11 @@ class TemplateService:
                 "template_id": new_template["id"],
                 "width_mm": page["width_mm"],
                 "height_mm": page["height_mm"],
+                "orientation": page.get("orientation", "portrait"),
+                "margin_top_mm": page.get("margin_top_mm", 10.0),
+                "margin_bottom_mm": page.get("margin_bottom_mm", 10.0),
+                "margin_left_mm": page.get("margin_left_mm", 10.0),
+                "margin_right_mm": page.get("margin_right_mm", 10.0),
                 "background_asset": page.get("background_asset"),
                 "sort_order": page["sort_order"],
             }
@@ -653,6 +686,8 @@ class TemplateService:
             "category": source.get("category", ""),
             "language": source.get("language", "ar"),
             "country": source.get("country", "EG"),
+            "currency": source.get("currency", "EGP"),
+            "tags": source.get("tags", []),
             "status": "draft",
             "version": 1,
             "created_by": str(user_id),
@@ -667,6 +702,11 @@ class TemplateService:
                 "template_id": new_template["id"],
                 "width_mm": page["width_mm"],
                 "height_mm": page["height_mm"],
+                "orientation": page.get("orientation", "portrait"),
+                "margin_top_mm": page.get("margin_top_mm", 10.0),
+                "margin_bottom_mm": page.get("margin_bottom_mm", 10.0),
+                "margin_left_mm": page.get("margin_left_mm", 10.0),
+                "margin_right_mm": page.get("margin_right_mm", 10.0),
                 "background_asset": page.get("background_asset"),
                 "sort_order": page["sort_order"],
             }
@@ -706,6 +746,22 @@ class TemplateService:
         )
 
         return await self.get_template(UUID(new_template["id"]))
+
+    async def preview_clone(self, template_id: UUID, user_id: UUID) -> dict:
+        source = await self.get_template(template_id)
+        page_count = len(source.get("pages", []))
+        element_count = sum(
+            len(page.get("elements", [])) for page in source.get("pages", [])
+        )
+        warnings = []
+        return {
+            "template_id": str(template_id),
+            "name": source["name"],
+            "thumbnail_url": None,
+            "page_count": page_count,
+            "element_count": element_count,
+            "reference_binding_warnings": warnings,
+        }
 
     async def get_version_history(self, template_id: UUID) -> dict:
         template = await self.get_template(template_id)

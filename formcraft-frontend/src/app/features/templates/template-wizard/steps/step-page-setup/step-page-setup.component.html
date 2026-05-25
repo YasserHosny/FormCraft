@@ -1,0 +1,51 @@
+<form [formGroup]="form" class="step-page-setup">
+  <div class="form-row">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'templateWizard.pageSizeLabel' | translate }}</mat-label>
+      <mat-select formControlName="pageSize">
+        <mat-option *ngFor="let size of pageSizes" [value]="size.value">{{ size.label }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="form-row custom-size" *ngIf="isCustom">
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>{{ 'templateWizard.customWidthLabel' | translate }}</mat-label>
+      <input matInput type="number" formControlName="customWidthMm" min="50" max="1000" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>{{ 'templateWizard.customHeightLabel' | translate }}</mat-label>
+      <input matInput type="number" formControlName="customHeightMm" min="50" max="1000" />
+    </mat-form-field>
+  </div>
+
+  <div class="form-row">
+    <label class="orientation-label">{{ 'templateWizard.orientationLabel' | translate }}</label>
+    <mat-radio-group formControlName="orientation" class="orientation-group">
+      <mat-radio-button value="portrait">{{ 'templateWizard.orientationPortrait' | translate }}</mat-radio-button>
+      <mat-radio-button value="landscape">{{ 'templateWizard.orientationLandscape' | translate }}</mat-radio-button>
+    </mat-radio-group>
+  </div>
+
+  <div class="form-row margins" formGroupName="margins">
+    <label class="margins-label">{{ 'templateWizard.marginsLabel' | translate }}</label>
+    <div class="margins-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'templateWizard.marginTop' | translate }}</mat-label>
+        <input matInput type="number" formControlName="top" min="0" max="50" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'templateWizard.marginBottom' | translate }}</mat-label>
+        <input matInput type="number" formControlName="bottom" min="0" max="50" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'templateWizard.marginLeft' | translate }}</mat-label>
+        <input matInput type="number" formControlName="left" min="0" max="50" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'templateWizard.marginRight' | translate }}</mat-label>
+        <input matInput type="number" formControlName="right" min="0" max="50" />
+      </mat-form-field>
+    </div>
+  </div>
+</form>

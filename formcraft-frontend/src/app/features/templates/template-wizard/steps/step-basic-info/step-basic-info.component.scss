@@ -1,0 +1,19 @@
+.step-basic-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  width: 100%;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 8px;
+}
