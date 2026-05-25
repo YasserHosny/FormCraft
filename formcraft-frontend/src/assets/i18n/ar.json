@@ -946,5 +946,26 @@
       "testDelivery": "اختبار التوصيل",
       "deliveries": "سجل التوصيل"
     }
+  },
+  "search": {
+    "placeholder": "ابحث في النماذج والتسليمات والعملاء...",
+    "aria_label": "البحث العام",
+    "results_label": "نتائج البحث",
+    "recent": "عمليات البحث الأخيرة",
+    "no_results": "لم يُعثر على نتائج",
+    "group_templates": "النماذج",
+    "group_submissions": "التسليمات",
+    "group_customers": "العملاء"
+  },
+  "quickfill": {
+    "dialog_title": "التعبئة السريعة — اختر عميل",
+    "search_placeholder": "ابحث بالاسم أو الهوية أو الهاتف",
+    "results_label": "نتائج البحث عن العملاء",
+    "no_results": "لم يُعثر على عملاء",
+    "unknown_name": "غير معروف",
+    "recent_submissions": "نماذج حديثة",
+    "select_customer": "اختر العميل",
+    "auto_filled_label": "مملوء تلقائياً",
+    "save_to_profile": "حفظ في الملف الشخصي"
   }
 }
