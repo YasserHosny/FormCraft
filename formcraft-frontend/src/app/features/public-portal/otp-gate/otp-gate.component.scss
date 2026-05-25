@@ -1,0 +1,65 @@
+.otp-gate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 16px;
+  background: #f8f9fa;
+}
+
+.otp-card {
+  max-width: 480px;
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.send-section,
+.verify-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mode-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contact-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contact-input input,
+.verify-section input {
+  padding: 10px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.error {
+  color: #dc3545;
+  background: #f8d7da;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.lockout-timer {
+  color: #6c757d;
+  font-size: 13px;
+  margin-top: 10px;
+}

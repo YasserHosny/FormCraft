@@ -11,6 +11,8 @@ Auto-generated from all feature plans. Last updated: 2026-05-25
 - Supabase PostgreSQL; extend existing `templates`, `pages`, `elements`, `form_submissions`, `profiles`, `departments`, `branches`, `audit_logs`; add export schedule/delivery, integration credential, webhook subscription/delivery tables (032-data-export-integration)
 - Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, openpyxl, WeasyPrint, APScheduler, matplotlib, ng2-charts/Chart.js (033-operational-reports)
 - Supabase PostgreSQL; extend existing `templates`, `pages`, `elements`, `submissions`, `profiles`, `departments`, `branches`; add `report_templates`, `report_schedules`, `report_archives` tables (033-operational-reports)
+- Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, Zod, Pydantic, existing validation/condition/tafqeet services, existing PDF renderer, existing notification/email infrastructure, pluggable SMS provider adapter, hCaptcha/reCAPTCHA adapter (034-external-form-portal-plan)
+- Supabase PostgreSQL; extend existing `organizations`, `org_settings`, `templates`, `pages`, `elements`, `submissions`, `profiles`, `audit_logs`; add portal configuration/session/OTP/rate-limit/public-submission metadata tables (034-external-form-portal-plan)
 
 - Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Storage + Auth), Angular Material (001-customer-feedback)
 
@@ -39,6 +41,7 @@ Python 3.12 (backend), TypeScript / Angular 19 (frontend): Follow standard conve
 
 ## Recent Changes
 - 033-operational-reports: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, openpyxl, WeasyPrint, APScheduler, matplotlib, ng2-charts/Chart.js
+- 034-external-form-portal-plan: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, Zod, Pydantic, existing validation/condition/tafqeet services, existing PDF renderer, existing notification/email infrastructure, pluggable SMS provider adapter, hCaptcha/reCAPTCHA adapter
 - 032-data-export-integration: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, Python CSV/JSON libraries, `openpyxl` for workbook export, existing notification/email delivery infrastructure
 - 028-approval-workflow: Added Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Auth), Angular Material, WeasyPrint (timeline PDF export)
 

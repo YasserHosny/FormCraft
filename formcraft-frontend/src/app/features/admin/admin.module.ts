@@ -16,6 +16,7 @@ import { TemplateGovernanceComponent } from './template-governance/template-gove
 import { DataExportComponent } from './data-export/data-export.component';
 import { ExportSchedulesComponent } from './export-schedules/export-schedules.component';
 import { IntegrationsComponent } from './integrations/integrations.component';
+import { PortalAdminComponent } from './portal/portal-admin.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'settings', pathMatch: 'full' },
@@ -35,6 +36,7 @@ const routes: Routes = [
   { path: 'export/schedules', component: ExportSchedulesComponent },
   { path: 'integrations', component: IntegrationsComponent },
   { path: 'reports', loadChildren: () => import('./reports/reports.module').then(m => m.ReportsModule) },
+  { path: 'portal', component: PortalAdminComponent },
 ];
 
 @NgModule({
@@ -57,6 +59,7 @@ const routes: Routes = [
     DataExportComponent,
     ExportSchedulesComponent,
     IntegrationsComponent,
+    PortalAdminComponent,
   ],
 })
 export class AdminModule {}

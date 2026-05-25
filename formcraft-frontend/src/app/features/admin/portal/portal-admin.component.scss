@@ -1,0 +1,102 @@
+.portal-admin {
+  padding: 20px;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.alert {
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.alert-error {
+  background: #f8d7da;
+  color: #842029;
+}
+
+.alert-success {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.layout {
+  display: flex;
+  gap: 20px;
+}
+
+.template-list {
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.template-list .active {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.config-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  margin-bottom: 14px;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.url-display code {
+  display: block;
+  padding: 10px;
+  background: #f1f3f5;
+  border-radius: 6px;
+  word-break: break-all;
+}
+
+.qr-display {
+  margin-top: 12px;
+}
+
+.analytics-card {
+  margin-top: 8px;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.metric .label {
+  font-size: 13px;
+  color: #6c757d;
+}
+
+.metric .value {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.loading {
+  padding: 20px;
+  color: #6c757d;
+}

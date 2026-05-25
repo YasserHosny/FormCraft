@@ -1,0 +1,13 @@
+/* Public portal shared layout styles with RTL/LTR-safe responsive Flow Layout primitives */
+.public-portal-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 16px;
+}
+
+@media (min-width: 768px) {
+  .public-portal-container {
+    padding: 24px;
+  }
+}

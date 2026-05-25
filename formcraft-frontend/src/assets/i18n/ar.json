@@ -830,6 +830,65 @@
     "oversized": "التصدير يتجاوز الحد. قلل الفلاتر.",
     "noRecords": "لا توجد سجلات تطابق الفلاتر."
   },
+  "portalAdmin": {
+    "title": "بوابة النماذج العامة",
+    "enable": "تفعيل الوصول العام",
+    "publicSlug": "الرابط العام",
+    "otpRequired": "يتطلب التحقق",
+    "allowedOtpModes": "طرق التحقق المسموحة",
+    "sms": "رسائل نصية",
+    "email": "بريد إلكتروني",
+    "captchaEnabled": "تفعيل CAPTCHA",
+    "captchaProvider": "مزود CAPTCHA",
+    "allowPdfDownload": "السماح بتنزيل PDF",
+    "sendEmailConfirmation": "إرسال تأكيد بالبريد",
+    "rateLimitMax": "الحد الأقصى للطلبات",
+    "rateLimitWindowMinutes": "نافذة الحد (دقيقة)",
+    "publicUrl": "الرابط العام",
+    "qrCode": "رمز الاستجابة السريعة",
+    "downloadQr": "تنزيل QR",
+    "preview": "معاينة",
+    "analytics": {
+      "title": "تحليلات البوابة",
+      "submissionCount": "عدد الإرسالات",
+      "otpSentCount": "OTP مرسلة",
+      "otpFailureCount": "فشل OTP",
+      "rateLimitedCount": "محظور بسبب الحد",
+      "emailConfirmationFailureCount": "فشل تأكيد البريد"
+    },
+    "errors": {
+      "publishedRequired": "يجب نشر القالب قبل التفعيل.",
+      "slugRequired": "الرابط العام مطلوب.",
+      "slugUnique": "الرابط العام مستخدم مسبقاً.",
+      "otpModesRequired": "اختر طرق التحقق عند تفعيل OTP."
+    }
+  },
+  "publicPortal": {
+    "title": "نموذج",
+    "submit": "إرسال",
+    "sending": "جاري الإرسال...",
+    "validationError": "يرجى تصحيح الأخطاء أولاً.",
+    "referenceNumber": "رقم المرجع",
+    "downloadPdf": "تنزيل PDF",
+    "emailConfirmationStatus": "حالة تأكيد البريد",
+    "languageToggle": "تبديل اللغة",
+    "captchaRequired": "مطلوب CAPTCHA.",
+    "rateLimited": "تم تجاوز الحد. حاول لاحقاً."
+  },
+  "otpGate": {
+    "title": "التحقق",
+    "chooseMode": "اختر طريقة التحقق",
+    "enterContact": "أدخل جهة الاتصال",
+    "sendCode": "إرسال الرمز",
+    "enterCode": "أدخل الرمز",
+    "verify": "تحقق",
+    "retryIn": "إعادة المحاولة بعد",
+    "locked": "تم الحظر مؤقتاً. حاول لاحقاً.",
+    "providerError": "خدمة التحقق غير متوفرة. اتصل بالدعم.",
+    "invalidCode": "رمز غير صحيح.",
+    "expiredCode": "انتهت صلاحية الرمز.",
+    "minutes": "دقيقة"
+  },
   "integrations": {
     "title": "التكاملات",
     "credentials": {

@@ -1,0 +1,93 @@
+.public-form-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 16px;
+  background: #f8f9fa;
+}
+
+.language-toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.form-container {
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.flow-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-wrapper label {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.field-wrapper input {
+  padding: 10px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.field-wrapper.has-error input {
+  border-color: #dc3545;
+}
+
+.field-error {
+  color: #dc3545;
+  font-size: 13px;
+}
+
+.tafqeet {
+  color: #6c757d;
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.error-message {
+  color: #dc3545;
+  background: #f8d7da;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #6c757d;
+}
+
+@media (min-width: 768px) {
+  .public-form-page {
+    padding: 24px;
+  }
+}

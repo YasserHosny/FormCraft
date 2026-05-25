@@ -836,6 +836,65 @@
     "oversized": "Export exceeds limit. Narrow filters.",
     "noRecords": "No records match filters."
   },
+  "portalAdmin": {
+    "title": "Public Form Portal",
+    "enable": "Enable public access",
+    "publicSlug": "Public slug",
+    "otpRequired": "Require verification",
+    "allowedOtpModes": "Allowed verification modes",
+    "sms": "SMS",
+    "email": "Email",
+    "captchaEnabled": "Enable CAPTCHA",
+    "captchaProvider": "CAPTCHA provider",
+    "allowPdfDownload": "Allow PDF download",
+    "sendEmailConfirmation": "Send email confirmation",
+    "rateLimitMax": "Rate limit max",
+    "rateLimitWindowMinutes": "Rate limit window (minutes)",
+    "publicUrl": "Public URL",
+    "qrCode": "QR code",
+    "downloadQr": "Download QR",
+    "preview": "Preview",
+    "analytics": {
+      "title": "Portal analytics",
+      "submissionCount": "Submission count",
+      "otpSentCount": "OTP sent",
+      "otpFailureCount": "OTP failures",
+      "rateLimitedCount": "Rate limited",
+      "emailConfirmationFailureCount": "Email confirmation failures"
+    },
+    "errors": {
+      "publishedRequired": "Template must be published before enabling.",
+      "slugRequired": "Public slug is required.",
+      "slugUnique": "Public slug is already in use.",
+      "otpModesRequired": "Select OTP modes when verification is required."
+    }
+  },
+  "publicPortal": {
+    "title": "Form",
+    "submit": "Submit",
+    "sending": "Submitting...",
+    "validationError": "Please correct the errors first.",
+    "referenceNumber": "Reference number",
+    "downloadPdf": "Download PDF",
+    "emailConfirmationStatus": "Email confirmation status",
+    "languageToggle": "Switch language",
+    "captchaRequired": "CAPTCHA is required.",
+    "rateLimited": "Rate limit exceeded. Try again later."
+  },
+  "otpGate": {
+    "title": "Verification",
+    "chooseMode": "Choose verification method",
+    "enterContact": "Enter contact",
+    "sendCode": "Send code",
+    "enterCode": "Enter code",
+    "verify": "Verify",
+    "retryIn": "Retry in",
+    "locked": "Temporarily locked. Try again later.",
+    "providerError": "Verification service unavailable. Contact support.",
+    "invalidCode": "Invalid code.",
+    "expiredCode": "Code expired.",
+    "minutes": "minutes"
+  },
   "integrations": {
     "title": "Integrations",
     "credentials": {

@@ -1,0 +1,57 @@
+<div class="otp-gate" dir="rtl">
+  <div class="otp-card">
+    <h3>{{ 'otpGate.title' | translate }}</h3>
+
+    <div *ngIf="!sent" class="send-section">
+      <div class="mode-selection">
+        <label>{{ 'otpGate.chooseMode' | translate }}</label>
+        <mat-radio-group [(ngModel)]="contactMode">
+          <mat-radio-button *ngFor="let mode of allowedModes" [value]="mode">
+            {{ ('otpGate.' + mode) | translate }}
+          </mat-radio-button>
+        </mat-radio-group>
+      </div>
+
+      <div class="contact-input">
+        <label>{{ 'otpGate.enterContact' | translate }}</label>
+        <input
+          matInput
+          [(ngModel)]="contactValue"
+          [type]="contactMode === 'email' ? 'email' : 'tel'"
+          [placeholder]="contactMode === 'email' ? 'email@example.com' : '05xxxxxxxx'"
+        />
+      </div>
+
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="sendCode()"
+        [disabled]="isSending || !contactMode || !contactValue"
+      >
+        {{ isSending ? ('common.loading' | translate) : ('otpGate.sendCode' | translate) }}
+      </button>
+    </div>
+
+    <div *ngIf="sent" class="verify-section">
+      <label>{{ 'otpGate.enterCode' | translate }}</label>
+      <input matInput [(ngModel)]="code" maxlength="6" />
+
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="verifyCode()"
+        [disabled]="isVerifying || !code"
+      >
+        {{ isVerifying ? ('common.loading' | translate) : ('otpGate.verify' | translate) }}
+      </button>
+    </div>
+
+    <div *ngIf="error" class="error" role="alert">
+      {{ error }}
+    </div>
+
+    <div *ngIf="lockoutTimer > 0" class="lockout-timer">
+      {{ 'otpGate.retryIn' | translate }} {{ Math.floor(lockoutTimer / 60) }}:{{ (lockoutTimer % 60).toString().padStart(2, '0') }}
+    </div>
+  </div>
+</div>
