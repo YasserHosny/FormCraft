@@ -20,6 +20,25 @@ class CustomerService:
         self, data: CustomerCreate, org_id: UUID, created_by: UUID
     ) -> dict:
         """Create a new customer. Handle duplicate identifier by returning existing."""
+        # Pre-check for duplicate identifier
+        existing = (
+            self.client.table("customers")
+            .select("*")
+            .eq("org_id", str(org_id))
+            .eq("identifier_type", data.identifier_type.value)
+            .eq("identifier", data.identifier)
+            .maybe_single()
+            .execute()
+        )
+        if existing.data:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={
+                    "detail": "Customer already exists",
+                    "customer": existing.data,
+                },
+            )
+
         customer_data = {
             **data.model_dump(),
             "org_id": str(org_id),
@@ -27,43 +46,23 @@ class CustomerService:
             "custom_fields": data.custom_fields or {},
         }
 
-        try:
-            result = self.client.table("customers").insert(customer_data).execute()
-            if result.data:
-                from app.core.audit import AuditLogger
+        result = self.client.table("customers").insert(customer_data).execute()
+        if result.data:
+            from app.core.audit import AuditLogger
 
-                await AuditLogger(self.client).log_event(
-                    user_id=str(created_by),
-                    action="CUSTOMER_CREATED",
-                    resource_type="customer",
-                    resource_id=result.data[0]["id"],
-                    metadata={"name_ar": data.name_ar, "identifier": data.identifier},
-                )
-                return result.data[0]
-        except Exception as e:
-            # Check for unique violation
-            if "duplicate" in str(e).lower() or "unique" in str(e).lower():
-                existing = (
-                    self.client.table("customers")
-                    .select("*")
-                    .eq("org_id", str(org_id))
-                    .eq("identifier_type", data.identifier_type.value)
-                    .eq("identifier", data.identifier)
-                    .single()
-                    .execute()
-                )
-                if existing.data:
-                    raise HTTPException(
-                        status_code=status.HTTP_409_CONFLICT,
-                        detail={
-                            "detail": "Customer already exists",
-                            "customer": existing.data,
-                        },
-                    )
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=str(e),
+            await AuditLogger(self.client).log_event(
+                user_id=str(created_by),
+                action="CUSTOMER_CREATED",
+                resource_type="customer",
+                resource_id=result.data[0]["id"],
+                metadata={"name_ar": data.name_ar, "identifier": data.identifier},
             )
+            return result.data[0]
+
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Failed to create customer",
+        )
 
     async def get_by_id(self, customer_id: UUID, org_id: UUID) -> dict:
         result = (
@@ -205,19 +204,17 @@ class CustomerService:
         self, customer_id: UUID, template_id: UUID
     ) -> list[dict]:
         """Return field mappings for auto-populating a form from customer data."""
-        customer = await self.get_by_id(
-            customer_id,
-            UUID(
-                str(
-                    self.client.table("customers")
-                    .select("org_id")
-                    .eq("id", str(customer_id))
-                    .single()
-                    .execute()
-                    .data.get("org_id")
-                )
-            ),
+        # Fetch customer directly by ID (single query instead of two)
+        result = (
+            self.client.table("customers")
+            .select("*")
+            .eq("id", str(customer_id))
+            .single()
+            .execute()
         )
+        if not result.data:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Customer not found")
+        customer = result.data
 
         # Tier 1: Default mapping based on element key naming conventions
         tier1 = {

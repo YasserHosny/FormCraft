@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -21,6 +22,7 @@ import { ReviewQueueItem, ReviewQueueResponse } from '../../../shared/models/rev
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     FormsModule,
     MatTableModule,
     MatButtonModule,

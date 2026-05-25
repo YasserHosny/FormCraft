@@ -8,7 +8,7 @@ import {
   CustomerListResponse,
   CustomerSearchParams,
   CustomerUpdate,
-} from './customer.models';
+} from '../customers/customer.models';
 
 @Injectable({ providedIn: 'root' })
 export class CustomerService {
