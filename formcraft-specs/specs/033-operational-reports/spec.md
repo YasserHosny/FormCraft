@@ -5,6 +5,16 @@
 **Status**: Draft  
 **Vision Reference**: AC-08
 
+## Clarifications
+
+### Session 2026-05-25
+
+- Q: What is the relationship between F033 (Operational Reports) and F032 (Data Export & Integration)? → A: Complementary — F032 provides raw data exports (flat rows, structured JSON), while F033 provides formatted reports with aggregation, totals, period comparisons, and charts. F033 reports may use F032's export infrastructure for file generation but add a reporting presentation layer.
+- Q: How does the system identify which form fields contain monetary amounts for financial aggregation? → A: Designer-tagged fields — template designers tag fields as "amount" type during design. Only tagged fields are summed in financial reports.
+- Q: Can the custom report builder query across multiple templates in a single report? → A: Yes, cross-template. Admin selects multiple templates; shared fields (amount, date, customer) are auto-aligned by field type tag.
+- Q: How long should generated report archives be retained? → A: Fixed 12-month retention for all organizations, then auto-purged.
+- Q: Which roles can access which report types? → A: Tiered access — org admins access all reports; branch managers access transaction register and daily reconciliation (branch-scoped via RLS); operators access only their own submission history (no aggregate reports).
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Transaction Register (Priority: P1)
@@ -101,13 +111,14 @@ As an org admin, I need pre-built reports for beneficiary/payee analysis, void &
 - **FR-002**: System MUST provide daily reconciliation reports with per-operator, per-branch summaries.
 - **FR-003**: System MUST support auto-generation of daily reconciliation at configurable times with email delivery.
 - **FR-004**: System MUST provide period summary reports (week/month/quarter/year) with period-over-period comparison.
-- **FR-005**: System MUST provide a custom report builder with dimension selection, filter configuration, aggregation methods, and chart types.
+- **FR-005**: System MUST provide a custom report builder with dimension selection, filter configuration, aggregation methods, and chart types. The builder MUST support cross-template queries, auto-aligning shared fields by their designer-assigned type tag.
 - **FR-006**: System MUST support saving custom reports as named templates for reuse.
 - **FR-007**: System MUST support scheduling recurring reports (daily/weekly/monthly) with email delivery.
 - **FR-008**: System MUST provide pre-built beneficiary/payee reports, void & reprint registers, and signatory usage reports.
 - **FR-009**: All reports MUST support export to Excel, CSV, and PDF formats.
-- **FR-010**: Reports MUST respect RLS — branch managers see only their branch data, operators see only their own submissions.
+- **FR-010**: Reports MUST respect RLS and tiered role access — org admins access all reports; branch managers access transaction register and daily reconciliation (branch-scoped); operators access only their own submission history with no aggregate reports.
 - **FR-011**: Reports involving large datasets MUST generate asynchronously with progress indication.
+- **FR-012**: Financial aggregation in reports MUST use only fields tagged as "amount" type by the template designer; untagged fields MUST NOT be included in financial totals.
 
 ### Key Entities
 
