@@ -1,0 +1,61 @@
+<div class="public-form-page" [dir]="dir">
+  <div class="language-toggle">
+    <button mat-button (click)="toggleLanguage()">
+      {{ 'publicPortal.languageToggle' | translate }}
+    </button>
+  </div>
+
+  <div *ngIf="error" class="error-message" role="alert">
+    {{ error }}
+  </div>
+
+  <fc-otp-gate
+    *ngIf="showOtpGate"
+    [sessionToken]="sessionToken"
+    [allowedModes]="session?.settings?.allowed_otp_modes || []"
+    (verified)="onOtpVerified()"
+  ></fc-otp-gate>
+
+  <div *ngIf="session && !showOtpGate" class="form-container">
+    <h1>{{ session.title }}</h1>
+
+    <form (ngSubmit)="submit()" class="flow-layout">
+      <div
+        *ngFor="let field of session.fields"
+        class="field-wrapper"
+        [class.has-error]="validationErrors[field.key]"
+      >
+        <label [for]="field.key">{{ field.label }}</label>
+        <input
+          [id]="field.key"
+          [type]="field.type || 'text'"
+          [value]="fieldValues[field.key] || ''"
+          (input)="onFieldChange(field.key, $any($event).target.value)"
+          [required]="field.required"
+          [dir]="dir"
+        />
+        <span *ngIf="validationErrors[field.key]" class="field-error">
+          {{ validationErrors[field.key] }}
+        </span>
+        <span *ngIf="tafqeetMap[field.key]" class="tafqeet">
+          {{ tafqeetMap[field.key] }}
+        </span>
+      </div>
+
+      <div class="actions">
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="isSubmitting"
+        >
+          {{ isSubmitting ? ('publicPortal.sending' | translate) : ('publicPortal.submit' | translate) }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="!session && !error" class="loading">
+    {{ 'common.loading' | translate }}
+  </div>
+</div>

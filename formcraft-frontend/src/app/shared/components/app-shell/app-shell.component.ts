@@ -20,6 +20,7 @@ const MODE_TABS: ModeTab[] = [
   { key: 'desk', icon: 'assignment', route: '/desk', labelKey: 'nav.desk', roles: ['admin', 'designer', 'operator', 'branch_manager'] },
   { key: 'admin', icon: 'admin_panel_settings', route: '/admin', labelKey: 'nav.admin', roles: ['admin'] },
   { key: 'adminExport', icon: 'file_download', route: '/admin/export', labelKey: 'adminExport.title', roles: ['admin'] },
+  { key: 'portal', icon: 'public', route: '/admin/portal', labelKey: 'portalAdmin.title', roles: ['admin'] },
   { key: 'integrations', icon: 'hub', route: '/admin/integrations', labelKey: 'integrations.title', roles: ['admin'] },
 ];
 
@@ -278,6 +279,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
   private detectModeFromUrl(url: string): string {
     if (url.startsWith('/admin/export')) return 'adminExport';
     if (url.startsWith('/admin/integrations')) return 'integrations';
+    if (url.startsWith('/admin/portal')) return 'portal';
     if (url.startsWith('/admin')) return 'admin';
     if (url.startsWith('/desk')) return 'desk';
     // /templates and /designer are both part of "studio"

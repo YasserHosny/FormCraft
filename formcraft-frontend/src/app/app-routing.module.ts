@@ -65,6 +65,13 @@ const routes: Routes = [
       ),
     canActivate: [AuthGuard],
   },
+  {
+    path: 'forms/:org/:slug',
+    loadChildren: () =>
+      import('./features/public-portal/public-portal.module').then(
+        (m) => m.PublicPortalModule
+      ),
+  },
   // F15: Default redirect to /templates (Studio). Role-based redirect happens at login and in RoleGuard.
   { path: '', redirectTo: '/templates', pathMatch: 'full' },
   { path: '**', redirectTo: '/templates' },

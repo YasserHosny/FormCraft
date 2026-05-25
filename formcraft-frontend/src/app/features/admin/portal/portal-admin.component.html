@@ -1,0 +1,147 @@
+<div class="portal-admin" dir="rtl">
+  <h2>{{ 'portalAdmin.title' | translate }}</h2>
+
+  <div *ngIf="error" class="alert alert-error" role="alert">
+    {{ error }}
+  </div>
+
+  <div *ngIf="success" class="alert alert-success" role="status">
+    {{ 'common.save' | translate }} — تم الحفظ
+  </div>
+
+  <div class="layout">
+    <aside class="template-list">
+      <div *ngIf="loading" class="loading">{{ 'common.loading' | translate }}</div>
+      <mat-nav-list *ngIf="!loading">
+        <a
+          mat-list-item
+          *ngFor="let t of templates"
+          (click)="selectTemplate(t)"
+          [class.active]="selectedTemplate?.template_id === t.template_id"
+        >
+          {{ t.public_slug }}
+          <mat-chip *ngIf="t.enabled" color="primary" selected>مفعّل</mat-chip>
+        </a>
+      </mat-nav-list>
+    </aside>
+
+    <main *ngIf="selectedTemplate" class="config-panel">
+      <mat-card>
+        <mat-card-title>{{ 'portalAdmin.title' | translate }}</mat-card-title>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-slide-toggle [(ngModel)]="selectedTemplate.enabled">
+              {{ 'portalAdmin.enable' | translate }}
+            </mat-slide-toggle>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'portalAdmin.publicSlug' | translate }}</mat-label>
+              <input matInput [(ngModel)]="selectedTemplate.public_slug" />
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-slide-toggle [(ngModel)]="selectedTemplate.verification_required">
+              {{ 'portalAdmin.otpRequired' | translate }}
+            </mat-slide-toggle>
+          </div>
+
+          <div class="form-row" *ngIf="selectedTemplate.verification_required">
+            <label>{{ 'portalAdmin.allowedOtpModes' | translate }}</label>
+            <mat-checkbox
+              *ngFor="let mode of ['sms', 'email']"
+              [(ngModel)]="selectedTemplate.allowed_otp_modes"
+              [value]="mode"
+            >
+              {{ ('portalAdmin.' + mode) | translate }}
+            </mat-checkbox>
+          </div>
+
+          <div class="form-row">
+            <mat-slide-toggle [(ngModel)]="selectedTemplate.captcha_enabled">
+              {{ 'portalAdmin.captchaEnabled' | translate }}
+            </mat-slide-toggle>
+          </div>
+
+          <div class="form-row" *ngIf="selectedTemplate.captcha_enabled">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'portalAdmin.captchaProvider' | translate }}</mat-label>
+              <mat-select [(ngModel)]="selectedTemplate.captcha_provider">
+                <mat-option value="hcaptcha">hCaptcha</mat-option>
+                <mat-option value="recaptcha">reCAPTCHA</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-slide-toggle [(ngModel)]="selectedTemplate.allow_pdf_download">
+              {{ 'portalAdmin.allowPdfDownload' | translate }}
+            </mat-slide-toggle>
+          </div>
+
+          <div class="form-row">
+            <mat-slide-toggle [(ngModel)]="selectedTemplate.send_email_confirmation">
+              {{ 'portalAdmin.sendEmailConfirmation' | translate }}
+            </mat-slide-toggle>
+          </div>
+
+          <div class="form-row two-col">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'portalAdmin.rateLimitMax' | translate }}</mat-label>
+              <input matInput type="number" [(ngModel)]="selectedTemplate.rate_limit_max" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'portalAdmin.rateLimitWindowMinutes' | translate }}</mat-label>
+              <input matInput type="number" [(ngModel)]="selectedTemplate.rate_limit_window_minutes" />
+            </mat-form-field>
+          </div>
+
+          <div class="form-row url-display" *ngIf="selectedTemplate.public_url">
+            <label>{{ 'portalAdmin.publicUrl' | translate }}</label>
+            <code>{{ selectedTemplate.public_url }}</code>
+          </div>
+
+          <div class="form-row qr-display" *ngIf="selectedTemplate.public_url">
+            <label>{{ 'portalAdmin.qrCode' | translate }}</label>
+            <div [innerHTML]="generateQrSvg(selectedTemplate.public_url)"></div>
+          </div>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-raised-button color="primary" (click)="save()" [disabled]="saving">
+            {{ saving ? ('common.loading' | translate) : ('common.save' | translate) }}
+          </button>
+        </mat-card-actions>
+      </mat-card>
+
+      <mat-card *ngIf="analytics" class="analytics-card">
+        <mat-card-title>{{ 'portalAdmin.analytics.title' | translate }}</mat-card-title>
+        <mat-card-content>
+          <div class="analytics-grid">
+            <div class="metric">
+              <span class="label">{{ 'portalAdmin.analytics.submissionCount' | translate }}</span>
+              <span class="value">{{ analytics.submission_count }}</span>
+            </div>
+            <div class="metric">
+              <span class="label">{{ 'portalAdmin.analytics.otpSentCount' | translate }}</span>
+              <span class="value">{{ analytics.otp_sent_count }}</span>
+            </div>
+            <div class="metric">
+              <span class="label">{{ 'portalAdmin.analytics.otpFailureCount' | translate }}</span>
+              <span class="value">{{ analytics.otp_failure_count }}</span>
+            </div>
+            <div class="metric">
+              <span class="label">{{ 'portalAdmin.analytics.rateLimitedCount' | translate }}</span>
+              <span class="value">{{ analytics.rate_limited_count }}</span>
+            </div>
+            <div class="metric">
+              <span class="label">{{ 'portalAdmin.analytics.emailConfirmationFailureCount' | translate }}</span>
+              <span class="value">{{ analytics.email_confirmation_failure_count }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </main>
+  </div>
+</div>

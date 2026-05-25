@@ -20,6 +20,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -48,6 +50,8 @@ const MATERIAL_MODULES = [
   MatTooltipModule,
   MatChipsModule,
   MatSlideToggleModule,
+  MatRadioModule,
+  MatCheckboxModule,
   MatTabsModule,
   MatProgressSpinnerModule,
   MatBadgeModule,

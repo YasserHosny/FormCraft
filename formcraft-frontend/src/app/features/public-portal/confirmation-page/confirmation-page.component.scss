@@ -1,0 +1,55 @@
+.confirmation-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 16px;
+  background: #f8f9fa;
+}
+
+.confirmation-card {
+  max-width: 560px;
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.success-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #198754;
+  margin-bottom: 16px;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.reference-section,
+.email-status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.label {
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #212529;
+}
+
+.pdf-action {
+  margin-top: 20px;
+}

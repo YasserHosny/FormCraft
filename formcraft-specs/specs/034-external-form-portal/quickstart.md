@@ -75,6 +75,15 @@ Expected result: pre-OTP limiting uses IP plus browser/session. Post-OTP limitin
 
 Expected result: submission succeeds against the originally loaded template version, and PDF/download behavior uses that pinned version.
 
+## Implementation Notes
+
+- All backend routes, services, schemas, and the database migration (`035_external_form_portal.sql`) have been implemented.
+- Frontend components (public form page, OTP gate, confirmation page, admin portal) are scaffolded with full templates and styles.
+- Translation keys added to `ar.json` and `en.json`.
+- TDD placeholder tests exist for all contract, unit, and component test suites and are expected to fail until real fixtures/mocks are wired.
+- PDF download endpoint returns `501 Not Implemented` for the PDF streaming step; it requires wiring to the existing PDF renderer with the pinned template version.
+- QR code generation on the admin portal currently returns a placeholder SVG; replace with a real QR library (e.g., `qrcode`) for production.
+
 ## Validation Commands
 
 ```bash
