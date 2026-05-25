@@ -15,7 +15,15 @@ Auto-generated from all feature plans. Last updated: 2026-05-24
 ```text
 src/
 tests/
+formcraft-specs/
+└── specs/
 ```
+
+## Specs Generation
+
+- **Specs Location**: All specification files MUST be generated in `formcraft-specs/specs/` directory
+- **Root Folder**: DO NOT generate or fetch specs in the project root folder `/FormCraft/`
+- **Force Generation**: Always force generate specs at `formcraft-specs/specs/` location
 
 ## Commands
 
