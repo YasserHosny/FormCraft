@@ -1,0 +1,18 @@
+<div *ngIf="job" class="batch-detail">
+  <h2>{{ job.name }}</h2>
+  <p>{{ 'BATCH.STATUS' | translate }}: {{ job.status }}</p>
+  <p>{{ 'BATCH.ROWS' | translate }}: {{ job.row_count }}</p>
+  <p>{{ 'BATCH.SUCCESS' | translate }}: {{ job.success_count }}</p>
+  <p>{{ 'BATCH.FAILED' | translate }}: {{ job.fail_count }}</p>
+
+  <mat-progress-bar *ngIf="job.status === 'running'" mode="determinate" [value]="(job.progress / job.row_count) * 100"></mat-progress-bar>
+
+  <div class="actions">
+    <button mat-raised-button color="primary" (click)="download('zip')" *ngIf="job.status === 'completed' || job.status === 'cancelled'">
+      {{ 'BATCH.DOWNLOAD_ZIP' | translate }}
+    </button>
+    <button mat-raised-button color="accent" (click)="cancel()" *ngIf="job.status === 'running'">
+      {{ 'BATCH.CANCEL' | translate }}
+    </button>
+  </div>
+</div>
