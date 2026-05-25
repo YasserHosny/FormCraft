@@ -1,11 +1,39 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Router, NavigationEnd } from '@angular/router';
+import { Subject, takeUntil, filter } from 'rxjs';
 import { AuthService, User } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { FeedbackRealtimeService } from '../../../features/feedback/services/feedback-realtime.service';
 import { MyFeedbackService } from '../../../features/my-feedback/services/my-feedback.service';
 import { OrgAdminService } from '../../../core/services/org-admin.service';
+
+interface ModeTab {
+  key: string;
+  icon: string;
+  route: string;
+  labelKey: string;
+  roles: string[];
+}
+
+const MODE_TABS: ModeTab[] = [
+  { key: 'studio', icon: 'brush', route: '/templates', labelKey: 'nav.studio', roles: ['admin', 'designer'] },
+  { key: 'desk', icon: 'assignment', route: '/desk', labelKey: 'nav.desk', roles: ['admin', 'designer', 'operator', 'branch_manager'] },
+  { key: 'admin', icon: 'admin_panel_settings', route: '/admin', labelKey: 'nav.admin', roles: ['admin'] },
+];
+
+/** Returns the role-based default route for post-login redirect. */
+export function getDefaultRouteForRole(role: string): string {
+  switch (role) {
+    case 'operator':
+    case 'branch_manager':
+      return '/desk';
+    case 'designer':
+      return '/templates';
+    case 'admin':
+    default:
+      return '/templates';
+  }
+}
 
 @Component({
   selector: 'fc-app-shell',
@@ -14,42 +42,29 @@ import { OrgAdminService } from '../../../core/services/org-admin.service';
     <mat-toolbar color="primary" class="app-toolbar">
       <!-- T046: Org logo in nav bar -->
       <img *ngIf="orgLogoUrl" [src]="orgLogoUrl" alt="Org logo" class="org-nav-logo" />
-      <span class="app-title" routerLink="/templates">FormCraft</span>
+      <span class="app-title" (click)="navigateHome()">FormCraft</span>
+
+      <!-- F15: Mode-switching tabs -->
+      <ng-container *ngIf="user">
+        <nav class="mode-tabs">
+          <a
+            *ngFor="let tab of visibleTabs"
+            class="mode-tab"
+            [class.active]="activeMode === tab.key"
+            [routerLink]="tab.route"
+          >
+            <mat-icon class="mode-tab-icon">{{ tab.icon }}</mat-icon>
+            <span class="mode-tab-label">{{ tab.labelKey | translate }}</span>
+          </a>
+        </nav>
+      </ng-container>
+
       <span class="spacer"></span>
 
       <ng-container *ngIf="user">
-        <button mat-button routerLink="/templates">
-          {{ 'templates.title' | translate }}
-        </button>
-        <button mat-button [matMenuTriggerFor]="adminMenu" *ngIf="user.role === 'admin'">
-          <mat-icon>admin_panel_settings</mat-icon>
-        </button>
-        <mat-menu #adminMenu="matMenu">
-          <button mat-menu-item routerLink="/admin/settings">
-            <mat-icon>business</mat-icon>
-            {{ 'org.title' | translate }}
-          </button>
-          <button mat-menu-item routerLink="/admin/departments">
-            <mat-icon>account_tree</mat-icon>
-            {{ 'departments.title' | translate }}
-          </button>
-          <button mat-menu-item routerLink="/admin/users">
-            <mat-icon>group</mat-icon>
-            {{ 'user_management.title' | translate }}
-          </button>
-          <button mat-menu-item routerLink="/admin/invitations">
-            <mat-icon>mail</mat-icon>
-            {{ 'invitations.title' | translate }}
-          </button>
-          <button mat-menu-item routerLink="/auth/register">
-            <mat-icon>person_add</mat-icon>
-            {{ 'auth.register' | translate }}
-          </button>
-        </mat-menu>
-
         <!-- My Feedback link with notification badge (non-admin only) -->
         <button
-          mat-button
+          mat-icon-button
           routerLink="/my-feedback"
           *ngIf="user.role !== 'admin'"
           [matBadge]="unreadCount > 0 ? unreadCount.toString() : null"
@@ -57,7 +72,6 @@ import { OrgAdminService } from '../../../core/services/org-admin.service';
           [matTooltip]="'notifications.badge_title' | translate"
         >
           <mat-icon>feedback</mat-icon>
-          {{ 'my_feedback.title' | translate }}
         </button>
 
         <button mat-icon-button [matMenuTriggerFor]="userMenu">
@@ -96,6 +110,7 @@ import { OrgAdminService } from '../../../core/services/org-admin.service';
       position: sticky;
       top: 0;
       z-index: 100;
+      gap: 4px;
     }
     .org-nav-logo {
       max-height: 32px;
@@ -108,6 +123,40 @@ import { OrgAdminService } from '../../../core/services/org-admin.service';
       cursor: pointer;
       font-weight: 700;
       font-size: 18px;
+      margin-inline-end: 8px;
+    }
+    .mode-tabs {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      height: 100%;
+    }
+    .mode-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.15s, color 0.15s;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .mode-tab:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+    .mode-tab.active {
+      background: rgba(255, 255, 255, 0.22);
+      color: #fff;
+    }
+    .mode-tab-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
     }
     .spacer {
       flex: 1 1 auto;
@@ -129,6 +178,10 @@ export class AppShellComponent implements OnInit, OnDestroy {
   unreadCount = 0;
   /** T046: Org logo URL for the nav bar */
   orgLogoUrl: string | null = null;
+  /** F15: Tabs visible for current user role */
+  visibleTabs: ModeTab[] = [];
+  /** F15: Currently active mode key (studio, desk, admin) */
+  activeMode = '';
 
   private destroy$ = new Subject<void>();
 
@@ -142,9 +195,22 @@ export class AppShellComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // F15: Track active mode from route changes
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      takeUntil(this.destroy$),
+    ).subscribe((e) => {
+      this.activeMode = this.detectModeFromUrl(e.urlAfterRedirects || e.url);
+    });
+    // Set initial active mode
+    this.activeMode = this.detectModeFromUrl(this.router.url);
+
     this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((u) => {
       this.user = u;
       if (u) {
+        // F15: Compute visible tabs for this role
+        this.visibleTabs = MODE_TABS.filter((tab) => tab.roles.includes(u.role));
+
         // T046: Fetch org logo
         this.orgAdminService.getOrgSettings().subscribe({
           next: (settings) => (this.orgLogoUrl = settings.logo_url),
@@ -159,6 +225,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
         // Reset on logout
         this.unreadCount = 0;
         this.orgLogoUrl = null;
+        this.visibleTabs = [];
       }
     });
     this.currentLang = this.languageService.getLanguage();
@@ -187,6 +254,12 @@ export class AppShellComponent implements OnInit, OnDestroy {
       });
   }
 
+  /** F15: Navigate to role-appropriate home when clicking the logo/title. */
+  navigateHome(): void {
+    const role = this.user?.role || 'operator';
+    this.router.navigate([getDefaultRouteForRole(role)]);
+  }
+
   toggleLanguage(): void {
     this.languageService.toggleLanguage();
     this.currentLang = this.languageService.getLanguage();
@@ -197,5 +270,13 @@ export class AppShellComponent implements OnInit, OnDestroy {
     this.unreadCount = 0;
     this.authService.logout();
     this.router.navigate(['/auth/login']);
+  }
+
+  /** F15: Detect which mode tab is active based on the current URL. */
+  private detectModeFromUrl(url: string): string {
+    if (url.startsWith('/admin')) return 'admin';
+    if (url.startsWith('/desk')) return 'desk';
+    // /templates and /designer are both part of "studio"
+    return 'studio';
   }
 }

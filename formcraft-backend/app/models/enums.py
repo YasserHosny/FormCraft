@@ -50,3 +50,23 @@ class Direction(StrEnum):
     RTL = "rtl"
     LTR = "ltr"
     AUTO = "auto"
+
+
+# F29: Notification Center
+class NotificationType(StrEnum):
+    TEMPLATE_SUBMITTED_FOR_REVIEW = "template_submitted_for_review"
+    TEMPLATE_APPROVED = "template_approved"
+    TEMPLATE_REJECTED = "template_rejected"
+    TEMPLATE_PUBLISHED = "template_published"
+    TEMPLATE_WITHDRAWN = "template_withdrawn"
+    TEMPLATE_FEEDBACK_RECEIVED = "template_feedback_received"
+    TEMPLATE_FEEDBACK_RESOLVED = "template_feedback_resolved"
+    DRAFT_EXPIRING = "draft_expiring"
+    SYSTEM_ANNOUNCEMENT = "system_announcement"
+
+
+class EmailStatus(StrEnum):
+    PENDING = "pending"
+    SENT = "sent"
+    FAILED = "failed"
+    SKIPPED = "skipped"

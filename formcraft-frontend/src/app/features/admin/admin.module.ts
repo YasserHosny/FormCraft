@@ -14,6 +14,7 @@ import { UserManagementComponent } from './users/user-management.component';
 import { InvitationsComponent } from './invitations/invitations.component';
 
 const routes: Routes = [
+  { path: '', redirectTo: 'settings', pathMatch: 'full' },
   { path: 'reviews', component: ReviewQueueComponent },
   { path: 'governance', component: GovernanceDashboardComponent },
   { path: 'review-timeline/:template_id', component: ReviewTimelineComponent },
