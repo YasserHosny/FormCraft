@@ -36,8 +36,8 @@
         <mat-card-title>{{ 'governance.rejectionRate' | translate }}</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <div class="metric-value" [class.low]="metrics.rejection_rate_pct < 20" [class.high]="metrics.rejection_rate_pct > 40">
-          {{ metrics.rejection_rate_pct }}%
+        <div class="metric-value" [class.low]="$any(metrics).rejection_rate_pct < 20" [class.high]="$any(metrics).rejection_rate_pct > 40">
+          {{ $any(metrics).rejection_rate_pct }}%
         </div>
       </mat-card-content>
     </mat-card>
