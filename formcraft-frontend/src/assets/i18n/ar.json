@@ -26,6 +26,36 @@
     "view": "عرض",
     "clear": "مسح"
   },
+  "ocrOnboarding": {
+    "title": "إدخال النماذج عبر OCR",
+    "subtitle": "حوّل مكتبات النماذج الممسوحة إلى مسودات قوالب بعد المراجعة.",
+    "newBatch": "دفعة جديدة",
+    "createTitle": "إنشاء دفعة OCR",
+    "batchName": "اسم الدفعة",
+    "threshold": "حد الثقة",
+    "selectedFiles": "تم تحديد {{count}} ملف",
+    "startBatch": "بدء الدفعة",
+    "status": "الحالة",
+    "progress": "التقدم",
+    "file": "الملف",
+    "confidence": "الثقة",
+    "bulkAccept": "اعتماد جماعي",
+    "accept": "اعتماد",
+    "reject": "رفض",
+    "retry": "إعادة المحاولة",
+    "states": {
+      "queued": "في الانتظار",
+      "processing": "قيد المعالجة",
+      "needs_review": "بحاجة إلى مراجعة",
+      "accepted": "معتمد",
+      "rejected": "مرفوض",
+      "failed": "فشل",
+      "duplicate": "مكرر",
+      "converted": "محوّل",
+      "completed": "مكتمل",
+      "cancelled": "ملغي"
+    }
+  },
   "adminExport": {
     "title": "تصدير البيانات",
     "schedulesTitle": "جداول التصدير المتكررة",

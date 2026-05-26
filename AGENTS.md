@@ -15,6 +15,8 @@ Auto-generated from all feature plans. Last updated: 2026-05-26
 - Supabase PostgreSQL; extend existing `organizations`, `org_settings`, `templates`, `pages`, `elements`, `submissions`, `profiles`, `audit_logs`; add portal configuration/session/OTP/rate-limit/public-submission metadata tables (034-external-form-portal-plan)
 - Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, existing template/PDF/reference-data services (035-template-marketplace-codex)
 - Supabase PostgreSQL with versioned migration for marketplace listing/import/review/transaction tables and RLS policies (035-template-marketplace-codex)
+- Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/Storage/RLS, existing OCR services (`AzureOCRClient`, `FieldClassifier`, `BoundingBoxConverter`), Angular Material, ngx-translate, RxJS (045-batch-ocr-onboarding)
+- Supabase PostgreSQL plus Storage; add OCR onboarding batch/item/detection/decision tables and links to existing templates/pages/elements/form_detections/audit_logs (045-batch-ocr-onboarding)
 
 - Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Storage + Auth), Angular Material (001-customer-feedback)
 
@@ -42,6 +44,7 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.12 (backend), TypeScript / Angular 19 (frontend): Follow standard conventions
 
 ## Recent Changes
+- 045-batch-ocr-onboarding: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/Storage/RLS, existing OCR services (`AzureOCRClient`, `FieldClassifier`, `BoundingBoxConverter`), Angular Material, ngx-translate, RxJS
 - 039-platform-admin-console: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, Pydantic, ng2-charts/Chart.js, APScheduler
 - 035-template-marketplace-codex: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, existing template/PDF/reference-data services
 - 033-operational-reports: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, openpyxl, WeasyPrint, APScheduler, matplotlib, ng2-charts/Chart.js

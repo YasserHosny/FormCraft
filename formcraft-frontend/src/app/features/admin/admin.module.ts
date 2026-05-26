@@ -38,6 +38,7 @@ const routes: Routes = [
   { path: 'reports', loadChildren: () => import('./reports/reports.module').then(m => m.ReportsModule) },
   { path: 'portal', component: PortalAdminComponent },
   { path: 'batch-schedules', loadChildren: () => import('./batch-schedules/batch-schedules.module').then(m => m.BatchSchedulesModule) },
+  { path: 'ocr-onboarding', loadChildren: () => import('./ocr-onboarding/ocr-onboarding.module').then(m => m.OcrOnboardingModule) },
 ];
 
 @NgModule({

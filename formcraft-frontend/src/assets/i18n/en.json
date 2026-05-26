@@ -26,6 +26,36 @@
     "view": "View",
     "clear": "Clear"
   },
+  "ocrOnboarding": {
+    "title": "OCR Onboarding",
+    "subtitle": "Convert legacy scanned form libraries into reviewed draft templates.",
+    "newBatch": "New batch",
+    "createTitle": "Create OCR batch",
+    "batchName": "Batch name",
+    "threshold": "Confidence threshold",
+    "selectedFiles": "{{count}} files selected",
+    "startBatch": "Start batch",
+    "status": "Status",
+    "progress": "Progress",
+    "file": "File",
+    "confidence": "Confidence",
+    "bulkAccept": "Bulk accept",
+    "accept": "Accept",
+    "reject": "Reject",
+    "retry": "Retry",
+    "states": {
+      "queued": "Queued",
+      "processing": "Processing",
+      "needs_review": "Needs review",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "failed": "Failed",
+      "duplicate": "Duplicate",
+      "converted": "Converted",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
+  },
   "adminExport": {
     "title": "Data Export",
     "schedulesTitle": "Recurring Export Schedules",
