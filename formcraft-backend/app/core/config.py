@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     DEV_ALLOW_LOCAL_IMPORT: bool = False
     DEV_LOCAL_IMPORT_PATH: str = ""
 
+    # SSO / MFA
+    SSO_ENCRYPTION_KEY: str = ""
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]

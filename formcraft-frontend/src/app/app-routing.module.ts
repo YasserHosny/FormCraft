@@ -98,6 +98,20 @@ const routes: Routes = [
         (m) => m.UI_REDESIGN_ROUTES
       ),
   },
+  // F042: Enterprise SSO and MFA
+  {
+    path: 'admin/sso',
+    loadChildren: () =>
+      import('./features/sso/sso.module').then((m) => m.SsoModule),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['admin'] },
+  },
+  {
+    path: 'mfa',
+    loadChildren: () =>
+      import('./features/mfa/mfa.module').then((m) => m.MfaModule),
+    canActivate: [AuthGuard],
+  },
   // F15: Default redirect to /templates (Studio). Role-based redirect happens at login and in RoleGuard.
   { path: '', redirectTo: '/templates', pathMatch: 'full' },
   { path: '**', redirectTo: '/templates' },
