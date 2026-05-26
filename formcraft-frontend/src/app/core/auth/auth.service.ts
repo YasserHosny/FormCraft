@@ -10,6 +10,7 @@ export interface User {
   language: 'ar' | 'en';
   display_name: string | null;
   org_id?: string;
+  is_platform_admin?: boolean;
 }
 
 interface LoginResponse {
