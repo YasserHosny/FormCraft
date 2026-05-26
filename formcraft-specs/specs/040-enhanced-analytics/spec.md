@@ -74,9 +74,10 @@ As an org admin, I need deeper template usage analytics beyond basic counts: fil
 ### Edge Cases
 
 - What happens when telemetry for field-level timing is disabled? Analytics show "N/A" for time fields.
-- How does the system handle operators with zero submissions in a period?
-- What happens when compliance analytics reference deleted templates?
-- How does the system handle analytics across template version changes (field names changed)?
+- How does the system handle operators with zero submissions in a period? Operator is shown with zero counts and "N/A" for averages; not flagged for coaching.
+- How is "significantly higher error rate" defined for coaching indicators? Operator error rate > 1.5x the org average error rate triggers the coaching flag.
+- What happens when compliance analytics reference deleted templates? Deleted templates are excluded from compliance scorecards but retained in historical analytics archives.
+- How does the system handle analytics across template version changes (field names changed)? Field analytics are scoped to template version; version adoption chart shows migration patterns.
 
 ## Requirements
 
@@ -90,13 +91,40 @@ As an org admin, I need deeper template usage analytics beyond basic counts: fil
 - **FR-006**: All analytics MUST respect RLS — branch managers see branch-scoped data only.
 - **FR-007**: Analytics data MUST be exportable as CSV and PNG (charts).
 - **FR-008**: System MUST highlight anomalies and outliers with visual indicators.
-- **FR-009**: Field-level timing analytics MUST be optional (configurable telemetry toggle).
+- **FR-009**: Field-level timing analytics MUST be optional (configurable per-template telemetry toggle, default disabled).
+- **FR-010**: Analytics detail data MUST be retained for 90 days in hot tables, then rolled up to daily aggregates and archived for 1 year.
+- **FR-011**: Analytics queries MUST use pre-aggregated hourly materialized views refreshed every 15 minutes, except compliance scorecards which compute on-demand with 24-hour caching.
 
 ### Key Entities
 
-- **Field Analytics**: Template reference, field key, error_count, error_types (JSON), empty_count, total_submissions, avg_fill_time_ms.
-- **Operator Analytics**: Operator ID, period (day/week/month), forms_filled, avg_fill_time, error_rate, busiest_hours (JSON).
-- **Compliance Scorecard**: Org-level computed metrics: validator_coverage_pct, bilingual_label_pct, quality_score_avg, templates_needing_attention.
+- **Field Analytics**: Template reference (with version), field key, error_count, error_types (JSON), empty_count, total_submissions, avg_fill_time_ms, computed_at timestamp, retention bucket (hot/archive).
+- **Operator Analytics**: Operator ID, period (day/week/month), forms_filled, avg_fill_time, error_rate, busiest_hours (JSON), computed_at timestamp.
+- **Compliance Scorecard**: Org-level computed metrics: validator_coverage_pct (40% weight), bilingual_label_pct (30% weight), quality_score_avg (30% weight from template structure completeness), templates_needing_attention, computed_at timestamp, cache_ttl 24h.
+- **Analytics Aggregation Log**: Tracks materialized view refresh status, last_refresh_time, next_scheduled_refresh, and any refresh failures for observability.
+
+## Clarifications
+
+### Session 2026-05-26
+
+- Q: How long should raw field-level analytics data be retained, and should older data be archived or aggregated? → A: 90 days hot retention in detail tables, then roll up to daily aggregates archived for 1 year.
+- Q: Should analytics compute in real-time from source tables, or use pre-aggregated/materialized views? → A: Pre-aggregated hourly materialized views refreshed every 15 minutes for all analytics except compliance scorecards, which compute on-demand with 24-hour caching.
+- Q: Should F040 extend existing F027 analytics tables or create new dedicated analytics tables? → A: Extend existing F027 analytics tables with new columns and companion tables for F040-specific metrics (field_analytics, operator_analytics).
+- Q: Is field-level timing telemetry enabled per-organization, per-template, or globally? → A: Per-template opt-in toggle, default disabled, org admin can enable in template settings.
+- Q: How is the "quality score" for compliance analytics calculated? → A: Weighted formula: validator coverage 40%, bilingual labels 30%, template structure completeness 30%.
+
+## Non-Functional Requirements
+
+### Performance & Scalability
+
+- **NFR-001**: Field-level analytics queries MUST complete within 5 seconds for templates with 50 fields and 10,000 submissions via pre-aggregated materialized views.
+- **NFR-002**: Operator analytics for 100 operators MUST load within 3 seconds.
+- **NFR-003**: Compliance scorecards across 500+ templates MUST compute within 10 seconds with 24-hour result caching.
+- **NFR-004**: Analytics materialized views MUST refresh every 15 minutes without blocking read queries.
+
+### Observability
+
+- **NFR-005**: All analytics view refreshes MUST emit structured logs: refresh_start, refresh_duration_ms, row_count, error (if any).
+- **NFR-006**: Analytics query latency MUST be instrumented with Prometheus histogram buckets: [0.5s, 1s, 2s, 5s, 10s].
 
 ## Success Criteria
 

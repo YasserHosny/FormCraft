@@ -72,6 +72,15 @@ const routes: Routes = [
         (m) => m.PublicPortalModule
       ),
   },
+  {
+    path: 'admin/analytics',
+    loadChildren: () =>
+      import('./features/analytics/analytics.module').then(
+        (m) => m.AnalyticsModule
+      ),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['admin', 'designer'] },
+  },
   // F15: Default redirect to /templates (Studio). Role-based redirect happens at login and in RoleGuard.
   { path: '', redirectTo: '/templates', pathMatch: 'full' },
   { path: '**', redirectTo: '/templates' },
