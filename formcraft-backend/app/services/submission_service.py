@@ -6,7 +6,6 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from supabase import Client
 
-from app.core.audit import AuditLogger
 from app.models.submission import Submission
 from app.services.condition_engine import ConditionEngine
 from app.services.validators.registry import ValidatorRegistry
@@ -291,18 +290,6 @@ class SubmissionService:
                     if not _re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(col_val)):
                         errors.append({"field": f"{key}[{row_idx}].{col_key}", "code": "invalid_type", "message": f"Column '{col_key}' must be a date (YYYY-MM-DD) in row {row_idx + 1}"})
         return errors
-        try:
-            result = self.client.rpc(
-                "generate_submission_ref", {"p_org_id": str(org_id)}
-            ).execute()
-            if result.data:
-                return result.data
-        except Exception:
-            pass
-
-        now = datetime.now(timezone.utc)
-        month_str = now.strftime("%Y-%m")
-        return f"FC-{month_str}-{now.strftime('%H%M%S')}"
 
     async def list_submissions(
         self,

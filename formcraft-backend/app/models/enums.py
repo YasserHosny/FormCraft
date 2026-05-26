@@ -41,6 +41,13 @@ class Country(StrEnum):
     AE = "AE"
 
 
+class Currency(StrEnum):
+    SAR = "SAR"
+    EGP = "EGP"
+    AED = "AED"
+    USD = "USD"
+
+
 class Language(StrEnum):
     AR = "ar"
     EN = "en"

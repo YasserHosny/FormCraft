@@ -7,9 +7,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from supabase import Client
 
-from app.core.auth import get_current_user
-from app.core.deps import get_supabase_client
-from app.models.user import User
+from app.api.deps import get_current_user
+from app.core.supabase import get_supabase_client
+from app.models.user import UserProfile as User
 from app.schemas.analytics import (
     BusiestHoursResponse,
     ComplianceScorecardResponse,

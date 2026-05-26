@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from uuid import uuid4
 
 import pytest
 from pytest_mock import MockerFixture
@@ -28,7 +27,7 @@ class TestPlatformMetricsService:
     def service(self, mock_client):
         return PlatformMetricsService(mock_client)
 
-    async def test_get_metrics(self, service, mock_client):
+    async def test_get_metrics(self, service, mock_client, mocker: MockerFixture):
         mock_client.table.return_value.select.return_value.gte.return_value.lt.return_value.execute.return_value = mocker.MagicMock(
             count=100
         )
@@ -45,7 +44,7 @@ class TestPlatformMetricsService:
         assert "recently_created_orgs" in metrics
         assert "tier_limit_alerts" in metrics
 
-    async def test_refresh_materialized_view(self, service, mock_client):
+    async def test_refresh_materialized_view(self, service, mock_client, mocker: MockerFixture):
         mock_client.rpc.return_value.execute.return_value = mocker.MagicMock(data=None)
         await service.refresh_materialized_view()
         mock_client.rpc.assert_called_once_with("refresh_platform_metrics_mv", {})

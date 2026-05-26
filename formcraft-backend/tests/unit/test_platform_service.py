@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 from fastapi import HTTPException
@@ -29,7 +28,7 @@ class TestPlatformService:
     # CREATE
     # ------------------------------------------------------------------
 
-    async def test_create_organization_success(self, service, mock_client):
+    async def test_create_organization_success(self, service, mock_client, mocker: MockerFixture):
         org_id = str(uuid4())
         mock_client.table.return_value.insert.return_value.execute.return_value = mocker.MagicMock(
             data=[{"id": org_id, "name_ar": "Test Org"}]
@@ -40,7 +39,7 @@ class TestPlatformService:
         )
         assert result["name_ar"] == "Test Org"
 
-    async def test_create_organization_domain_conflict(self, service, mock_client):
+    async def test_create_organization_domain_conflict(self, service, mock_client, mocker: MockerFixture):
         mock_client.table.return_value.select.return_value.eq.return_value.execute.return_value = mocker.MagicMock(
             data=[{"id": str(uuid4())}]
         )
@@ -51,7 +50,7 @@ class TestPlatformService:
             )
         assert exc.value.status_code == 409
 
-    async def test_create_organization_rate_limit(self, service, mock_client):
+    async def test_create_organization_rate_limit(self, service, mock_client, mocker: MockerFixture):
         mock_client.table.return_value.select.return_value.eq.return_value.eq.return_value.gte.return_value.execute.return_value = mocker.MagicMock(
             count=10
         )
@@ -66,7 +65,7 @@ class TestPlatformService:
     # SUSPEND / REACTIVATE
     # ------------------------------------------------------------------
 
-    async def test_suspend_organization(self, service, mock_client):
+    async def test_suspend_organization(self, service, mock_client, mocker: MockerFixture):
         org_id = uuid4()
         mock_client.table.return_value.update.return_value.eq.return_value.execute.return_value = mocker.MagicMock(
             data=[{"id": str(org_id), "status": "suspended"}]
@@ -77,7 +76,7 @@ class TestPlatformService:
         result = await service.suspend_organization(org_id=org_id, admin_id=uuid4())
         assert result["status"] == "suspended"
 
-    async def test_reactivate_organization(self, service, mock_client):
+    async def test_reactivate_organization(self, service, mock_client, mocker: MockerFixture):
         org_id = uuid4()
         mock_client.table.return_value.update.return_value.eq.return_value.execute.return_value = mocker.MagicMock(
             data=[{"id": str(org_id), "status": "active"}]
@@ -89,7 +88,7 @@ class TestPlatformService:
     # DELETE
     # ------------------------------------------------------------------
 
-    async def test_delete_organization_blocked_with_submissions(self, service, mock_client):
+    async def test_delete_organization_blocked_with_submissions(self, service, mock_client, mocker: MockerFixture):
         org_id = uuid4()
         mock_client.table.return_value.select.return_value.eq.return_value.execute.return_value = mocker.MagicMock(
             count=5
@@ -102,7 +101,7 @@ class TestPlatformService:
     # LIST
     # ------------------------------------------------------------------
 
-    async def test_list_organizations_with_filters(self, service, mock_client):
+    async def test_list_organizations_with_filters(self, service, mock_client, mocker: MockerFixture):
         org_id = str(uuid4())
         mock_client.table.return_value.select.return_value.eq.return_value.eq.return_value.or_.return_value.order.return_value.range.return_value.execute.return_value = mocker.MagicMock(
             data=[{"id": org_id, "name_ar": "Org 1"}],
