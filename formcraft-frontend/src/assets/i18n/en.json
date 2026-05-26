@@ -1137,6 +1137,40 @@
     "dateRange": "Date Range",
     "na": "N/A",
     "computedAt": "Computed at"
+  },
+  "sso": {
+    "idpConfig": {
+      "title": "Identity Provider Configuration",
+      "name": "Provider Name",
+      "type": "Provider Type",
+      "domains": "Verified Domains",
+      "metadataUrl": "Metadata URL"
+    },
+    "domainVerify": {
+      "title": "Verify Domain",
+      "domain": "Domain"
+    },
+    "mappingConfig": {
+      "title": "Identity Mapping",
+      "claimType": "Claim Type",
+      "claimValue": "Claim Value",
+      "assignedRole": "Assigned Role"
+    }
+  },
+  "mfa": {
+    "enroll": {
+      "title": "MFA Enrollment",
+      "methodType": "Method",
+      "totp": "Authenticator App",
+      "sms": "SMS",
+      "email": "Email",
+      "phoneNumber": "Phone Number",
+      "scanQr": "Scan the QR code with your authenticator app."
+    },
+    "challenge": {
+      "title": "MFA Challenge",
+      "code": "Enter 6-digit code"
+    }
   }
 }
 }
