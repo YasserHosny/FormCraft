@@ -1101,6 +1101,32 @@
     "dateRange": "نطاق التاريخ",
     "na": "غير متاح",
     "computedAt": "حُسِب في"
+  },
+  "RETENTION": {
+    "TITLE": "الاحتفاظ بالبيانات",
+    "POLICIES": "سياسات الاحتفاظ",
+    "JOBS": "مهام الاحتفاظ",
+    "LEGAL_HOLDS": "الحجز القانوني",
+    "ARCHIVE_MANIFESTS": "قوائم الأرشيف",
+    "PREVIEW": "معاينة التأثير",
+    "CREATE_POLICY": "إنشاء سياسة",
+    "RUN_JOB": "تشغيل المهمة",
+    "PLACE_HOLD": "وضع حجز قانوني",
+    "RESTORE": "استعادة من الأرشيف",
+    "POLICY_NAME": "اسم السياسة",
+    "DATA_CLASS": "فئة البيانات",
+    "ACTION": "الإجراء",
+    "PERIOD": "المدة (بالأيام)",
+    "EFFECTIVE_DATE": "تاريخ السريان",
+    "STATUS": "الحالة",
+    "PROGRESS": "التقدم",
+    "HOLD_TYPE": "نوع الحجز",
+    "SCOPE_TYPE": "نطاق الحجز",
+    "REASON": "السبب",
+    "LOCATION": "الموقع",
+    "RECORD_COUNT": "عدد السجلات",
+    "INTEGRITY": "السلامة"
   }
+}
 }
 }

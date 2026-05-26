@@ -1107,6 +1107,32 @@
     "dateRange": "Date Range",
     "na": "N/A",
     "computedAt": "Computed at"
+  },
+  "RETENTION": {
+    "TITLE": "Data Retention",
+    "POLICIES": "Retention Policies",
+    "JOBS": "Retention Jobs",
+    "LEGAL_HOLDS": "Legal Holds",
+    "ARCHIVE_MANIFESTS": "Archive Manifests",
+    "PREVIEW": "Preview Impact",
+    "CREATE_POLICY": "Create Policy",
+    "RUN_JOB": "Run Job",
+    "PLACE_HOLD": "Place Legal Hold",
+    "RESTORE": "Restore from Archive",
+    "POLICY_NAME": "Policy Name",
+    "DATA_CLASS": "Data Class",
+    "ACTION": "Action",
+    "PERIOD": "Period (Days)",
+    "EFFECTIVE_DATE": "Effective Date",
+    "STATUS": "Status",
+    "PROGRESS": "Progress",
+    "HOLD_TYPE": "Hold Type",
+    "SCOPE_TYPE": "Scope Type",
+    "REASON": "Reason",
+    "LOCATION": "Location",
+    "RECORD_COUNT": "Record Count",
+    "INTEGRITY": "Integrity"
   }
+}
 }
 }
