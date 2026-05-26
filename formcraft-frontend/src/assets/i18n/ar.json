@@ -1101,6 +1101,19 @@
     "dateRange": "نطاق التاريخ",
     "na": "غير متاح",
     "computedAt": "حُسِب في"
+  },
+  "offline": {
+    "online": "متصل",
+    "offline": "غير متصل",
+    "pending_count": "{{count}} في قائمة الانتظار",
+    "sync_now": "مزامنة الآن",
+    "conflict": "تعارض",
+    "save_encrypted_draft": "حفظ مسودة مشفرة",
+    "queue_submission": "إضافة التقديم للانتظار",
+    "draft_saved": "تم حفظ المسودة المشفرة دون اتصال",
+    "save_failed": "تعذر حفظ المسودة دون اتصال",
+    "submission_queued": "تمت إضافة التقديم للمزامنة",
+    "queue_failed": "تعذر إضافة التقديم للانتظار"
   }
 }
 }

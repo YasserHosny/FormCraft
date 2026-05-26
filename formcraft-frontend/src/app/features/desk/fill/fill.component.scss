@@ -66,6 +66,23 @@
   margin-bottom: 16px;
 }
 
+.offline-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+
+  button {
+    min-height: 44px;
+  }
+
+  mat-icon {
+    margin-inline-end: 6px;
+  }
+}
+
 .fill-page {
   margin-bottom: 24px;
 }
@@ -81,6 +98,20 @@
 
 @media (max-width: 599px) {
   .fill-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     padding: 8px 12px;
+    overflow-x: hidden;
+  }
+
+  .offline-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+
+    button {
+      width: 100%;
+    }
   }
 }
