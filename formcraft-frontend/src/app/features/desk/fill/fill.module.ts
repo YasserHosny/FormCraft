@@ -19,6 +19,7 @@ import { FormToolbarComponent } from '../components/form-toolbar/form-toolbar.co
 import { ErrorSummaryComponent } from '../components/error-summary/error-summary.component';
 import { VersionWarningComponent } from '../components/version-warning/version-warning.component';
 import { TemplateFeedbackDialogComponent } from '../components/template-feedback-dialog/template-feedback-dialog.component';
+import { OfflineSyncPanelComponent } from '../offline/offline-sync-panel.component';
 const routes: Routes = [
   { path: ':templateId', component: FillComponent },
 ];
@@ -30,6 +31,7 @@ const routes: Routes = [
     ErrorSummaryComponent,
     VersionWarningComponent,
     TemplateFeedbackDialogComponent,
+    OfflineSyncPanelComponent,
   ],
   imports: [
     CommonModule,

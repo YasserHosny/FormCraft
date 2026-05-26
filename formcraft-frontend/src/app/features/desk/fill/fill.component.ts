@@ -16,6 +16,7 @@ import { DraftService } from '../services/draft.service';
 import { SubmissionService } from '../services/submission.service';
 import { HistoryService } from '../services/history.service';
 import { AutoFillService } from '../services/auto-fill.service';
+import { OfflineSyncService } from '../offline/offline-sync.service';
 
 @Component({
   selector: 'fc-fill',
@@ -34,6 +35,7 @@ export class FillComponent implements OnInit, OnDestroy {
   templateVersion = 0;
   submitting = false;
   savingDraft = false;
+  savingOffline = false;
   completionPercent = 0;
   cloneInfo: { id: string; ref: string } | null = null;
   visibleKeys = new Set<string>();
@@ -57,6 +59,7 @@ export class FillComponent implements OnInit, OnDestroy {
     private historyService: HistoryService,
     private conditionEngine: ConditionEngineService,
     private autoFillService: AutoFillService,
+    private offlineSync: OfflineSyncService,
   ) {}
 
   ngOnInit(): void {
@@ -426,6 +429,10 @@ export class FillComponent implements OnInit, OnDestroy {
   }
 
   onSaveDraft(): void {
+    if (!navigator.onLine) {
+      this.onSaveOfflineDraft();
+      return;
+    }
     if (this.savingDraft) return;
     this.savingDraft = true;
 
@@ -462,6 +469,37 @@ export class FillComponent implements OnInit, OnDestroy {
         },
       });
     }
+  }
+
+  onSaveOfflineDraft(): void {
+    if (!this.template || this.savingOffline) return;
+    this.savingOffline = true;
+    this.offlineSync.saveDraft(this.template.id, this.template.version, this.form.value)
+      .then(() => {
+        this.savingOffline = false;
+        this.isDirty = false;
+        this.snackBar.open(this.translate.instant('offline.draft_saved'), undefined, { duration: 2500 });
+      })
+      .catch(() => {
+        this.savingOffline = false;
+        this.snackBar.open(this.translate.instant('offline.save_failed'), undefined, { duration: 3000 });
+      });
+  }
+
+  onQueueOfflineSubmission(): void {
+    if (!this.template || !this.formValid || this.submitting) return;
+    this.submitting = true;
+    this.offlineSync.queueSubmission(this.template.id, this.template.version, this.form.value)
+      .then(() => {
+        this.submitting = false;
+        this.isDirty = false;
+        this.deleteDraftIfLoaded();
+        this.snackBar.open(this.translate.instant('offline.submission_queued'), undefined, { duration: 3000 });
+      })
+      .catch(() => {
+        this.submitting = false;
+        this.snackBar.open(this.translate.instant('offline.queue_failed'), undefined, { duration: 3000 });
+      });
   }
 
   private resolveSignatureUploads(submissionId: string, fieldValues: Record<string, any>) {

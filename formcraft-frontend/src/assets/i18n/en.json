@@ -1171,6 +1171,19 @@
       "title": "MFA Challenge",
       "code": "Enter 6-digit code"
     }
+  },
+  "offline": {
+    "online": "Online",
+    "offline": "Offline",
+    "pending_count": "{{count}} queued",
+    "sync_now": "Sync now",
+    "conflict": "Conflict",
+    "save_encrypted_draft": "Save encrypted draft",
+    "queue_submission": "Queue submission",
+    "draft_saved": "Encrypted offline draft saved",
+    "save_failed": "Could not save offline draft",
+    "submission_queued": "Submission queued for sync",
+    "queue_failed": "Could not queue submission"
   }
 }
 }
