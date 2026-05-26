@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { CanDeactivate } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable, of } from 'rxjs';
-import { TemplateWizardComponent } from './template-wizard.component';
+import { TemplateWizardComponent } from '../template-wizard.component';
 
 @Injectable()
 export class WizardCanDeactivateGuard implements CanDeactivate<TemplateWizardComponent> {

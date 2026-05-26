@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { OperatorAnalyticsItem } from '../../models/analytics.model';
@@ -11,7 +12,7 @@ import { AnalyticsService } from '../../services/analytics.service';
 @Component({
   selector: 'app-operator-analytics',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatTableModule, MatIconModule, TranslateModule],
+  imports: [CommonModule, MatCardModule, MatTableModule, MatIconModule, MatTooltipModule, TranslateModule],
   template: `
     <div class="operator-analytics">
       <h2>{{ 'analytics.operatorAnalytics' | translate }}</h2>

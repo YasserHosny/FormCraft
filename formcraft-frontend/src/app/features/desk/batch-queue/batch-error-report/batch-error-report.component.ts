@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
+  standalone: false,
   selector: 'app-batch-error-report',
   templateUrl: './batch-error-report.component.html',
   styleUrls: ['./batch-error-report.component.scss'],

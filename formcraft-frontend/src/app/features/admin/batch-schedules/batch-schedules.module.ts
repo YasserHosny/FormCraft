@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { BatchScheduleAdminComponent } from './batch-schedule-admin.component';
 
@@ -21,6 +22,7 @@ const routes: Routes = [
     MatButtonModule,
     MatIconModule,
     MatTableModule,
+    TranslateModule,
   ],
 })
 export class BatchSchedulesModule {}

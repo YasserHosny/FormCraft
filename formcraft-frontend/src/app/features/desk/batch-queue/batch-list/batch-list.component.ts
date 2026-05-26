@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { BatchService, BatchJobSummary } from '../../../../core/services/batch.service';
 
 @Component({
+  standalone: false,
   selector: 'app-batch-list',
   templateUrl: './batch-list.component.html',
   styleUrls: ['./batch-list.component.scss'],

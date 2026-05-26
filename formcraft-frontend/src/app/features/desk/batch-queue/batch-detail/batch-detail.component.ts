@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { BatchService, BatchJob } from '../../../../core/services/batch.service';
 
 @Component({
+  standalone: false,
   selector: 'app-batch-detail',
   templateUrl: './batch-detail.component.html',
   styleUrls: ['./batch-detail.component.scss'],

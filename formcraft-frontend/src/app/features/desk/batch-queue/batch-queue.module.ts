@@ -11,6 +11,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialogModule } from '@angular/material/dialog';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { BatchListComponent } from './batch-list/batch-list.component';
 import { BatchCreateWizardComponent } from './batch-create-wizard/batch-create-wizard.component';
@@ -54,6 +55,7 @@ const routes: Routes = [
     MatCardModule,
     MatChipsModule,
     MatDialogModule,
+    TranslateModule,
   ],
 })
 export class BatchQueueModule {}

@@ -6,7 +6,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
 import { FeedbackRealtimeService } from '../../../features/feedback/services/feedback-realtime.service';
 import { MyFeedbackService } from '../../../features/my-feedback/services/my-feedback.service';
 import { OrgAdminService } from '../../../core/services/org-admin.service';
-import { GlobalSearchBarComponent } from './global-search/global-search-bar.component';
+import { GlobalSearchBarComponent } from '../global-search/global-search-bar.component';
 
 interface ModeTab {
   key: string;

@@ -23,22 +23,22 @@
       <div
         *ngFor="let field of session.fields"
         class="field-wrapper"
-        [class.has-error]="validationErrors[field.key]"
+        [class.has-error]="validationErrors[field['key']]"
       >
-        <label [for]="field.key">{{ field.label }}</label>
+        <label [for]="field['key']">{{ field['label'] }}</label>
         <input
-          [id]="field.key"
-          [type]="field.type || 'text'"
-          [value]="fieldValues[field.key] || ''"
-          (input)="onFieldChange(field.key, $any($event).target.value)"
-          [required]="field.required"
+          [id]="field['key']"
+          [type]="field['type'] || 'text'"
+          [value]="fieldValues[field['key']] || ''"
+          (input)="onFieldChange(field['key'], $any($event).target.value)"
+          [required]="field['required']"
           [dir]="dir"
         />
-        <span *ngIf="validationErrors[field.key]" class="field-error">
-          {{ validationErrors[field.key] }}
+        <span *ngIf="validationErrors[field['key']]" class="field-error">
+          {{ validationErrors[field['key']] }}
         </span>
-        <span *ngIf="tafqeetMap[field.key]" class="tafqeet">
-          {{ tafqeetMap[field.key] }}
+        <span *ngIf="tafqeetMap[field['key']]" class="tafqeet">
+          {{ tafqeetMap[field['key']] }}
         </span>
       </div>
 

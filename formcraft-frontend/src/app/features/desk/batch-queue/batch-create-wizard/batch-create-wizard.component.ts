@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-batch-create-wizard',
   templateUrl: './batch-create-wizard.component.html',
   styleUrls: ['./batch-create-wizard.component.scss'],

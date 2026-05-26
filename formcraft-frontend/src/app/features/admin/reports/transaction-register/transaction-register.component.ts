@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ReportsService, TransactionFilter, ExportJobStatus } from '../../services/reports.service';
+import { TranslateModule } from '@ngx-translate/core';
 import { ReportFilterPanelComponent } from '../shared/report-filter-panel.component';
 import { ReportExportButtonComponent } from '../shared/report-export-button.component';
 
@@ -25,6 +26,7 @@ import { ReportExportButtonComponent } from '../shared/report-export-button.comp
     MatIconModule,
     MatCardModule,
     MatProgressSpinnerModule,
+    TranslateModule,
     ReportFilterPanelComponent,
     ReportExportButtonComponent,
   ],
