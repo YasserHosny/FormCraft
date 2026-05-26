@@ -44,6 +44,7 @@ from app.api.routes import (
     admin_portal,
     search,
     quickfill,
+    platform,
 )
 
 logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO))
@@ -110,6 +111,7 @@ def create_app() -> FastAPI:
     app.include_router(admin_portal.router, prefix="/api/admin")
     app.include_router(search.router, prefix="/api")
     app.include_router(quickfill.router, prefix="/api")
+    app.include_router(platform.router, prefix="/api")
 
     # Global handler for Supabase/PostgREST errors (missing tables/columns
     # from unapplied migrations) — returns a clear 503 instead of 500.

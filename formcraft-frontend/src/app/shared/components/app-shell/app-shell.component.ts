@@ -23,6 +23,7 @@ const MODE_TABS: ModeTab[] = [
   { key: 'adminExport', icon: 'file_download', route: '/admin/export', labelKey: 'adminExport.title', roles: ['admin'] },
   { key: 'portal', icon: 'public', route: '/admin/portal', labelKey: 'portalAdmin.title', roles: ['admin'] },
   { key: 'integrations', icon: 'hub', route: '/admin/integrations', labelKey: 'integrations.title', roles: ['admin'] },
+  { key: 'platform', icon: 'cloud', route: '/platform', labelKey: 'nav.platform', roles: ['admin'] },
 ];
 
 /** Returns the role-based default route for post-login redirect. */
@@ -228,6 +229,10 @@ export class AppShellComponent implements OnInit, OnDestroy {
       if (u) {
         // F15: Compute visible tabs for this role
         this.visibleTabs = MODE_TABS.filter((tab) => tab.roles.includes(u.role));
+        // F039: Show Platform tab only for platform admins
+        if (!u.is_platform_admin) {
+          this.visibleTabs = this.visibleTabs.filter((tab) => tab.key !== 'platform');
+        }
 
         // T046: Fetch org logo
         this.orgAdminService.getOrgSettings().subscribe({
@@ -292,6 +297,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
 
   /** F15: Detect which mode tab is active based on the current URL. */
   private detectModeFromUrl(url: string): string {
+    if (url.startsWith('/platform')) return 'platform';
     if (url.startsWith('/admin/export')) return 'adminExport';
     if (url.startsWith('/admin/integrations')) return 'integrations';
     if (url.startsWith('/admin/portal')) return 'portal';
