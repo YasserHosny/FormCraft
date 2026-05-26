@@ -1069,5 +1069,43 @@
     "CONTEXT_LABEL": "Context",
     "CONTEXT_PLATFORM": "Platform",
     "CONTEXT_ORG": "Organization"
+  },
+  "analytics": {
+    "title": "Analytics Dashboard",
+    "fieldAnalytics": "Field Analytics",
+    "operatorAnalytics": "Operator Analytics",
+    "complianceAnalytics": "Compliance Analytics",
+    "templateUsage": "Template Usage",
+    "errorRate": "Error Rate",
+    "emptyRate": "Empty Rate",
+    "avgFillTime": "Avg Fill Time",
+    "topErrors": "Top Errors",
+    "warning": "Warning",
+    "formsFilled": "Forms Filled",
+    "coachingFlag": "Needs Coaching",
+    "busiestHours": "Busiest Hours",
+    "validatorCoverage": "Validator Coverage",
+    "bilingualLabels": "Bilingual Labels",
+    "qualityScore": "Quality Score",
+    "templatesNeedingAttention": "Templates Needing Attention",
+    "accessSpikeAlert": "Unusual Data Access Detected",
+    "funnel": {
+      "started": "Started",
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "printed": "Printed",
+      "conversionRate": "Conversion Rate"
+    },
+    "versionAdoption": "Version Adoption",
+    "byDepartment": "By Department",
+    "byBranch": "By Branch",
+    "export": "Export",
+    "exportCsv": "Export CSV",
+    "exportPng": "Export PNG",
+    "exportPdf": "Export PDF",
+    "period": "Period",
+    "dateRange": "Date Range",
+    "na": "N/A",
+    "computedAt": "Computed at"
   }
 }

@@ -1063,5 +1063,43 @@
     "CONTEXT_LABEL": "السياق",
     "CONTEXT_PLATFORM": "المنصة",
     "CONTEXT_ORG": "المؤسسة"
+  },
+  "analytics": {
+    "title": "لوحة التحليلات",
+    "fieldAnalytics": "تحليلات الحقول",
+    "operatorAnalytics": "تحليلات المشغل",
+    "complianceAnalytics": "تحليلات الامتثال",
+    "templateUsage": "استخدام القالب",
+    "errorRate": "معدل الخطأ",
+    "emptyRate": "معدل الفراغ",
+    "avgFillTime": "متوسط وقت التعبئة",
+    "topErrors": "أهم الأخطاء",
+    "warning": "تحذير",
+    "formsFilled": "النماذج المُعَبَّأة",
+    "coachingFlag": "يحتاج إلى توجيه",
+    "busiestHours": "أكثر الساعات ازدحاماً",
+    "validatorCoverage": "تغطية المُحقِّق",
+    "bilingualLabels": "التسميات الثنائية",
+    "qualityScore": "درجة الجودة",
+    "templatesNeedingAttention": "قوالب تحتاج اهتماماً",
+    "accessSpikeAlert": "تم رصد وصول غير اعتيادي للبيانات",
+    "funnel": {
+      "started": "بدأ",
+      "draft": "مسودة",
+      "submitted": "مُقدَّم",
+      "printed": "مطبوع",
+      "conversionRate": "معدل التحويل"
+    },
+    "versionAdoption": "اعتماد الإصدار",
+    "byDepartment": "حسب القسم",
+    "byBranch": "حسب الفرع",
+    "export": "تصدير",
+    "exportCsv": "تصدير CSV",
+    "exportPng": "تصدير PNG",
+    "exportPdf": "تصدير PDF",
+    "period": "الفترة",
+    "dateRange": "نطاق التاريخ",
+    "na": "غير متاح",
+    "computedAt": "حُسِب في"
   }
 }
