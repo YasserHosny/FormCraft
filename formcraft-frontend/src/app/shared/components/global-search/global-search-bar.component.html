@@ -1,6 +1,5 @@
 <div class="global-search-container" role="search" [attr.aria-label]="'search.aria_label' | translate">
   <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
-    <mat-label>{{ 'search.placeholder' | translate }}</mat-label>
     <input
       #searchInput
       matInput
@@ -10,6 +9,7 @@
       (focus)="onFocus()"
       (blur)="onBlur()"
       (keydown)="onKeydown($event)"
+      [placeholder]="'search.placeholder' | translate"
       [attr.aria-label]="'search.aria_label' | translate"
       autocomplete="off"
     />

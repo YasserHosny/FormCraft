@@ -946,7 +946,8 @@
       "signingSecret": "سر التوقيع",
       "testDelivery": "اختبار التوصيل",
       "deliveries": "سجل التوصيل"
-    },
+    }
+  },
   "templateWizard": {
     "title": "نموذج جديد",
     "stepBasicInfo": "المعلومات الأساسية",
@@ -1159,5 +1160,4 @@
     "VERIFY_INTEGRITY": "التحقق من السلامة",
     "SIGNERS": "الموقعون"
   }
-}
 }

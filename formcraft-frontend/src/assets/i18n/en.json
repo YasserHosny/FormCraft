@@ -952,7 +952,8 @@
       "signingSecret": "Signing Secret",
       "testDelivery": "Test Delivery",
       "deliveries": "Delivery Log"
-    },
+    }
+  },
   "templateWizard": {
     "title": "New Template",
     "stepBasicInfo": "Basic Info",
@@ -1165,5 +1166,4 @@
     "VERIFY_INTEGRITY": "Verify Integrity",
     "SIGNERS": "Signers"
   }
-}
 }
