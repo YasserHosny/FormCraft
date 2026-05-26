@@ -1,5 +1,4 @@
 import pytest
-import asyncio
 from uuid import uuid4
 
 from app.services.batch_generation_service import BatchGenerationService

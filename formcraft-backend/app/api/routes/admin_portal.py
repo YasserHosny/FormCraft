@@ -1,10 +1,9 @@
 """Admin portal routes for portal configuration and analytics."""
 
-from datetime import datetime, timezone
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import require_role
 from app.core.supabase import get_supabase_client

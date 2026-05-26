@@ -9,7 +9,6 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from supabase import Client
 
-from app.core.audit import AuditLogger
 from app.schemas.portal import (
     PortalAnalyticsResponse,
     PortalConfiguration,

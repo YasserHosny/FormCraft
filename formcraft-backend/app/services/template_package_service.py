@@ -36,7 +36,7 @@ class TemplatePackageService:
             )
 
         template = template_result.data
-        org_id = template["org_id"]
+        template["org_id"]
 
         # Fetch pages
         pages_result = (

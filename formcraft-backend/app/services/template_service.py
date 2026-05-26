@@ -1,6 +1,5 @@
 """Template, Page, and Element CRUD operations via Supabase."""
 
-from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException, status
@@ -975,7 +974,7 @@ class TemplateService:
         }
 
     async def get_reviews(self, template_id: UUID) -> list[dict]:
-        template = await self.get_template(template_id)
+        await self.get_template(template_id)
 
         reviews_result = (
             self.client.table("template_reviews")

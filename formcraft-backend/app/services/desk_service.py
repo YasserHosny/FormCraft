@@ -4,12 +4,11 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from supabase import Client
 
-from app.models.desk import NotificationDismissal, OperatorPin
+from app.models.desk import OperatorPin
 from app.schemas.desk import (
     DashboardResponse,
     NotificationResponse,
     PinnedTemplateResponse,
-    PinRequest,
     RecentTemplateResponse,
     TemplateCardResponse,
     TemplatesPageResponse,

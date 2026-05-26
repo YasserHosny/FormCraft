@@ -4,11 +4,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel
 
-from app.api.deps import get_current_user, require_role
+from app.api.deps import get_current_user
 from app.core.audit import AuditLogger
 from app.core.supabase import get_supabase_client
-from app.middleware.org_context import OrgContext, get_org_context, require_org_admin
-from app.models.enums import Role
+from app.middleware.org_context import OrgContext, require_org_admin
 from app.models.user import UserProfile
 from app.schemas.user import UpdateProfileRequest, UpdateRoleRequest, UserProfileResponse
 from app.services.user_service import UserService

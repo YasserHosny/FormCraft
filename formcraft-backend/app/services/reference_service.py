@@ -1,6 +1,5 @@
 """Service for reference data list and entry management."""
 
-from datetime import datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status

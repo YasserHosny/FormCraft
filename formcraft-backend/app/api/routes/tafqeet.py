@@ -3,7 +3,6 @@
 POST /api/tafqeet/preview — stateless amount-to-words conversion for canvas preview.
 """
 
-from decimal import Decimal
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status

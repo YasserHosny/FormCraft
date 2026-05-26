@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 # Font directory relative to project root

@@ -2,8 +2,8 @@
 
 import os
 from datetime import datetime, timezone
-from unittest.mock import MagicMock, patch
-from uuid import UUID, uuid4
+from unittest.mock import MagicMock
+from uuid import UUID
 
 import pytest
 from jose import jwt

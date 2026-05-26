@@ -1,5 +1,4 @@
-import pytest
-from datetime import datetime, time
+from datetime import datetime
 from uuid import uuid4
 
 from app.services.batch_schedule_service import BatchScheduleService

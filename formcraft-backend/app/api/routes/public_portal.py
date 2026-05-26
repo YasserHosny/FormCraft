@@ -1,10 +1,9 @@
 """Public portal routes for anonymous form discovery and portal-session actions."""
 
 from datetime import datetime, timezone
-from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import APIRouter, Header, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request, status
 
 from app.core.supabase import get_supabase_client
 from app.schemas.portal import (
@@ -316,8 +315,6 @@ async def download_public_pdf(
         )
 
     # Reuse existing PDF renderer for pinned template version
-    from fastapi.responses import StreamingResponse
-    from app.services.pdf.renderer import PDFRenderer
 
     submission_id = meta["submission_id"]
     submission_resp = (

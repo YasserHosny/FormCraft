@@ -6,7 +6,6 @@ is implemented and registered in RENDERER_MAP.
 Run with: pytest tests/unit/tafqeet/test_pdf_tafqeet.py -v
 """
 
-import pytest
 
 from app.services.pdf.element_renderers.tafqeet_renderer import TafqeetRenderer
 

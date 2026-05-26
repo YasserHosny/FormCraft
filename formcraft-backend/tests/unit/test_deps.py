@@ -6,7 +6,6 @@ from fastapi import HTTPException
 
 from app.api.deps import get_current_user, require_role
 from app.models.enums import Role
-from app.models.user import UserProfile
 from tests.conftest import make_supabase_response
 
 

@@ -1,6 +1,5 @@
 """Unit tests for Arabic-specific validators."""
 
-import pytest
 
 from app.services.validators.egypt import (
     EgyptIbanValidator,
@@ -8,7 +7,6 @@ from app.services.validators.egypt import (
     EgyptPhoneValidator,
 )
 from app.services.validators.saudi import (
-    SaudiIbanValidator,
     SaudiNationalIdValidator,
     SaudiVatValidator,
 )

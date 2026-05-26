@@ -1,7 +1,6 @@
 """In-memory LRU cache for reference data dropdown queries."""
 
 import time
-from functools import lru_cache
 from threading import Lock
 
 _cache: dict[str, tuple[float, list[dict]]] = {}

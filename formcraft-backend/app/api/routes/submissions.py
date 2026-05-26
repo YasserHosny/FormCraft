@@ -15,7 +15,6 @@ from app.schemas.submission import (
     SubmissionListResponse,
     SubmissionListItem,
     SubmissionDetailResponse,
-    ReprintResponse,
 )
 from app.services.submission_service import SubmissionService
 
@@ -131,16 +130,15 @@ async def reprint_submission(
     template_id = data["template_id"]
 
     try:
-        template_result = (
+        (
             client.table("templates")
             .select("id, name, version, country")
             .eq("id", str(template_id))
             .single()
             .execute()
         )
-        template_data = template_result.data if template_result.data else {}
     except Exception:
-        template_data = {}
+        pass
 
     pdf_bytes = await render_reprint_pdf(
         client=client,
@@ -233,7 +231,7 @@ async def upload_signature(
         raise HTTPException(status_code=413, detail="Signature file too large (max 500KB)")
 
     client = get_supabase_client()
-    user_id = str(current_user.id)
+    str(current_user.id)
 
     path = f"{current_user.org_id}/{submission_id}/{element_key}.png"
     result = client.storage.from_("signatures").upload(path, content, {"content-type": "image/png"})

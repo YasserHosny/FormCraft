@@ -1,7 +1,7 @@
 """Unit tests for ReplyService — feedback threading & notifications (Feature 014)."""
 
 from datetime import datetime, timezone
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 from uuid import UUID, uuid4
 
 import pytest
@@ -716,7 +716,7 @@ class TestReplyDurability:
         )
 
         payload = ReplyCreateRequest(text_content="Fix deployed.")
-        posted = await service.post_reply(
+        await service.post_reply(
             feedback_id=feedback_id,
             author_id=admin_id,
             author_role="admin",

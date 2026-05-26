@@ -428,7 +428,7 @@ class ExportService:
         # Generate export using schedule filters
         from app.schemas.export import ExportFilters
         filters = ExportFilters(**(schedule.get("filters") or {}))
-        request = ExportPreviewRequest(filters=filters, format=schedule["format"], scope=schedule["scope"])
+        ExportPreviewRequest(filters=filters, format=schedule["format"], scope=schedule["scope"])
 
         rows, total = self._fetch_submission_rows(org_id, filters, limit=MAX_DIRECT_EXPORT_ROWS + 1)
 

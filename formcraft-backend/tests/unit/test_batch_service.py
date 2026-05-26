@@ -1,4 +1,3 @@
-import pytest
 from uuid import uuid4
 
 from app.services.batch_service import BatchService

@@ -84,7 +84,7 @@ class QuickFillService:
             .execute()
         )
         elements = elements_result.data or []
-        element_keys = {e["key"].lower(): e for e in elements}
+        {e["key"].lower(): e for e in elements}
 
         # Get mappings
         mappings = await self.get_quickfill_mappings(org_id)

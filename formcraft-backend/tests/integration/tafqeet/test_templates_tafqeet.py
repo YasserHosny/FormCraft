@@ -8,7 +8,6 @@ Tests that:
 Run with: pytest tests/integration/tafqeet/test_templates_tafqeet.py -v
 """
 
-from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 

@@ -6,7 +6,6 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from supabase import Client
 
-from app.models.enums import IdentifierType
 from app.schemas.customer import CustomerCreate, CustomerUpdate
 
 

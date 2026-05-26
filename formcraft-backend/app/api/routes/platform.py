@@ -13,7 +13,6 @@ from app.schemas.platform import (
     FirstAdminInvite,
     OrganizationCreate,
     OrganizationDetail,
-    OrganizationSummary,
     OrganizationUpdate,
     PlatformMetrics,
 )

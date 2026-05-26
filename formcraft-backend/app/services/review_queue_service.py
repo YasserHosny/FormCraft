@@ -329,7 +329,7 @@ class ReviewQueueService:
             "department_id": str(department_id),
             "reviewer_id": str(reviewer_id),
         }
-        result = (
+        (
             self.client.table("department_default_reviewers").upsert(data).execute()
         )
         return await self.get_default_reviewer(org_id, department_id)

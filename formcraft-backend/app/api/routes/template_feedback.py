@@ -11,8 +11,6 @@ from app.core.supabase import get_supabase_client
 from app.models.enums import Role
 from app.models.user import UserProfile
 from app.schemas.template_feedback import (
-    TemplateFeedbackAdminOverviewResponse,
-    TemplateFeedbackListResponse,
     TemplateFeedbackSubmitRequest,
     TemplateFeedbackUpdateRequest,
 )

@@ -4,7 +4,6 @@ import logging
 import re
 from typing import Literal
 
-from app.models.enums import ElementType
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +68,7 @@ class FieldClassifier:
         Returns:
             Suggested element type
         """
-        text_lower = text.lower().strip()
+        text.lower().strip()
         nearby_text = " ".join(nearby_labels or []).lower()
 
         # Check for date patterns

@@ -18,7 +18,7 @@ class SignatureRenderer(ElementHTMLRenderer):
             src = ""
 
         if src:
-            pen_color = props.get("pen_color", "#000000")
+            props.get("pen_color", "#000000")
             return (
                 f'<img src="{src}" '
                 f'style="{style} object-fit: contain; '

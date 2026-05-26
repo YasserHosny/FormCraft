@@ -3,9 +3,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.api.deps import get_current_user, require_role
+from app.api.deps import get_current_user
 from app.core.supabase import get_supabase_client
-from app.models.enums import Role
 from app.models.user import UserProfile
 from app.schemas.notification import (
     MarkAllReadResponse,

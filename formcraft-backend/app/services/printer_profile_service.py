@@ -3,7 +3,7 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from supabase import Client
 
 from app.models.print_settings import PrinterProfile

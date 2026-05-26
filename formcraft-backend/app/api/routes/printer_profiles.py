@@ -10,7 +10,7 @@ from app.api.deps import get_current_user, require_role
 from app.core.supabase import get_supabase_client
 from app.models.enums import Role
 from app.models.user import UserProfile
-from app.schemas.print_settings import PrinterProfileCreate, PrinterProfileUpdate, PrinterProfileResponse
+from app.schemas.print_settings import PrinterProfileCreate, PrinterProfileUpdate
 from app.services.printer_profile_service import PrinterProfileService
 
 router = APIRouter(prefix="/printer-profiles", tags=["Printer Profiles"])

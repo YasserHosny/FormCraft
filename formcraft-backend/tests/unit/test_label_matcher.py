@@ -1,6 +1,5 @@
 """Unit tests for label matcher."""
 
-import pytest
 
 from app.services.validators.label_matcher import LabelMatcher
 

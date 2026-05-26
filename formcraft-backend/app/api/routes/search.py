@@ -1,9 +1,8 @@
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
-from app.api.deps import get_current_user, require_role
+from app.api.deps import require_role
 from app.core.supabase import get_supabase_client
 from app.models.enums import Role
 from app.models.user import UserProfile

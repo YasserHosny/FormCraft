@@ -3,7 +3,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.api.deps import require_role
-from app.core.middleware.rate_limit import limiter
 from app.core.supabase import get_supabase_client
 from app.core.audit import AuditLogger
 from app.models.enums import Role

@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Request, UploadFile
+from fastapi import APIRouter, Depends, Query, UploadFile
 
 from app.core.supabase import get_supabase_client
 from app.middleware.org_context import OrgContext, require_platform_admin
