@@ -1,0 +1,221 @@
+<!-- Designer sub-toolbar -->
+<div class="designer-toolbar">
+  <button class="fc-icon-btn"><mat-icon>arrow_forward</mat-icon></button>
+  <div class="toolbar-info">
+    <div class="toolbar-title">
+      طلب فتح حساب جاري للأفراد
+      <span class="version fc-num">AC-001 · v4.2</span>
+    </div>
+    <div class="toolbar-status"><mat-icon>cloud_done</mat-icon>محفوظ تلقائياً قبل 12 ثانية</div>
+  </div>
+  <span class="grow"></span>
+
+  <!-- Page navigation -->
+  <div class="page-nav">
+    <button class="fc-icon-btn sm"><mat-icon>chevron_right</mat-icon></button>
+    <span class="page-text">الصفحة <span class="fc-num">١</span> من <span class="fc-num">٢</span></span>
+    <button class="fc-icon-btn sm"><mat-icon>chevron_left</mat-icon></button>
+  </div>
+
+  <!-- Zoom -->
+  <div class="zoom-control">
+    <button class="fc-icon-btn sm"><mat-icon>remove</mat-icon></button>
+    <span class="zoom-text fc-num">100%</span>
+    <button class="fc-icon-btn sm"><mat-icon>add</mat-icon></button>
+  </div>
+
+  <span class="separator"></span>
+
+  <button class="fc-btn ghost ai-btn"><mat-icon>auto_awesome</mat-icon>اقتراحات AI</button>
+  <button class="fc-btn ghost"><mat-icon>visibility</mat-icon>معاينة</button>
+  <button class="fc-btn ghost"><mat-icon>history</mat-icon>الإصدارات</button>
+  <button class="fc-btn outline"><mat-icon>save</mat-icon>حفظ كمسودة</button>
+  <button class="fc-btn primary"><mat-icon>rocket_launch</mat-icon>إرسال للمراجعة</button>
+</div>
+
+<!-- 3-column layout -->
+<div class="designer-layout">
+  <!-- Left palette panel -->
+  <aside class="palette-panel">
+    <div class="palette-search">
+      <div class="search-input">
+        <mat-icon>search</mat-icon>
+        <input placeholder="بحث في المكوّنات..." />
+      </div>
+    </div>
+    <div class="palette-scroll">
+      <div class="palette-group" *ngFor="let group of paletteGroups">
+        <div class="palette-label">{{ group.label }}</div>
+        <div class="palette-grid">
+          <div class="palette-item" *ngFor="let item of group.items">
+            <mat-icon>{{ item.icon }}</mat-icon>
+            <span>{{ item.label }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="palette-group">
+        <div class="palette-label">كائنات النموذج</div>
+        <div class="object-list">
+          <div class="object-item" *ngFor="let obj of objectItems">
+            <mat-icon>{{ obj.icon }}</mat-icon>
+            <span>{{ obj.label }}</span>
+            <span class="object-count fc-num">{{ obj.count }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Canvas area -->
+  <div class="canvas-area">
+    <div class="canvas-wrapper">
+      <div class="page-size-label fc-num">A4 · 210mm × 297mm</div>
+      <div class="paper">
+        <!-- Header area -->
+        <div class="paper-logo">شعار</div>
+        <div class="paper-qr">QR</div>
+        <div class="paper-header-text">
+          مصرف الإمارات للتنمية — فرع أبوظبي الرئيسي<br />
+          طلب فتح حساب جاري للأفراد
+        </div>
+
+        <!-- Section headers -->
+        <div class="section-bar" style="top: 88px">١ — بيانات مقدم الطلب</div>
+        <div class="section-bar" style="top: 260px">٢ — تفاصيل الحساب المطلوب</div>
+        <div class="section-bar" style="top: 395px">٣ — الإقرارات</div>
+
+        <!-- Fields -->
+        <div class="ds-field"
+             *ngFor="let f of canvasFields"
+             [style.inset-inline-start.px]="f.x"
+             [style.top.px]="f.y"
+             [style.width.px]="f.w"
+             [style.height.px]="f.h"
+             [class.selected]="f.selected"
+             [class.signature]="f.signature">
+          <span class="ds-label" *ngIf="f.label">{{ f.label }}</span>
+          <span class="ds-value" *ngIf="f.value && f.kind !== 'check'">{{ f.value }}</span>
+          <span class="ds-check" *ngIf="f.kind === 'check'">
+            <span class="check-box"></span>{{ f.value }}
+          </span>
+          <span class="ds-signature" *ngIf="f.signature">توقيع</span>
+          <span class="ai-badge" *ngIf="f.ai">AI</span>
+          <!-- Selection handles -->
+          <ng-container *ngIf="f.selected">
+            <span class="handle tl"></span>
+            <span class="handle tr"></span>
+            <span class="handle bl"></span>
+            <span class="handle br"></span>
+          </ng-container>
+        </div>
+
+        <!-- Page footer -->
+        <div class="paper-footer">
+          <span>AC-001 · v4.2</span>
+          <span class="fc-num">صفحة 1 / 2</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right properties panel -->
+  <aside class="props-panel">
+    <div class="prop-tabs">
+      <div class="prop-tab"
+           *ngFor="let tab of propTabs"
+           [class.active]="activePropTab === tab.key"
+           (click)="activePropTab = tab.key">
+        {{ tab.label }}
+      </div>
+    </div>
+    <div class="props-scroll">
+      <!-- Field info -->
+      <div class="field-info">
+        <mat-icon class="field-icon">attach_money</mat-icon>
+        <span class="field-name">حقل: الراتب الشهري</span>
+        <span class="ai-tag">AI</span>
+      </div>
+
+      <!-- Label group -->
+      <div class="prop-group">
+        <div class="prop-group-title">التسمية</div>
+        <div class="prop-field">
+          <label>عربي</label>
+          <div class="prop-input"><span>الراتب الشهري التقريبي</span></div>
+        </div>
+        <div class="prop-field">
+          <label>English</label>
+          <div class="prop-input"><span>Monthly Salary (approx.)</span></div>
+        </div>
+        <div class="prop-field">
+          <label>مفتاح الحقل</label>
+          <div class="prop-input mono"><span>monthly_salary</span></div>
+        </div>
+      </div>
+
+      <!-- Position group -->
+      <div class="prop-group">
+        <div class="prop-group-title">الموضع والأبعاد</div>
+        <div class="prop-grid-2">
+          <div class="prop-field">
+            <label>X</label>
+            <div class="prop-input mono"><span>24</span><em>px</em></div>
+          </div>
+          <div class="prop-field">
+            <label>Y</label>
+            <div class="prop-input mono"><span>336</span><em>px</em></div>
+          </div>
+          <div class="prop-field">
+            <label>العرض</label>
+            <div class="prop-input mono"><span>361</span><em>px</em></div>
+          </div>
+          <div class="prop-field">
+            <label>الارتفاع</label>
+            <div class="prop-input mono"><span>42</span><em>px</em></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Type group -->
+      <div class="prop-group">
+        <div class="prop-group-title">النوع والتنسيق</div>
+        <div class="prop-field">
+          <label>النوع</label>
+          <div class="prop-input select"><span>رقم / مبلغ</span><mat-icon>expand_more</mat-icon></div>
+        </div>
+        <div class="prop-field">
+          <label>العملة</label>
+          <div class="prop-input select"><span>درهم إماراتي (AED)</span><mat-icon>expand_more</mat-icon></div>
+        </div>
+        <div class="prop-toggle">
+          <span>تفقيط تلقائي بالعربية</span>
+          <div class="toggle on"><div class="toggle-dot"></div></div>
+        </div>
+        <div class="prop-toggle">
+          <span>إلزامي</span>
+          <div class="toggle on"><div class="toggle-dot"></div></div>
+        </div>
+      </div>
+
+      <!-- Validation group -->
+      <div class="prop-group">
+        <div class="prop-group-title">قواعد التحقق</div>
+        <div class="rules-box">
+          <div class="rule"><mat-icon>rule</mat-icon><span>أقل قيمة: <b class="fc-num">3,000</b></span></div>
+          <div class="rule"><mat-icon>rule</mat-icon><span>أعلى قيمة: <b class="fc-num">500,000</b></span></div>
+        </div>
+        <button class="add-rule"><mat-icon>add</mat-icon>إضافة قاعدة</button>
+      </div>
+
+      <!-- AI suggestion -->
+      <div class="ai-suggestion">
+        <div class="ai-header"><mat-icon>auto_awesome</mat-icon><span>اقتراح من الذكاء الاصطناعي</span></div>
+        <p>لاحظنا أن حقول الدخل عادةً ما تُقرن بحقل "مصدر الدخل". هل ترغب في ربط الحقلين منطقياً؟</p>
+        <div class="ai-actions">
+          <button class="fc-btn primary sm">تطبيق</button>
+          <button class="fc-btn ghost sm">تجاهل</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>

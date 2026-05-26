@@ -1,0 +1,380 @@
+.page-body {
+  padding: 20px 24px;
+  flex: 1;
+  overflow: auto;
+}
+
+// KPI Grid
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+// Section header
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.section-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  h2 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+.section-sub {
+  font-size: 11.5px;
+  color: var(--fc-text-3);
+}
+
+// Pinned forms grid
+.pin-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.pin-card {
+  background: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: var(--fc-elev-1);
+  position: relative;
+  min-height: 116px;
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: var(--fc-elev-2);
+    transform: translateY(-1px);
+  }
+}
+
+.pin-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.pin-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fc-text);
+  line-height: 1.3;
+}
+
+.pin-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--fc-text-3);
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.pin-badge {
+  position: absolute;
+  top: 10px;
+  inset-inline-end: 10px;
+  background: var(--fc-accent-50);
+  color: var(--fc-accent-dark);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Noto Sans', sans-serif;
+}
+
+// Two column layout
+.two-col {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 18px;
+}
+
+// Card styles
+.fc-card {
+  background: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: 8px;
+  box-shadow: var(--fc-elev-1);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--fc-divider);
+}
+
+.card-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+  }
+}
+
+.card-sub {
+  font-size: 11px;
+  color: var(--fc-text-3);
+}
+
+// Table
+.fc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  thead th {
+    height: 36px;
+    padding: 0 12px;
+    text-align: start;
+    background: var(--fc-surface-2);
+    border-bottom: 1px solid var(--fc-border);
+    color: var(--fc-text-3);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    height: 36px;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--fc-divider);
+    color: var(--fc-text);
+    vertical-align: middle;
+    font-size: 12px;
+  }
+
+  tbody tr:hover td {
+    background: var(--fc-surface-2);
+  }
+
+  .col-time { width: 70px; }
+  .col-status { width: 100px; }
+  .col-actions { width: 100px; }
+}
+
+.customer-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.customer-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.customer-name {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.customer-ref {
+  font-size: 10.5px;
+  color: var(--fc-text-3);
+}
+
+.action-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fc-icon-btn {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--fc-text-3);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: var(--fc-surface-3);
+    color: var(--fc-text);
+  }
+}
+
+// Drafts list
+.drafts-list {
+  padding: 8px;
+}
+
+.draft-item {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--fc-divider);
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:hover {
+    background: var(--fc-surface-2);
+  }
+
+  &.no-border {
+    border-bottom: none;
+  }
+}
+
+.draft-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.draft-form {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.draft-time {
+  font-size: 11px;
+  color: var(--fc-text-3);
+}
+
+.draft-customer {
+  font-size: 11.5px;
+  color: var(--fc-text-2);
+  margin-bottom: 6px;
+}
+
+.draft-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 5px;
+  background: var(--fc-surface-3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--fc-primary);
+  border-radius: 3px;
+  transition: width 0.3s;
+
+  &.warn {
+    background: var(--fc-warn);
+  }
+}
+
+.progress-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fc-text-2);
+}
+
+.warn-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  color: var(--fc-warn);
+}
+
+// Buttons
+.fc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--fc-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
+
+  &.outline {
+    border-color: var(--fc-border-strong);
+    color: var(--fc-text-2);
+    background: var(--fc-surface);
+
+    &:hover { background: var(--fc-surface-2); }
+  }
+
+  &.accent {
+    background: var(--fc-accent);
+    color: var(--fc-primary-deep);
+    border-color: transparent;
+
+    &:hover { background: var(--fc-accent-dark); }
+  }
+
+  &.ghost {
+    color: var(--fc-text-2);
+
+    &:hover { background: var(--fc-surface-3); color: var(--fc-text); }
+  }
+
+  &.sm {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+}
+
+// Responsive
+@media (max-width: 1200px) {
+  .pin-grid { grid-template-columns: repeat(3, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+}

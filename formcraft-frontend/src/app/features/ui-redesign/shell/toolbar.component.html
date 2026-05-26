@@ -1,0 +1,53 @@
+<header class="fc-toolbar">
+  <!-- Brand -->
+  <div class="brand-logo">FC</div>
+  <span class="brand-name">FormCraft</span>
+  <span class="brand-sep"></span>
+
+  <!-- Mode Tabs -->
+  <nav class="fc-mode-tabs">
+    <a *ngFor="let tab of tabs"
+       class="fc-mode-tab"
+       [class.active]="activeMode === tab.key"
+       [routerLink]="tab.route">
+      <mat-icon>{{ tab.icon }}</mat-icon>
+      <span>{{ tab.label }}</span>
+    </a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <!-- Global Search -->
+  <div class="fc-toolbar-search">
+    <mat-icon>search</mat-icon>
+    <input placeholder="ابحث في النماذج والعملاء والإعدادات..." />
+    <kbd>⌘K</kbd>
+  </div>
+
+  <!-- Help -->
+  <button class="fc-toolbar-btn">
+    <mat-icon>help_outline</mat-icon>
+  </button>
+
+  <!-- Notifications -->
+  <button class="fc-toolbar-btn" (click)="notificationClick.emit()">
+    <mat-icon>notifications</mat-icon>
+    <span class="fc-badge-dot" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+  </button>
+
+  <!-- User Chip -->
+  <div class="fc-user-chip" [matMenuTriggerFor]="userMenu">
+    <div class="avatar">{{ user.initials }}</div>
+    <div class="user-info">
+      <span class="name">{{ user.name }}</span>
+      <span class="role">{{ user.role }}</span>
+    </div>
+    <mat-icon class="expand">expand_more</mat-icon>
+  </div>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item>الملف الشخصي</button>
+    <button mat-menu-item>اللغة: العربية / EN</button>
+    <button mat-menu-item>تسجيل الخروج</button>
+  </mat-menu>
+</header>

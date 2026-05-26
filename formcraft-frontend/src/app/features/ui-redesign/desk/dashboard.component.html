@@ -1,0 +1,114 @@
+<fc-page-header title="مرحباً أحمد، فرع أبوظبي الرئيسي" subtitle="السبت ٢٥ مايو ٢٠٢٦ — الوردية الصباحية">
+  <div actions>
+    <button class="fc-btn outline"><mat-icon>qr_code_scanner</mat-icon>مسح هوية</button>
+    <button class="fc-btn accent"><mat-icon>edit_document</mat-icon>تعبئة نموذج جديد</button>
+  </div>
+</fc-page-header>
+
+<div class="page-body">
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <fc-kpi-card label="نماذج معبأة اليوم" value="٢٣" delta="+18% عن المتوسط اليومي" deltaDir="up" icon="task_alt"></fc-kpi-card>
+    <fc-kpi-card label="مسوّدات بانتظارك" value="٦" delta="٢ تنتهي صلاحيتها غداً" deltaDir="down" icon="pending_actions"></fc-kpi-card>
+    <fc-kpi-card label="عملاء جدد هذا الأسبوع" value="٤٧" delta="+12 عن الأسبوع الماضي" deltaDir="up" icon="person_add"></fc-kpi-card>
+    <fc-kpi-card label="متوسط زمن التعبئة" value="٣:٤٢" delta="-22 ثانية" deltaDir="up" icon="schedule"></fc-kpi-card>
+  </div>
+
+  <!-- Pinned Forms -->
+  <div class="section-header">
+    <div class="section-info">
+      <h2>النماذج المثبّتة</h2>
+      <span class="section-sub">أكثر النماذج استخداماً — يمكنك تثبيت حتى ١٠</span>
+    </div>
+    <button class="fc-btn ghost sm"><mat-icon>push_pin</mat-icon>إدارة التثبيت</button>
+  </div>
+
+  <div class="pin-grid">
+    <div class="pin-card" *ngFor="let p of pinnedForms">
+      <div class="pin-icon" [style.background]="p.color">
+        <mat-icon>{{ p.icon }}</mat-icon>
+      </div>
+      <div class="pin-name">{{ p.name }}</div>
+      <div class="pin-meta">
+        <span>{{ p.code }}</span>
+        <span>{{ p.lastUsed }}</span>
+      </div>
+      <span class="pin-badge" *ngIf="p.accent">{{ p.count }} اليوم</span>
+    </div>
+  </div>
+
+  <!-- Two column layout -->
+  <div class="two-col">
+    <!-- Recent activity table -->
+    <div class="fc-card">
+      <div class="card-header">
+        <div class="card-header-info">
+          <h3>آخر المعاملات</h3>
+          <span class="card-sub">٢٣ معاملة اليوم</span>
+        </div>
+        <button class="fc-btn ghost sm">عرض الكل<mat-icon>chevron_left</mat-icon></button>
+      </div>
+      <table class="fc-table">
+        <thead>
+          <tr>
+            <th class="col-time">الوقت</th>
+            <th>العميل</th>
+            <th>النموذج</th>
+            <th class="col-status">الحالة</th>
+            <th class="col-actions">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of activities">
+            <td class="fc-num">{{ a.time }}</td>
+            <td>
+              <div class="customer-cell">
+                <fc-avatar [name]="a.customer" size="sm" [color]="a.color"></fc-avatar>
+                <div class="customer-info">
+                  <span class="customer-name">{{ a.customer }}</span>
+                  <span class="customer-ref fc-num">{{ a.ref }}</span>
+                </div>
+              </div>
+            </td>
+            <td>{{ a.form }}</td>
+            <td><fc-status-chip [status]="a.status"></fc-status-chip></td>
+            <td>
+              <div class="action-btns">
+                <button class="fc-icon-btn"><mat-icon>visibility</mat-icon></button>
+                <button class="fc-icon-btn"><mat-icon>print</mat-icon></button>
+                <button class="fc-icon-btn"><mat-icon>more_horiz</mat-icon></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Drafts panel -->
+    <div class="fc-card">
+      <div class="card-header">
+        <div class="card-header-info">
+          <h3>مسوّدات لإكمالها</h3>
+          <span class="card-sub">٦ مسوّدات محفوظة تلقائياً</span>
+        </div>
+        <button class="fc-btn ghost sm">عرض الكل</button>
+      </div>
+      <div class="drafts-list">
+        <div class="draft-item" *ngFor="let d of drafts; let last = last" [class.no-border]="last">
+          <div class="draft-header">
+            <span class="draft-form">{{ d.form }}</span>
+            <span class="draft-time">{{ d.time }}</span>
+          </div>
+          <div class="draft-customer">{{ d.customer }}</div>
+          <div class="draft-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="d.progress" [class.warn]="d.warn"></div>
+            </div>
+            <span class="progress-label fc-num">{{ d.progress }}%</span>
+            <mat-icon class="warn-icon" *ngIf="d.warn">schedule</mat-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,74 @@
+// FormCraft Design Tokens — MD3 Indigo + Amber, Arabic-first RTL
+:root {
+  // Brand
+  --fc-primary: #3F51B5;
+  --fc-primary-dark: #303F9F;
+  --fc-primary-deep: #1A237E;
+  --fc-primary-light: #5C6BC0;
+  --fc-primary-50: #EEF0FA;
+  --fc-primary-100: #DEE2F4;
+  --fc-primary-200: #C5CAE9;
+
+  --fc-accent: #FFC107;
+  --fc-accent-dark: #FFA000;
+  --fc-accent-50: #FFF8E1;
+
+  // Semantic
+  --fc-success: #2E7D32;
+  --fc-success-bg: #E8F5E9;
+  --fc-warn: #EF6C00;
+  --fc-warn-bg: #FFF3E0;
+  --fc-error: #C62828;
+  --fc-error-bg: #FDECEA;
+  --fc-info: #1565C0;
+  --fc-info-bg: #E3F2FD;
+  --fc-violet: #6A1B9A;
+  --fc-violet-bg: #F3E5F5;
+
+  // Surface
+  --fc-bg: #F4F5F8;
+  --fc-surface: #FFFFFF;
+  --fc-surface-2: #FAFAFC;
+  --fc-surface-3: #F0F1F5;
+  --fc-border: #E4E6EB;
+  --fc-border-strong: #CFD2D8;
+  --fc-divider: #ECEEF2;
+
+  // Text
+  --fc-text: #1A1C2C;
+  --fc-text-2: #4A4D5E;
+  --fc-text-3: #797E8E;
+  --fc-text-disabled: #B0B4BE;
+
+  // Sizing
+  --fc-row-h: 36px;
+  --fc-toolbar-h: 56px;
+  --fc-sidebar-w: 232px;
+  --fc-radius-sm: 4px;
+  --fc-radius: 6px;
+  --fc-radius-lg: 10px;
+
+  // Shadows
+  --fc-elev-1: 0 1px 2px rgba(20, 22, 40, 0.05), 0 1px 0 rgba(20, 22, 40, 0.03);
+  --fc-elev-2: 0 1px 3px rgba(20, 22, 40, 0.08), 0 2px 8px rgba(20, 22, 40, 0.04);
+  --fc-elev-3: 0 6px 16px rgba(20, 22, 40, 0.10), 0 2px 4px rgba(20, 22, 40, 0.06);
+}
+
+// Utility classes
+.fc-num {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.fc-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fc-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.fc-grow { flex: 1; }
