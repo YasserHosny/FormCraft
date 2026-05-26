@@ -49,6 +49,7 @@ from app.api.routes import (
     platform,
     analytics,
     template_permissions,
+    ocr_onboarding,
 )
 
 logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO))
@@ -123,6 +124,7 @@ def create_app() -> FastAPI:
     app.include_router(analytics.router, prefix="/api")
     app.include_router(template_permissions.router, prefix="/api")
     app.include_router(template_permissions.admin_router, prefix="/api/admin")
+    app.include_router(ocr_onboarding.router, prefix="/api")
 
     # Global handler for Supabase/PostgREST errors (missing tables/columns
     # from unapplied migrations) — returns a clear 503 instead of 500.

@@ -17,6 +17,8 @@ Auto-generated from all feature plans. Last updated: 2026-05-26
 - Supabase PostgreSQL with versioned migration for marketplace listing/import/review/transaction tables and RLS policies (035-template-marketplace-codex)
 - Python 3.12 backend; TypeScript / Angular 19 frontend remains unchanged for this increment + FastAPI, Pydantic, Supabase PostgreSQL/Auth/RLS/Storage, existing AuditLogger (043-granular-template-permissions)
 - Supabase PostgreSQL with versioned SQL migration in `formcraft-backend/migrations/041_granular_template_permissions.sql` (043-granular-template-permissions)
+- Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/Storage/RLS, existing OCR services (`AzureOCRClient`, `FieldClassifier`, `BoundingBoxConverter`), Angular Material, ngx-translate, RxJS (045-batch-ocr-onboarding)
+- Supabase PostgreSQL plus Storage; add OCR onboarding batch/item/detection/decision tables and links to existing templates/pages/elements/form_detections/audit_logs (045-batch-ocr-onboarding)
 
 - Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Storage + Auth), Angular Material (001-customer-feedback)
 
@@ -45,6 +47,7 @@ Python 3.12 (backend), TypeScript / Angular 19 (frontend): Follow standard conve
 
 ## Recent Changes
 - 043-granular-template-permissions: Added Python 3.12 backend; TypeScript / Angular 19 frontend remains unchanged for this increment + FastAPI, Pydantic, Supabase PostgreSQL/Auth/RLS/Storage, existing AuditLogger
+- 045-batch-ocr-onboarding: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/Storage/RLS, existing OCR services (`AzureOCRClient`, `FieldClassifier`, `BoundingBoxConverter`), Angular Material, ngx-translate, RxJS
 - 039-platform-admin-console: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, Pydantic, ng2-charts/Chart.js, APScheduler
 - 035-template-marketplace-codex: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, existing template/PDF/reference-data services
 - 033-operational-reports: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, openpyxl, WeasyPrint, APScheduler, matplotlib, ng2-charts/Chart.js
