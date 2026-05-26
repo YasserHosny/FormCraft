@@ -48,12 +48,8 @@ from app.api.routes import (
     quickfill,
     platform,
     analytics,
-    template_permissions,
-    ocr_onboarding,
-    offline_desk,
-    sso,
-    mfa,
-    auth_policy,
+    retention,
+    digital_signatures,
 )
 
 logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO))
@@ -126,13 +122,9 @@ def create_app() -> FastAPI:
     app.include_router(quickfill.router, prefix="/api")
     app.include_router(platform.router, prefix="/api")
     app.include_router(analytics.router, prefix="/api")
-    app.include_router(template_permissions.router, prefix="/api")
-    app.include_router(template_permissions.admin_router, prefix="/api/admin")
-    app.include_router(ocr_onboarding.router, prefix="/api")
-    app.include_router(offline_desk.router, prefix="/api")
-    app.include_router(sso.router, prefix="/api")
-    app.include_router(mfa.router, prefix="/api")
-    app.include_router(auth_policy.router, prefix="/api")
+    app.include_router(retention.router, prefix="/api")
+    app.include_router(digital_signatures.router, prefix="/api")
+    app.include_router(digital_signatures.signer_router, prefix="/api")
 
     # Global handler for Supabase/PostgREST errors (missing tables/columns
     # from unapplied migrations) — returns a clear 503 instead of 500.

@@ -26,36 +26,6 @@
     "view": "View",
     "clear": "Clear"
   },
-  "ocrOnboarding": {
-    "title": "OCR Onboarding",
-    "subtitle": "Convert legacy scanned form libraries into reviewed draft templates.",
-    "newBatch": "New batch",
-    "createTitle": "Create OCR batch",
-    "batchName": "Batch name",
-    "threshold": "Confidence threshold",
-    "selectedFiles": "{{count}} files selected",
-    "startBatch": "Start batch",
-    "status": "Status",
-    "progress": "Progress",
-    "file": "File",
-    "confidence": "Confidence",
-    "bulkAccept": "Bulk accept",
-    "accept": "Accept",
-    "reject": "Reject",
-    "retry": "Retry",
-    "states": {
-      "queued": "Queued",
-      "processing": "Processing",
-      "needs_review": "Needs review",
-      "accepted": "Accepted",
-      "rejected": "Rejected",
-      "failed": "Failed",
-      "duplicate": "Duplicate",
-      "converted": "Converted",
-      "completed": "Completed",
-      "cancelled": "Cancelled"
-    }
-  },
   "adminExport": {
     "title": "Data Export",
     "schedulesTitle": "Recurring Export Schedules",
@@ -1138,52 +1108,31 @@
     "na": "N/A",
     "computedAt": "Computed at"
   },
-  "sso": {
-    "idpConfig": {
-      "title": "Identity Provider Configuration",
-      "name": "Provider Name",
-      "type": "Provider Type",
-      "domains": "Verified Domains",
-      "metadataUrl": "Metadata URL"
-    },
-    "domainVerify": {
-      "title": "Verify Domain",
-      "domain": "Domain"
-    },
-    "mappingConfig": {
-      "title": "Identity Mapping",
-      "claimType": "Claim Type",
-      "claimValue": "Claim Value",
-      "assignedRole": "Assigned Role"
-    }
-  },
-  "mfa": {
-    "enroll": {
-      "title": "MFA Enrollment",
-      "methodType": "Method",
-      "totp": "Authenticator App",
-      "sms": "SMS",
-      "email": "Email",
-      "phoneNumber": "Phone Number",
-      "scanQr": "Scan the QR code with your authenticator app."
-    },
-    "challenge": {
-      "title": "MFA Challenge",
-      "code": "Enter 6-digit code"
-    }
-  },
-  "offline": {
-    "online": "Online",
-    "offline": "Offline",
-    "pending_count": "{{count}} queued",
-    "sync_now": "Sync now",
-    "conflict": "Conflict",
-    "save_encrypted_draft": "Save encrypted draft",
-    "queue_submission": "Queue submission",
-    "draft_saved": "Encrypted offline draft saved",
-    "save_failed": "Could not save offline draft",
-    "submission_queued": "Submission queued for sync",
-    "queue_failed": "Could not queue submission"
+  "RETENTION": {
+    "TITLE": "Data Retention",
+    "POLICIES": "Retention Policies",
+    "JOBS": "Retention Jobs",
+    "LEGAL_HOLDS": "Legal Holds",
+    "ARCHIVE_MANIFESTS": "Archive Manifests",
+    "PREVIEW": "Preview Impact",
+    "CREATE_POLICY": "Create Policy",
+    "RUN_JOB": "Run Job",
+    "PLACE_HOLD": "Place Legal Hold",
+    "RESTORE": "Restore from Archive",
+    "POLICY_NAME": "Policy Name",
+    "DATA_CLASS": "Data Class",
+    "ACTION": "Action",
+    "PERIOD": "Period (Days)",
+    "EFFECTIVE_DATE": "Effective Date",
+    "STATUS": "Status",
+    "PROGRESS": "Progress",
+    "HOLD_TYPE": "Hold Type",
+    "SCOPE_TYPE": "Scope Type",
+    "REASON": "Reason",
+    "LOCATION": "Location",
+    "RECORD_COUNT": "Record Count",
+    "INTEGRITY": "Integrity"
   }
+}
 }
 }

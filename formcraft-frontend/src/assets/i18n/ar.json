@@ -26,36 +26,6 @@
     "view": "عرض",
     "clear": "مسح"
   },
-  "ocrOnboarding": {
-    "title": "إدخال النماذج عبر OCR",
-    "subtitle": "حوّل مكتبات النماذج الممسوحة إلى مسودات قوالب بعد المراجعة.",
-    "newBatch": "دفعة جديدة",
-    "createTitle": "إنشاء دفعة OCR",
-    "batchName": "اسم الدفعة",
-    "threshold": "حد الثقة",
-    "selectedFiles": "تم تحديد {{count}} ملف",
-    "startBatch": "بدء الدفعة",
-    "status": "الحالة",
-    "progress": "التقدم",
-    "file": "الملف",
-    "confidence": "الثقة",
-    "bulkAccept": "اعتماد جماعي",
-    "accept": "اعتماد",
-    "reject": "رفض",
-    "retry": "إعادة المحاولة",
-    "states": {
-      "queued": "في الانتظار",
-      "processing": "قيد المعالجة",
-      "needs_review": "بحاجة إلى مراجعة",
-      "accepted": "معتمد",
-      "rejected": "مرفوض",
-      "failed": "فشل",
-      "duplicate": "مكرر",
-      "converted": "محوّل",
-      "completed": "مكتمل",
-      "cancelled": "ملغي"
-    }
-  },
   "adminExport": {
     "title": "تصدير البيانات",
     "schedulesTitle": "جداول التصدير المتكررة",
@@ -1132,52 +1102,31 @@
     "na": "غير متاح",
     "computedAt": "حُسِب في"
   },
-  "sso": {
-    "idpConfig": {
-      "title": "إعداد موفر الهوية",
-      "name": "اسم الموفر",
-      "type": "نوع الموفر",
-      "domains": "المجالات الموثقة",
-      "metadataUrl": "رابط البيانات الوصفية"
-    },
-    "domainVerify": {
-      "title": "توثيق المجال",
-      "domain": "المجال"
-    },
-    "mappingConfig": {
-      "title": "ربط الهوية",
-      "claimType": "نوع المطالبة",
-      "claimValue": "قيمة المطالبة",
-      "assignedRole": "الدور المُخصص"
-    }
-  },
-  "mfa": {
-    "enroll": {
-      "title": "تسجيل المصادقة الثنائية",
-      "methodType": "الطريقة",
-      "totp": "تطبيق المصادقة",
-      "sms": "رسالة نصية",
-      "email": "بريد إلكتروني",
-      "phoneNumber": "رقم الهاتف",
-      "scanQr": "امسح رمز الاستجابة السريعة باستخدام تطبيق المصادقة."
-    },
-    "challenge": {
-      "title": "تحدي المصادقة الثنائية",
-      "code": "أدخل الرمز المكون من 6 أرقام"
-    }
-  },
-  "offline": {
-    "online": "متصل",
-    "offline": "غير متصل",
-    "pending_count": "{{count}} في قائمة الانتظار",
-    "sync_now": "مزامنة الآن",
-    "conflict": "تعارض",
-    "save_encrypted_draft": "حفظ مسودة مشفرة",
-    "queue_submission": "إضافة التقديم للانتظار",
-    "draft_saved": "تم حفظ المسودة المشفرة دون اتصال",
-    "save_failed": "تعذر حفظ المسودة دون اتصال",
-    "submission_queued": "تمت إضافة التقديم للمزامنة",
-    "queue_failed": "تعذر إضافة التقديم للانتظار"
+  "RETENTION": {
+    "TITLE": "الاحتفاظ بالبيانات",
+    "POLICIES": "سياسات الاحتفاظ",
+    "JOBS": "مهام الاحتفاظ",
+    "LEGAL_HOLDS": "الحجز القانوني",
+    "ARCHIVE_MANIFESTS": "قوائم الأرشيف",
+    "PREVIEW": "معاينة التأثير",
+    "CREATE_POLICY": "إنشاء سياسة",
+    "RUN_JOB": "تشغيل المهمة",
+    "PLACE_HOLD": "وضع حجز قانوني",
+    "RESTORE": "استعادة من الأرشيف",
+    "POLICY_NAME": "اسم السياسة",
+    "DATA_CLASS": "فئة البيانات",
+    "ACTION": "الإجراء",
+    "PERIOD": "المدة (بالأيام)",
+    "EFFECTIVE_DATE": "تاريخ السريان",
+    "STATUS": "الحالة",
+    "PROGRESS": "التقدم",
+    "HOLD_TYPE": "نوع الحجز",
+    "SCOPE_TYPE": "نطاق الحجز",
+    "REASON": "السبب",
+    "LOCATION": "الموقع",
+    "RECORD_COUNT": "عدد السجلات",
+    "INTEGRITY": "السلامة"
   }
+}
 }
 }
