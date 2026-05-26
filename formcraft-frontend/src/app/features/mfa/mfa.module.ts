@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { EnrollComponent } from './components/enroll/enroll.component';
 import { ChallengeComponent } from './components/challenge/challenge.component';
@@ -27,6 +28,7 @@ const routes: Routes = [
     MatInputModule,
     MatButtonModule,
     MatSelectModule,
+    TranslateModule,
   ],
 })
 export class MfaModule {}

@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { SsoService, IdentityProviderCreate } from '../../../core/services/sso.service';
+import { SsoService, IdentityProviderCreate } from '@core/services/sso.service';
 
 @Component({
+  standalone: false,
   selector: 'app-idp-config',
   template: `
     <mat-card>

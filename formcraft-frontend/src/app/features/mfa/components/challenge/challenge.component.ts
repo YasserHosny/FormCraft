@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MfaService } from '../../../core/services/mfa.service';
+import { MfaService } from '@core/services/mfa.service';
 
 @Component({
+  standalone: false,
   selector: 'app-challenge',
   template: `
     <mat-card>

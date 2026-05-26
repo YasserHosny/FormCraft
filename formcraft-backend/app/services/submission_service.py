@@ -368,7 +368,7 @@ class SubmissionService:
     async def get_submission(self, submission_id: UUID, org_id: UUID) -> dict | None:
         result = (
             self.client.table("submissions")
-            .select("*, templates(name), profiles!submissions_operator_id_fkey(full_name)")
+            .select("*, templates(name), profiles!submissions_operator_id_fkey(display_name)")
             .eq("id", str(submission_id))
             .eq("org_id", str(org_id))
             .single()
@@ -391,7 +391,7 @@ class SubmissionService:
         profiles = row.pop("profiles", None)
         if profiles:
             if isinstance(profiles, dict):
-                row["operator_name"] = profiles.get("full_name", "")
+                row["operator_name"] = profiles.get("display_name", "")
             elif isinstance(profiles, str):
                 row["operator_name"] = profiles
 

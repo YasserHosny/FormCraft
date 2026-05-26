@@ -8,7 +8,7 @@ import {
   ArchiveManifest,
   PrivacyRequest,
   PreviewResult,
-} from './models/retention.model';
+} from '../models/retention.model';
 
 @Injectable({ providedIn: 'root' })
 export class RetentionService {

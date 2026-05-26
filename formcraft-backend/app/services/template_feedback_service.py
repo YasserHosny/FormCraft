@@ -48,8 +48,8 @@ class TemplateFeedbackService:
         result = self.client.table("template_feedback").insert(row).execute()
         fb = result.data[0]
 
-        creator = self.client.table("profiles").select("full_name").eq("id", str(user_id)).single().execute()
-        fb["created_by_name"] = creator.data.get("full_name") if creator.data else None
+        creator = self.client.table("profiles").select("display_name").eq("id", str(user_id)).single().execute()
+        fb["created_by_name"] = creator.data.get("display_name") if creator.data else None
 
         return fb
 
@@ -62,7 +62,7 @@ class TemplateFeedbackService:
     ) -> dict:
         query = (
             self.client.table("template_feedback")
-            .select("*, profiles!template_feedback_created_by_fkey(full_name)", count="exact")
+            .select("*, profiles!template_feedback_created_by_fkey(display_name)", count="exact")
             .eq("template_id", str(template_id))
             .order("created_at", desc=True)
         )
@@ -75,7 +75,7 @@ class TemplateFeedbackService:
         items = []
         for row in result.data:
             profile = row.pop("profiles", None)
-            row["created_by_name"] = profile.get("full_name") if profile else None
+            row["created_by_name"] = profile.get("display_name") if profile else None
             items.append(row)
 
         return {"items": items, "total": result.count}
@@ -109,8 +109,8 @@ class TemplateFeedbackService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Feedback not found")
 
         fb = result.data[0]
-        creator = self.client.table("profiles").select("full_name").eq("id", str(fb["created_by"])).single().execute()
-        fb["created_by_name"] = creator.data.get("full_name") if creator.data else None
+        creator = self.client.table("profiles").select("display_name").eq("id", str(fb["created_by"])).single().execute()
+        fb["created_by_name"] = creator.data.get("display_name") if creator.data else None
 
         return fb
 

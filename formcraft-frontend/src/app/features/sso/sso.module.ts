@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { SsoRoutingModule } from './sso-routing.module';
 import { IdpConfigComponent } from './components/idp-config/idp-config.component';
@@ -25,6 +26,7 @@ import { MappingConfigComponent } from './components/mapping-config/mapping-conf
     MatButtonModule,
     MatSelectModule,
     MatIconModule,
+    TranslateModule,
   ],
 })
 export class SsoModule {}

@@ -17,9 +17,8 @@ from app.schemas.retention import (
     PrivacyRequestCreate,
     PrivacyRequestResolve,
     PreviewResponse,
-    RestoreRequest,
 )
-from app.schemas.job import JobPauseRequest
+from app.schemas.job import JobPauseRequest, RestoreRequest
 from app.services.retention_policy_service import RetentionPolicyService
 from app.services.retention_job_service import RetentionJobService
 from app.services.preview_service import PreviewService
