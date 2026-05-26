@@ -1132,7 +1132,38 @@
     "LOCATION": "Location",
     "RECORD_COUNT": "Record Count",
     "INTEGRITY": "Integrity"
+  },
+  "signature": {
+    "WORKFLOW_CONFIG": "Signature Workflow",
+    "WORKFLOW_NAME": "Workflow Name",
+    "ORDERED_SIGNING": "Ordered Signing",
+    "EXPIRATION_DAYS": "Expiration (Days)",
+    "DECLINE_POLICY": "Decline Policy",
+    "POLICY_STOP": "Stop Workflow",
+    "POLICY_CONTINUE": "Continue to Next",
+    "POLICY_ROUTE_ADMIN": "Route to Admin",
+    "REQUIRE_ALL": "Require All Signers",
+    "REQUEST_LIST": "Signature Requests",
+    "REQUEST_DETAIL": "Request Detail",
+    "STATUS": "Status",
+    "EXPIRES_AT": "Expires At",
+    "RECIPIENTS": "Recipients",
+    "EVENTS": "Events",
+    "RESEND": "Resend",
+    "CANCEL": "Cancel",
+    "SIGNER_NAME": "Signer Name",
+    "SEND_OTP": "Send OTP",
+    "OTP_CODE": "OTP Code",
+    "VERIFY": "Verify",
+    "PASSWORD": "Password",
+    "AUTHENTICATE": "Authenticate",
+    "SIGN": "Sign",
+    "DECLINE": "Decline",
+    "EVIDENCE": "Evidence",
+    "DOCUMENT_HASH": "Document Hash",
+    "INTEGRITY": "Integrity",
+    "VERIFY_INTEGRITY": "Verify Integrity",
+    "SIGNERS": "Signers"
   }
-}
 }
 }
