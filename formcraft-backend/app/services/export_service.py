@@ -7,6 +7,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from app.core.audit import AuditLogger
+from app.core.db_errors import is_missing_schema_error
 from app.schemas.export import ExportFilters, ExportPreviewRequest
 
 
@@ -120,17 +121,22 @@ class ExportService:
         page_size: int = 25,
     ) -> tuple[list[dict], int]:
         offset = (page - 1) * page_size
-        result = (
-            self.client.table("export_requests")
-            .select(
-                "id, dataset, format, scope, status, matching_count, rejection_reason, created_at",
-                count="exact",
+        try:
+            result = (
+                self.client.table("export_requests")
+                .select(
+                    "id, dataset, format, scope, status, matching_count, rejection_reason, created_at",
+                    count="exact",
+                )
+                .eq("org_id", str(org_id))
+                .order("created_at", desc=True)
+                .range(offset, offset + page_size - 1)
+                .execute()
             )
-            .eq("org_id", str(org_id))
-            .order("created_at", desc=True)
-            .range(offset, offset + page_size - 1)
-            .execute()
-        )
+        except Exception as exc:
+            if is_missing_schema_error(exc):
+                return [], 0
+            raise
         return result.data or [], result.count or len(result.data or [])
 
     def _fetch_submission_rows(
@@ -303,7 +309,12 @@ class ExportService:
             "completed_at": completed_at.isoformat() if completed_at else None,
             "created_by": str(actor_id),
         }
-        result = self.client.table("export_requests").insert(row).execute()
+        try:
+            result = self.client.table("export_requests").insert(row).execute()
+        except Exception as exc:
+            if is_missing_schema_error(exc):
+                return None
+            raise
         if result.data:
             return result.data[0]
         return None
@@ -345,13 +356,18 @@ class ExportService:
         org_id: UUID,
     ) -> list[dict]:
         """List all export schedules for an org."""
-        result = (
-            self.client.table("export_schedules")
-            .select("*")
-            .eq("org_id", str(org_id))
-            .order("created_at", desc=True)
-            .execute()
-        )
+        try:
+            result = (
+                self.client.table("export_schedules")
+                .select("*")
+                .eq("org_id", str(org_id))
+                .order("created_at", desc=True)
+                .execute()
+            )
+        except Exception as exc:
+            if is_missing_schema_error(exc):
+                return []
+            raise
         return result.data or []
 
     async def update_schedule(
@@ -485,5 +501,10 @@ class ExportService:
         query = self.client.table("export_deliveries").select("*").eq("org_id", str(org_id))
         if schedule_id:
             query = query.eq("schedule_id", str(schedule_id))
-        result = query.order("created_at", desc=True).execute()
+        try:
+            result = query.order("created_at", desc=True).execute()
+        except Exception as exc:
+            if is_missing_schema_error(exc):
+                return []
+            raise
         return result.data or []

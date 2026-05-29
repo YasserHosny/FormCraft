@@ -5,6 +5,8 @@ import time
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from app.core.db_errors import is_missing_schema_error
+
 
 class WebhookService:
     """F32 signed webhook subscription and delivery service."""
@@ -91,13 +93,18 @@ class WebhookService:
 
     async def list_subscriptions(self, org_id):
         """List webhook subscriptions for an org."""
-        result = (
-            self.client.table("webhook_subscriptions")
-            .select("id, url, event_types, status, created_at")
-            .eq("org_id", str(org_id))
-            .order("created_at", desc=True)
-            .execute()
-        )
+        try:
+            result = (
+                self.client.table("webhook_subscriptions")
+                .select("id, url, event_types, status, created_at")
+                .eq("org_id", str(org_id))
+                .order("created_at", desc=True)
+                .execute()
+            )
+        except Exception as exc:
+            if is_missing_schema_error(exc):
+                return []
+            raise
         return result.data or []
 
     async def update_subscription(self, org_id, subscription_id, updates):
@@ -133,5 +140,10 @@ class WebhookService:
         query = self.client.table("webhook_deliveries").select("*").eq("org_id", str(org_id))
         if subscription_id:
             query = query.eq("subscription_id", str(subscription_id))
-        result = query.order("created_at", desc=True).execute()
+        try:
+            result = query.order("created_at", desc=True).execute()
+        except Exception as exc:
+            if is_missing_schema_error(exc):
+                return []
+            raise
         return result.data or []
