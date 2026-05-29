@@ -1,7 +1,8 @@
 import { Component, Input } from '@angular/core';
-import { OrganizationDetail } from '../../../../shared/models/platform.models';
+import { OrganizationDetail } from '@shared/models/platform.models';
 
 @Component({
+  standalone: false,
   selector: 'app-subscription-tab',
   template: `
     <div class="tab-content" *ngIf="org">

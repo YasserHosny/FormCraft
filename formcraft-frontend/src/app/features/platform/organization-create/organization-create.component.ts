@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { PlatformService } from '../../../core/services/platform.service';
 
 @Component({
+  standalone: false,
   selector: 'app-organization-create',
   template: `
     <div class="create-container">

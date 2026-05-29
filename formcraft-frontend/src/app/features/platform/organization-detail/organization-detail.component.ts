@@ -4,6 +4,7 @@ import { PlatformService } from '../../../core/services/platform.service';
 import { OrganizationDetail } from '../../../shared/models/platform.models';
 
 @Component({
+  standalone: false,
   selector: 'app-organization-detail',
   template: `
     <div class="detail-container" *ngIf="org">

@@ -3,6 +3,7 @@ import { PlatformService } from '../../../core/services/platform.service';
 import { PlatformMetrics } from '../../../shared/models/platform.models';
 
 @Component({
+  standalone: false,
   selector: 'app-platform-dashboard',
   template: `
     <div class="dashboard-container">
@@ -29,11 +30,7 @@ import { PlatformMetrics } from '../../../shared/models/platform.models';
             <mat-card-title>{{ 'PLATFORM.ORGS_BY_TIER' | translate }}</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <canvas baseChart
-              [type]="'pie'"
-              [data]="tierChartData"
-              [options]="{ responsive: true }">
-            </canvas>
+            <div class="chart-placeholder">{{ tierChartData.labels?.join(' / ') }}</div>
           </mat-card-content>
         </mat-card>
 
@@ -42,11 +39,7 @@ import { PlatformMetrics } from '../../../shared/models/platform.models';
             <mat-card-title>{{ 'PLATFORM.SUBMISSION_TREND' | translate }}</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <canvas baseChart
-              [type]="'line'"
-              [data]="trendChartData"
-              [options]="{ responsive: true }">
-            </canvas>
+            <div class="chart-placeholder">{{ trendChartData.labels?.join(' / ') }}</div>
           </mat-card-content>
         </mat-card>
       </div>
@@ -57,7 +50,7 @@ import { PlatformMetrics } from '../../../shared/models/platform.models';
         </mat-card-header>
         <mat-card-content>
           <mat-list>
-            <mat-list-item *ngFor="let alert of metrics.tier_limit_alerts">
+            <mat-list-item *ngFor="let alert of metrics?.tier_limit_alerts || []">
               {{ alert.org_name }} — {{ alert.limit_type }}: {{ alert.current_usage }}/{{ alert.limit_value }}
             </mat-list-item>
           </mat-list>
@@ -70,6 +63,7 @@ import { PlatformMetrics } from '../../../shared/models/platform.models';
     `.summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }`,
     `.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }`,
     `.chart-card { min-height: 300px; }`,
+    `.chart-placeholder { min-height: 220px; display: grid; place-items: center; color: rgba(0,0,0,.64); }`,
   ],
 })
 export class PlatformDashboardComponent implements OnInit {
