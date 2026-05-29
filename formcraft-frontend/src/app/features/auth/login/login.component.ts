@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { take, filter } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { OrgAdminService, OrgBranding } from '../../../core/services/org-admin.service';
-import { getDefaultRouteForRole } from '../../../shared/components/app-shell/app-shell.component';
+import { ThemePreferenceService } from '../../../core/services/theme-preference.service';
 import { environment } from '../../../../environments/environment';
 
 interface OrgOption {
@@ -39,6 +39,7 @@ export class LoginComponent implements OnInit {
     private orgAdmin: OrgAdminService,
     private http: HttpClient,
     private router: Router,
+    private themePreference: ThemePreferenceService,
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -103,7 +104,9 @@ export class LoginComponent implements OnInit {
       filter((u) => u !== null),
       take(1),
     ).subscribe((user) => {
-      this.router.navigate([getDefaultRouteForRole(user!.role)]);
+      const theme = this.themePreference.getPreference();
+      const route = this.themePreference.getDefaultRoute(theme, user!.role);
+      this.router.navigate([route]);
     });
   }
 }
