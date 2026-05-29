@@ -5,6 +5,13 @@ import { Router } from '@angular/router';
 import { TemplateWizardService } from './template-wizard.service';
 import { WizardState, OrgCategory } from './template-wizard.models';
 
+const FALLBACK_CATEGORIES: OrgCategory[] = [
+  { id: 'accounts', name: 'الحسابات', is_system_default: true },
+  { id: 'compliance', name: 'الالتزام', is_system_default: true },
+  { id: 'finance', name: 'التمويل', is_system_default: true },
+  { id: 'general', name: 'عام', is_system_default: true },
+];
+
 @Component({
   selector: 'fc-template-wizard',
   standalone: false,
@@ -19,7 +26,7 @@ export class TemplateWizardComponent implements OnInit {
   pageSetupForm: FormGroup;
   startingPointForm: FormGroup;
 
-  categories: OrgCategory[] = [];
+  categories: OrgCategory[] = [...FALLBACK_CATEGORIES];
   saving = false;
 
   constructor(
@@ -34,12 +41,13 @@ export class TemplateWizardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadState();
+    this.ensureCategorySelected();
     this.wizardService.listOrgCategories().subscribe({
       next: (res) => {
-        this.categories = res.items || [];
+        this.setCategories(res.items || []);
       },
       error: () => {
-        this.categories = [];
+        this.setCategories([]);
       },
     });
   }
@@ -55,6 +63,32 @@ export class TemplateWizardComponent implements OnInit {
     this.localeForm.patchValue(state.locale);
     this.pageSetupForm.patchValue(state.pageSetup);
     this.startingPointForm.patchValue(state.startingPoint);
+  }
+
+  private setCategories(categories: OrgCategory[]): void {
+    this.categories = categories.length > 0
+      ? categories.map((category) => ({
+          ...category,
+          name: this.categoryName(category),
+        })).filter((category) => !!category.name)
+      : [...FALLBACK_CATEGORIES];
+    if (this.categories.length === 0) {
+      this.categories = [...FALLBACK_CATEGORIES];
+    }
+    this.ensureCategorySelected();
+  }
+
+  private ensureCategorySelected(): void {
+    const categoryControl = this.basicInfoForm.get('category');
+    const categoryNames = new Set(this.categories.map((category) => category.name));
+    if ((!categoryControl?.value || !categoryNames.has(categoryControl.value)) && this.categories[0]) {
+      categoryControl?.setValue(this.categories[0].name);
+    }
+  }
+
+  private categoryName(category: OrgCategory): string {
+    const raw = category as unknown as Record<string, unknown>;
+    return String(raw['name'] || raw['name_ar'] || raw['name_en'] || raw['id'] || '').trim();
   }
 
   private saveState(): void {
@@ -75,7 +109,7 @@ export class TemplateWizardComponent implements OnInit {
   onClearState(): void {
     this.wizardService.resetState();
     this.basicInfoForm.reset({ name: '', description: '', category: '', tags: [] });
-    this.localeForm.reset({ language: 'AR', country: 'EG', currency: 'EGP' });
+    this.localeForm.reset({ language: 'ar', country: 'EG', currency: 'EGP' });
     this.pageSetupForm.reset({
       pageSize: 'A4',
       orientation: 'portrait',
@@ -86,12 +120,19 @@ export class TemplateWizardComponent implements OnInit {
   }
 
   onCreate(): void {
-    if (this.startingPointForm.invalid) return;
+    if (this.basicInfoForm.invalid || this.localeForm.invalid || this.pageSetupForm.invalid || this.startingPointForm.invalid) {
+      this.basicInfoForm.markAllAsTouched();
+      this.localeForm.markAllAsTouched();
+      this.pageSetupForm.markAllAsTouched();
+      this.startingPointForm.markAllAsTouched();
+      return;
+    }
     this.saving = true;
 
     const basicInfo = this.basicInfoForm.value;
     const locale = this.localeForm.value;
     const pageSetup = this.pageSetupForm.value;
+    const startingPoint = this.startingPointForm.value;
 
     const payload = {
       name: basicInfo.name,
@@ -108,13 +149,22 @@ export class TemplateWizardComponent implements OnInit {
         orientation: pageSetup.orientation,
         margins: pageSetup.margins,
       },
+      starting_point: {
+        type: startingPoint.type,
+        clone_template_id: startingPoint.cloneTemplateId || null,
+        has_package_file: !!startingPoint.packageFile,
+      },
     };
 
     this.wizardService.createTemplate(payload).subscribe({
       next: (result) => {
         this.saving = false;
         this.wizardService.resetState();
-        this.router.navigate(['/designer', result.id]);
+        const isNewTheme = this.router.url.startsWith('/ui/');
+        const designerPath = isNewTheme
+          ? ['/ui/studio/designer', result.id]
+          : ['/designer', result.id];
+        this.router.navigate(designerPath);
       },
       error: () => {
         this.saving = false;

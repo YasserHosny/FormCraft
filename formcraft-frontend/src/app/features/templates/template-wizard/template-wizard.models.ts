@@ -7,7 +7,7 @@ export interface WizardState {
     tags: string[];
   };
   locale: {
-    language: 'AR' | 'EN' | 'BOTH';
+    language: 'ar' | 'en';
     country: 'EG' | 'SA' | 'AE';
     currency: string;
   };
@@ -40,7 +40,7 @@ export const DEFAULT_WIZARD_STATE: WizardState = {
     tags: [],
   },
   locale: {
-    language: 'AR',
+    language: 'ar',
     country: 'EG',
     currency: 'EGP',
   },
