@@ -1,10 +1,13 @@
 <header class="fc-toolbar">
+  <!-- Org logo -->
+  <img *ngIf="orgLogoUrl" [src]="orgLogoUrl" alt="Org logo" class="org-logo" />
+
   <!-- Brand -->
   <div class="brand-logo">FC</div>
   <span class="brand-name">FormCraft</span>
   <span class="brand-sep"></span>
 
-  <!-- Mode Tabs -->
+  <!-- Mode Tabs (role-filtered) -->
   <nav class="fc-mode-tabs">
     <a *ngFor="let tab of tabs"
        class="fc-mode-tab"
@@ -17,37 +20,72 @@
 
   <span class="spacer"></span>
 
-  <!-- Global Search -->
-  <div class="fc-toolbar-search">
-    <mat-icon>search</mat-icon>
-    <input placeholder="ابحث في النماذج والعملاء والإعدادات..." />
-    <kbd>⌘K</kbd>
-  </div>
+  <!-- Global Search (real component) -->
+  <fc-global-search-bar class="fc-toolbar-search-wrap"></fc-global-search-bar>
+
+  <!-- Theme Switch -->
+  <a class="fc-theme-switch" (click)="switchToClassic()">
+    <mat-icon>compare_arrows</mat-icon>
+    <span>الثيم الكلاسيكي</span>
+  </a>
 
   <!-- Help -->
-  <button class="fc-toolbar-btn">
+  <button class="fc-toolbar-btn" type="button" [matMenuTriggerFor]="helpMenu"
+          matTooltip="المساعدة">
     <mat-icon>help_outline</mat-icon>
   </button>
+  <mat-menu #helpMenu="matMenu">
+    <button mat-menu-item (click)="switchToClassic()">
+      <mat-icon>compare_arrows</mat-icon>
+      فتح الثيم الكلاسيكي
+    </button>
+    <button mat-menu-item disabled>
+      <mat-icon>keyboard</mat-icon>
+      اختصارات لوحة المفاتيح
+    </button>
+  </mat-menu>
+
+  <!-- My Feedback (non-admin only) -->
+  <a class="fc-toolbar-btn" routerLink="/my-feedback"
+     *ngIf="userRole && userRole !== 'admin'"
+     matTooltip="ملاحظاتي">
+    <mat-icon>feedback</mat-icon>
+    <span class="fc-badge-dot" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+  </a>
 
   <!-- Notifications -->
-  <button class="fc-toolbar-btn" (click)="notificationClick.emit()">
+  <button class="fc-toolbar-btn" type="button"
+          matTooltip="الإشعارات">
     <mat-icon>notifications</mat-icon>
-    <span class="fc-badge-dot" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
   </button>
 
   <!-- User Chip -->
-  <div class="fc-user-chip" [matMenuTriggerFor]="userMenu">
+  <button class="fc-user-chip" type="button" [matMenuTriggerFor]="userMenu">
     <div class="avatar">{{ user.initials }}</div>
     <div class="user-info">
       <span class="name">{{ user.name }}</span>
       <span class="role">{{ user.role }}</span>
     </div>
     <mat-icon class="expand">expand_more</mat-icon>
-  </div>
+  </button>
 
   <mat-menu #userMenu="matMenu">
-    <button mat-menu-item>الملف الشخصي</button>
-    <button mat-menu-item>اللغة: العربية / EN</button>
-    <button mat-menu-item>تسجيل الخروج</button>
+    <button mat-menu-item routerLink="/auth/profile">
+      <mat-icon>person</mat-icon>
+      الملف الشخصي
+    </button>
+    <button mat-menu-item (click)="toggleLanguage()">
+      <mat-icon>language</mat-icon>
+      {{ currentLang === 'ar' ? 'English' : 'العربية' }}
+    </button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="switchToClassic()">
+      <mat-icon>compare_arrows</mat-icon>
+      الثيم الكلاسيكي
+    </button>
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      تسجيل الخروج
+    </button>
   </mat-menu>
 </header>

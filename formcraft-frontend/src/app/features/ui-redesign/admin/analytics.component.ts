@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
 import { KpiCardComponent } from '../shared/components/kpi-card.component';
@@ -34,6 +35,16 @@ interface Operator {
   styleUrl: './analytics.component.scss',
 })
 export class AnalyticsComponent {
+  constructor(private router: Router) {}
+
+  exportPdf(): void {
+    this.router.navigate(['/admin/analytics'], { queryParams: { export: 'pdf' } });
+  }
+
+  openClassicAnalytics(): void {
+    this.router.navigate(['/admin/analytics']);
+  }
+
   // Line chart data
   lineData = [42, 58, 51, 47, 63, 70, 38, 41, 55, 68, 72, 81, 76, 65, 78, 92, 88, 73, 81, 95, 102, 87, 79, 94, 108, 115, 98, 92, 105, 124];
   lineMax = 130;

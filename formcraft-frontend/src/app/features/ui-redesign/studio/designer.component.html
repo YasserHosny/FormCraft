@@ -1,10 +1,10 @@
 <!-- Designer sub-toolbar -->
 <div class="designer-toolbar">
-  <button class="fc-icon-btn"><mat-icon>arrow_forward</mat-icon></button>
+  <button class="fc-icon-btn" (click)="goBack()"><mat-icon>arrow_forward</mat-icon></button>
   <div class="toolbar-info">
     <div class="toolbar-title">
-      طلب فتح حساب جاري للأفراد
-      <span class="version fc-num">AC-001 · v4.2</span>
+      {{ templateName }}
+      <span class="version fc-num">{{ templateCode }}</span>
     </div>
     <div class="toolbar-status"><mat-icon>cloud_done</mat-icon>محفوظ تلقائياً قبل 12 ثانية</div>
   </div>
@@ -27,10 +27,10 @@
   <span class="separator"></span>
 
   <button class="fc-btn ghost ai-btn"><mat-icon>auto_awesome</mat-icon>اقتراحات AI</button>
-  <button class="fc-btn ghost"><mat-icon>visibility</mat-icon>معاينة</button>
+  <button class="fc-btn ghost" (click)="preview()"><mat-icon>visibility</mat-icon>معاينة</button>
   <button class="fc-btn ghost"><mat-icon>history</mat-icon>الإصدارات</button>
-  <button class="fc-btn outline"><mat-icon>save</mat-icon>حفظ كمسودة</button>
-  <button class="fc-btn primary"><mat-icon>rocket_launch</mat-icon>إرسال للمراجعة</button>
+  <button class="fc-btn outline" (click)="saveDraft()"><mat-icon>save</mat-icon>حفظ كمسودة</button>
+  <button class="fc-btn primary" (click)="submitForReview()"><mat-icon>rocket_launch</mat-icon>إرسال للمراجعة</button>
 </div>
 
 <!-- 3-column layout -->

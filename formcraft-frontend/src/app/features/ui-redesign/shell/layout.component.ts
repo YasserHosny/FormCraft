@@ -1,16 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs';
+import { filter, Subject, takeUntil } from 'rxjs';
 import { ToolbarComponent } from './toolbar.component';
 import { SidebarComponent } from './sidebar.component';
+import { DirectionService, Dir } from '../../../core/i18n/direction.service';
 
 @Component({
   selector: 'fc-redesign-layout',
   standalone: true,
   imports: [CommonModule, RouterModule, ToolbarComponent, SidebarComponent],
   template: `
-    <div class="layout-wrapper" dir="rtl">
+    <div class="layout-wrapper" [attr.dir]="currentDir">
       <fc-redesign-toolbar [activeMode]="activeMode"></fc-redesign-toolbar>
       <div class="layout-body">
         <fc-redesign-sidebar [mode]="activeMode"></fc-redesign-sidebar>
@@ -40,16 +41,33 @@ import { SidebarComponent } from './sidebar.component';
     }
   `],
 })
-export class LayoutComponent {
+export class LayoutComponent implements OnDestroy {
   activeMode: 'studio' | 'desk' | 'admin' = 'studio';
+  currentDir: 'rtl' | 'ltr' = 'rtl';
 
-  constructor(private router: Router) {
+  private destroy$ = new Subject<void>();
+
+  constructor(private router: Router, private directionService: DirectionService) {
+    this.currentDir = this.directionService.currentDir;
+
+    this.directionService.dir$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((dir: Dir) => {
+        this.currentDir = dir;
+      });
+
     this.router.events.pipe(
-      filter((e): e is NavigationEnd => e instanceof NavigationEnd)
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      takeUntil(this.destroy$),
     ).subscribe(e => {
       this.detectMode(e.urlAfterRedirects);
     });
     this.detectMode(this.router.url);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private detectMode(url: string): void {

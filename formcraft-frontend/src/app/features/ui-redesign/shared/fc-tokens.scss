@@ -1,13 +1,14 @@
-// FormCraft Design Tokens — MD3 Indigo + Amber, Arabic-first RTL
+// FormCraft Design Tokens — MD3 Teal + Amber, Arabic-first RTL
+// New theme uses Teal to visually differentiate from Classic (Indigo)
 :root {
-  // Brand
-  --fc-primary: #3F51B5;
-  --fc-primary-dark: #303F9F;
-  --fc-primary-deep: #1A237E;
-  --fc-primary-light: #5C6BC0;
-  --fc-primary-50: #EEF0FA;
-  --fc-primary-100: #DEE2F4;
-  --fc-primary-200: #C5CAE9;
+  // Brand — Teal palette (Material Teal 600 base)
+  --fc-primary: #00897B;
+  --fc-primary-dark: #00796B;
+  --fc-primary-deep: #004D40;
+  --fc-primary-light: #26A69A;
+  --fc-primary-50: #E0F2F1;
+  --fc-primary-100: #B2DFDB;
+  --fc-primary-200: #80CBC4;
 
   --fc-accent: #FFC107;
   --fc-accent-dark: #FFA000;

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
 import { StatusChipComponent } from '../shared/components/status-chip.component';
@@ -24,6 +25,20 @@ interface Stat {
 })
 export class CustomersComponent {
   customers = CUSTOMERS;
+
+  constructor(private router: Router) {}
+
+  addCustomer(): void {
+    this.router.navigate(['/desk/customers/new']);
+  }
+
+  viewCustomer(customerId: string): void {
+    this.router.navigate(['/desk/customers', customerId]);
+  }
+
+  fillFormForCustomer(): void {
+    this.router.navigate(['/desk']);
+  }
 
   stats: Stat[] = [
     { label: 'إجمالي العملاء', value: '٢٨٤١', delta: '+47 هذا الأسبوع', up: true },

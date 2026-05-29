@@ -1,7 +1,7 @@
 <fc-page-header title="مرحباً أحمد، فرع أبوظبي الرئيسي" subtitle="السبت ٢٥ مايو ٢٠٢٦ — الوردية الصباحية">
   <div actions>
     <button class="fc-btn outline"><mat-icon>qr_code_scanner</mat-icon>مسح هوية</button>
-    <button class="fc-btn accent"><mat-icon>edit_document</mat-icon>تعبئة نموذج جديد</button>
+    <button class="fc-btn accent" (click)="fillNewForm()"><mat-icon>edit_document</mat-icon>تعبئة نموذج جديد</button>
   </div>
 </fc-page-header>
 
@@ -24,7 +24,7 @@
   </div>
 
   <div class="pin-grid">
-    <div class="pin-card" *ngFor="let p of pinnedForms">
+    <div class="pin-card" *ngFor="let p of pinnedForms" (click)="fillNewForm()">
       <div class="pin-icon" [style.background]="p.color">
         <mat-icon>{{ p.icon }}</mat-icon>
       </div>
@@ -46,7 +46,7 @@
           <h3>آخر المعاملات</h3>
           <span class="card-sub">٢٣ معاملة اليوم</span>
         </div>
-        <button class="fc-btn ghost sm">عرض الكل<mat-icon>chevron_left</mat-icon></button>
+        <button class="fc-btn ghost sm" (click)="viewAllTransactions()">عرض الكل<mat-icon>chevron_left</mat-icon></button>
       </div>
       <table class="fc-table">
         <thead>

@@ -83,51 +83,6 @@ export const NOTIFICATIONS: Notification[] = [
   { kind: 'system', icon: 'system_update', color: '#797E8E', bg: '#F0F1F5', title: 'تحديث النظام v3.2', body: 'إضافات جديدة: تحقق ذكي بالـAI، تحسينات على لوحة التحليلات، دعم تصدير Excel', time: 'قبل ٣ أيام', unread: false },
 ];
 
-export const SIDEBAR_DATA = {
-  studio: [
-    { label: 'استوديو التصميم', items: [
-      { icon: 'dashboard', label: 'نظرة عامة', route: '/ui/studio' },
-      { icon: 'description', label: 'النماذج', route: '/ui/studio/templates', count: 47 },
-      { icon: 'history', label: 'سجل الإصدارات', route: '' },
-      { icon: 'folder_special', label: 'القوالب الجاهزة', route: '', count: 12 },
-      { icon: 'palette', label: 'مكوّنات قابلة للاستخدام', route: '' },
-    ]},
-    { label: 'الذكاء الاصطناعي', items: [
-      { icon: 'auto_awesome', label: 'اقتراحات الحقول', route: '' },
-      { icon: 'fact_check', label: 'فحص جودة النموذج', route: '' },
-    ]},
-  ],
-  desk: [
-    { label: 'مكتب النماذج', items: [
-      { icon: 'home', label: 'الرئيسية', route: '/ui/desk' },
-      { icon: 'edit_document', label: 'تعبئة نموذج جديد', route: '' },
-      { icon: 'inbox', label: 'الواردات', route: '', count: 38 },
-      { icon: 'pending_actions', label: 'المسوّدات', route: '', count: 6 },
-      { icon: 'history', label: 'سجل المعاملات', route: '' },
-    ]},
-    { label: 'العملاء', items: [
-      { icon: 'groups', label: 'دليل العملاء', route: '/ui/desk/customers', count: 2841 },
-      { icon: 'person_add', label: 'إضافة عميل', route: '' },
-      { icon: 'merge_type', label: 'دمج التكرارات', route: '', count: 4 },
-    ]},
-  ],
-  admin: [
-    { label: 'لوحة الإدارة', items: [
-      { icon: 'dashboard', label: 'نظرة عامة', route: '/ui/admin' },
-      { icon: 'analytics', label: 'التحليلات والتقارير', route: '/ui/admin/analytics' },
-      { icon: 'rule', label: 'قائمة المراجعة', route: '', count: 12 },
-      { icon: 'history_edu', label: 'سجل النشاط', route: '' },
-    ]},
-    { label: 'المؤسسة', items: [
-      { icon: 'people', label: 'المستخدمون', route: '', count: 184 },
-      { icon: 'account_tree', label: 'الإدارات والفروع', route: '' },
-      { icon: 'business', label: 'إعدادات المؤسسة', route: '' },
-      { icon: 'list_alt', label: 'البيانات المرجعية', route: '' },
-      { icon: 'print', label: 'ملفات تعريف الطابعات', route: '' },
-    ]},
-  ],
-};
-
 export const STATUS_LABELS: Record<string, string> = {
   draft: 'مسوّدة',
   'in-review': 'قيد المراجعة',

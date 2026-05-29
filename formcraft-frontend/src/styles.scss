@@ -2,7 +2,7 @@
 @use 'styles/rtl';
 
 // UI Redesign design tokens
-@import 'app/features/ui-redesign/shared/fc-tokens';
+@use 'app/features/ui-redesign/shared/fc-tokens';
 
 // Override ALL Angular Material MDC typography tokens to use Arabic font stack
 // (indigo-pink.css sets these to Roboto; we override since styles.scss loads after it)

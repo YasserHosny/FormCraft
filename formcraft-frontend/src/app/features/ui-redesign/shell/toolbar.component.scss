@@ -8,6 +8,15 @@
   padding: 0 12px;
   position: relative;
   z-index: 50;
+  min-width: 0;
+}
+
+.org-logo {
+  max-height: 28px;
+  max-width: 64px;
+  object-fit: contain;
+  margin-inline-end: 8px;
+  border-radius: 4px;
 }
 
 .brand-logo {
@@ -43,6 +52,7 @@
   gap: 2px;
   align-items: center;
   height: 40px;
+  min-width: 0;
 }
 
 .fc-mode-tab {
@@ -76,38 +86,37 @@
 
 .spacer { flex: 1; }
 
-.fc-toolbar-search {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 280px;
+.fc-toolbar-search-wrap {
+  margin: 0 8px;
+  max-width: 360px;
+  width: 100%;
+  flex: 0 1 360px;
+  min-width: 0;
+}
+
+.fc-theme-switch {
   height: 32px;
   padding: 0 10px;
-  margin-inline-end: 8px;
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.88);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
 
-  mat-icon { font-size: 18px; color: rgba(255, 255, 255, 0.7); width: 18px; height: 18px; }
-
-  input {
-    flex: 1;
-    border: none;
-    outline: none;
-    background: transparent;
-    font: inherit;
-    font-size: 13px;
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
     color: #fff;
-    &::placeholder { color: rgba(255, 255, 255, 0.5); }
   }
 
-  kbd {
-    background: rgba(255, 255, 255, 0.16);
-    color: rgba(255, 255, 255, 0.85);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-family: 'Noto Sans', sans-serif;
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
   }
 }
 
@@ -156,6 +165,11 @@
   cursor: pointer;
   color: #fff;
   margin-inline-start: 6px;
+  border: none;
+  max-width: 210px;
+  min-width: 0;
+  flex: 0 0 auto;
+  font: inherit;
 
   &:hover { background: rgba(255, 255, 255, 0.18); }
 
@@ -175,9 +189,35 @@
     display: flex;
     flex-direction: column;
     line-height: 1.15;
+    min-width: 0;
   }
 
-  .name { font-size: 13px; font-weight: 600; }
+  .name {
+    font-size: 13px;
+    font-weight: 600;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .role { font-size: 10.5px; color: rgba(255, 255, 255, 0.75); }
   .expand { font-size: 18px; color: rgba(255, 255, 255, 0.7); width: 18px; height: 18px; }
+}
+
+@media (max-width: 1180px) {
+  .fc-toolbar-search-wrap {
+    display: none;
+  }
+}
+
+@media (max-width: 960px) {
+  .fc-mode-tab span,
+  .fc-theme-switch span,
+  .fc-user-chip .user-info {
+    display: none;
+  }
+
+  .fc-user-chip {
+    padding: 4px;
+  }
 }

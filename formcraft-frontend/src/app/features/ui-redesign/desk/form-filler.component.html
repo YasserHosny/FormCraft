@@ -1,10 +1,10 @@
 <!-- Sub-toolbar -->
 <div class="sub-toolbar">
-  <button class="fc-icon-btn"><mat-icon>arrow_forward</mat-icon></button>
+  <button class="fc-icon-btn" (click)="goBack()"><mat-icon>arrow_forward</mat-icon></button>
   <div class="form-info">
-    <div class="form-title">طلب فتح حساب جاري للأفراد</div>
+    <div class="form-title">{{ templateName }}</div>
     <div class="form-meta">
-      <span>AC-001 · v4.2</span>
+      <span>{{ templateCode }}</span>
       <span>·</span>
       <span class="meta-time"><mat-icon>schedule</mat-icon>بدأت قبل ٢ دقيقة</span>
     </div>
@@ -21,9 +21,9 @@
     <button class="fc-icon-btn sm"><mat-icon>close</mat-icon></button>
   </div>
 
-  <button class="fc-btn outline"><mat-icon>save</mat-icon>حفظ كمسودة</button>
-  <button class="fc-btn outline"><mat-icon>print</mat-icon>طباعة PDF</button>
-  <button class="fc-btn primary"><mat-icon>check</mat-icon>إرسال</button>
+  <button class="fc-btn outline" (click)="saveDraft()"><mat-icon>save</mat-icon>حفظ كمسودة</button>
+  <button class="fc-btn outline" (click)="printPdf()"><mat-icon>print</mat-icon>طباعة PDF</button>
+  <button class="fc-btn primary" (click)="submitForm()"><mat-icon>check</mat-icon>إرسال</button>
 </div>
 
 <!-- Progress bar -->
@@ -194,7 +194,7 @@
     </div>
 
     <div class="dialog-footer">
-      <button class="fc-btn outline"><mat-icon>person_add</mat-icon>إنشاء عميل جديد</button>
+      <button class="fc-btn outline" (click)="createNewCustomer()"><mat-icon>person_add</mat-icon>إنشاء عميل جديد</button>
       <div class="footer-actions">
         <button class="fc-btn ghost" (click)="closeCustomerPicker()">إلغاء</button>
         <button class="fc-btn primary"><mat-icon>check</mat-icon>تأكيد الاختيار</button>
