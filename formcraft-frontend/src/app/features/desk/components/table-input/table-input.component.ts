@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import { TemplateElement } from '../../services/form-filler.service';
 
@@ -29,10 +30,11 @@ interface ColumnDef {
     MatIconModule,
     MatInputModule,
     MatFormFieldModule,
+    MatTooltipModule,
     TranslateModule,
   ],
   template: `
-    <div class="table-input-container" [dir]="element?.direction || 'rtl'">
+    <div class="table-input-container" [dir]="tableDir">
       <label class="table-label" *ngIf="label">{{ label }}</label>
       <table mat-table [dataSource]="rows" class="data-table">
         <ng-container *ngFor="let col of columns" [matColumnDef]="col.key">
@@ -44,7 +46,7 @@ interface ColumnDef {
               class="cell-input"
               [placeholder]="getHeader(col)" />
           </td>
-          <td mat-footer-cell *matFooterCellDef *ngIf="showFooter">
+          <td mat-footer-cell *matFooterCellDef>
             <span *ngIf="col.auto_sum" class="sum-value">{{ getSum(col.key) | number:'1.2-2' }}</span>
           </td>
         </ng-container>
@@ -52,16 +54,16 @@ interface ColumnDef {
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let row; let rowIndex = index">
-            <button mat-icon-button *ngIf="canRemoveRow" (click)="removeRow(rowIndex)" matTooltip="{{ 'table.removeRow' | translate }}">
+            <button mat-icon-button *ngIf="canRemoveRow" (click)="removeRow(rowIndex)" [matTooltip]="'table.removeRow' | translate">
               <mat-icon>remove_circle_outline</mat-icon>
             </button>
           </td>
-          <td mat-footer-cell *matFooterCellDef *ngIf="showFooter"></td>
+          <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        <tr mat-footer-row *matFooterRowDef="displayedColumns" *ngIf="showFooter"></tr>
+        <tr mat-footer-row *matFooterRowDef="displayedColumns" [hidden]="!showFooter"></tr>
       </table>
 
       <div class="table-actions">
@@ -117,6 +119,10 @@ export class TableInputComponent implements OnChanges {
 
   rows: any[] = [];
   formArray = new FormArray<FormGroup>([]);
+
+  get tableDir(): 'rtl' | 'ltr' | 'auto' {
+    return this.element?.direction === 'ltr' || this.element?.direction === 'auto' ? this.element.direction : 'rtl';
+  }
 
   get canAddRow(): boolean {
     return this.rows.length < this.maxRows;

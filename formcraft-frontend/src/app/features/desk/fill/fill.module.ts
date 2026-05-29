@@ -27,11 +27,6 @@ const routes: Routes = [
 @NgModule({
   declarations: [
     FillComponent,
-    FormToolbarComponent,
-    ErrorSummaryComponent,
-    VersionWarningComponent,
-    TemplateFeedbackDialogComponent,
-    OfflineSyncPanelComponent,
   ],
   imports: [
     CommonModule,
@@ -49,6 +44,11 @@ const routes: Routes = [
     MatDividerModule,
     MatMenuModule,
     FieldRendererComponent,
+    FormToolbarComponent,
+    ErrorSummaryComponent,
+    VersionWarningComponent,
+    TemplateFeedbackDialogComponent,
+    OfflineSyncPanelComponent,
   ],
   providers: [],
 })

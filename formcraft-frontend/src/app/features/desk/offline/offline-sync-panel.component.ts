@@ -1,9 +1,16 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { TranslateModule } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 import { OfflineSyncService, OfflineSyncState } from './offline-sync.service';
 
 @Component({
   selector: 'fc-offline-sync-panel',
+  standalone: true,
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule, TranslateModule],
   template: `
     <section class="offline-sync" *ngIf="state$ | async as state" [class.offline]="!state.online" [class.has-conflict]="state.conflicts.length > 0">
       <div class="offline-sync__main">
@@ -33,9 +40,11 @@ import { OfflineSyncService, OfflineSyncState } from './offline-sync.service';
   `],
 })
 export class OfflineSyncPanelComponent {
-  state$: Observable<OfflineSyncState> = this.offlineSync.state$;
+  state$: Observable<OfflineSyncState>;
 
-  constructor(private offlineSync: OfflineSyncService) {}
+  constructor(private offlineSync: OfflineSyncService) {
+    this.state$ = this.offlineSync.state$;
+  }
 
   sync(): void {
     this.offlineSync.syncPending();

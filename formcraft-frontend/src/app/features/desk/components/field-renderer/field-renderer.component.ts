@@ -15,8 +15,6 @@ import { ValidationService } from '../../services/validation.service';
 import { SignaturePadComponent } from '../signature-pad/signature-pad.component';
 import { TableInputComponent } from '../table-input/table-input.component';
 import { BoundDropdownComponent } from '../bound-dropdown/bound-dropdown.component';
-import { SignaturePadComponent } from '../signature-pad/signature-pad.component';
-import { TableInputComponent } from '../table-input/table-input.component';
 
 @Component({
   selector: 'fc-field-renderer',
@@ -39,11 +37,11 @@ imports: [
     BoundDropdownComponent,
   ],
   template: `
-    <div class="field-renderer" [ngSwitch]="element?.type" [dir]="element?.direction || 'rtl'">
+    <div class="field-renderer" [ngSwitch]="element?.type" [dir]="fieldDir">
       <!-- Text -->
       <mat-form-field *ngSwitchCase="'text'" appearance="outline" class="field-full">
         <mat-label>{{ label }}</mat-label>
-        <input matInput [formControl]="control" [required]="element?.required" />
+        <input matInput [formControl]="control" [required]="element?.required ?? false" />
         <mat-error *ngIf="control?.touched && control?.invalid">
           {{ getErrorMessage() }}
         </mat-error>
@@ -52,7 +50,7 @@ imports: [
       <!-- Number -->
       <mat-form-field *ngSwitchCase="'number'" appearance="outline" class="field-full">
         <mat-label>{{ label }}</mat-label>
-        <input matInput type="number" [formControl]="control" [required]="element?.required" />
+        <input matInput type="number" [formControl]="control" [required]="element?.required ?? false" />
         <mat-error *ngIf="control?.touched && control?.invalid">
           {{ getErrorMessage() }}
         </mat-error>
@@ -61,7 +59,7 @@ imports: [
       <!-- Currency -->
       <mat-form-field *ngSwitchCase="'currency'" appearance="outline" class="field-full">
         <mat-label>{{ label }}</mat-label>
-        <input matInput type="number" [formControl]="control" [required]="element?.required" />
+        <input matInput type="number" [formControl]="control" [required]="element?.required ?? false" />
         <span matTextSuffix>{{ element?.formatting?.currency || '' }}</span>
         <mat-error *ngIf="control?.touched && control?.invalid">
           {{ getErrorMessage() }}
@@ -71,7 +69,7 @@ imports: [
       <!-- Date -->
       <mat-form-field *ngSwitchCase="'date'" appearance="outline" class="field-full">
         <mat-label>{{ label }}</mat-label>
-        <input matInput [matDatepicker]="picker" [formControl]="control" [required]="element?.required" />
+        <input matInput [matDatepicker]="picker" [formControl]="control" [required]="element?.required ?? false" />
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
         <mat-error *ngIf="control?.touched && control?.invalid">
@@ -80,34 +78,37 @@ imports: [
       </mat-form-field>
 
       <!-- Dropdown (bound to reference list) -->
-      <fc-bound-dropdown *ngSwitchCase="'dropdown'"
-        *ngIf="hasRefBinding()"
-        [label]="label"
-        [required]="element?.required ?? false"
-        [listId]="getRefBinding()?.list_id"
-        [displayColumn]="getRefBinding()?.display_column || ''"
-        [valueColumn]="getRefBinding()?.value_column || ''"
-        [searchThreshold]="getRefBinding()?.search_threshold ?? 20"
-        [selectedValue]="control.value"
-        (valueChange)="onDropdownValueChange($event)"
-        (entrySelected)="onEntrySelected($event)">
-      </fc-bound-dropdown>
+      <ng-container *ngSwitchCase="'dropdown'">
+        <fc-bound-dropdown
+          *ngIf="hasRefBinding(); else unboundDropdown"
+          [label]="label"
+          [required]="element?.required ?? false"
+          [listId]="getRefBinding()?.['list_id']"
+          [displayColumn]="getRefBinding()?.['display_column'] || ''"
+          [valueColumn]="getRefBinding()?.['value_column'] || ''"
+          [searchThreshold]="getRefBinding()?.['search_threshold'] ?? 20"
+          [selectedValue]="control.value"
+          (valueChange)="onDropdownValueChange($event)"
+          (entrySelected)="onEntrySelected($event)">
+        </fc-bound-dropdown>
 
-      <!-- Dropdown (unbound) -->
-      <mat-form-field *ngSwitchCase="'dropdown'" *ngIf="!hasRefBinding()" appearance="outline" class="field-full">
-        <mat-label>{{ label }}</mat-label>
-        <mat-select [formControl]="control" [required]="element?.required">
-          <mat-option *ngFor="let opt of options" [value]="opt">{{ opt }}</mat-option>
-        </mat-select>
-        <mat-error *ngIf="control?.touched && control?.invalid">
-          {{ getErrorMessage() }}
-        </mat-error>
-      </mat-form-field>
+        <ng-template #unboundDropdown>
+          <mat-form-field appearance="outline" class="field-full">
+            <mat-label>{{ label }}</mat-label>
+            <mat-select [formControl]="control" [required]="element?.required ?? false">
+              <mat-option *ngFor="let opt of options" [value]="opt">{{ opt }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="control?.touched && control?.invalid">
+              {{ getErrorMessage() }}
+            </mat-error>
+          </mat-form-field>
+        </ng-template>
+      </ng-container>
 
       <!-- Radio -->
       <div *ngSwitchCase="'radio'" class="field-radio-group">
         <label class="field-label">{{ label }}</label>
-        <mat-radio-group [formControl]="control" [required]="element?.required">
+        <mat-radio-group [formControl]="control" [required]="element?.required ?? false">
           <mat-radio-button *ngFor="let opt of options" [value]="opt">{{ opt }}</mat-radio-button>
         </mat-radio-group>
         <mat-error *ngIf="control?.touched && control?.invalid" class="field-error">
@@ -164,7 +165,7 @@ imports: [
       <!-- Default fallback -->
       <mat-form-field *ngSwitchDefault appearance="outline" class="field-full">
         <mat-label>{{ label }}</mat-label>
-        <input matInput [formControl]="control" [required]="element?.required" />
+        <input matInput [formControl]="control" [required]="element?.required ?? false" />
       </mat-form-field>
     </div>
   `,
@@ -222,6 +223,10 @@ export class FieldRendererComponent {
   @Output() entrySelected = new EventEmitter<{ entry_id: string; values: Record<string, any>; elementKey: string }>();
 
   constructor(private validationService: ValidationService) {}
+
+  get fieldDir(): 'rtl' | 'ltr' | 'auto' {
+    return this.element?.direction === 'ltr' || this.element?.direction === 'auto' ? this.element.direction : 'rtl';
+  }
 
   hasRefBinding(): boolean {
     const formatting = this.element?.formatting as Record<string, unknown> | undefined;
