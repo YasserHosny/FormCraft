@@ -102,5 +102,9 @@ class AzureOCRClient:
         return {
             "words": words,
             "lines": lines,
-            "page_dimensions": {"width": page_width, "height": page_height},
+            "page_dimensions": {
+                "width": page_width,
+                "height": page_height,
+                "unit": page.unit or "pixel",
+            },
         }

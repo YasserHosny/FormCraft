@@ -134,9 +134,23 @@ def _process_import(template_id: UUID, image_bytes: bytes, page_index: int) -> F
 
     page_dims = ocr_result["page_dimensions"]
     dpi = BoundingBoxConverter.detect_dpi_from_exif(image_bytes)
+    ocr_unit = page_dims.get("unit", "pixel")
+
+    # Azure DI returns dimensions in the unit specified by page.unit.
+    # For images it's typically "pixel"; for PDFs it's "inch".
+    # Convert to pixels for the converter when the unit is inches.
+    raw_width = page_dims["width"]
+    raw_height = page_dims["height"]
+    if ocr_unit == "inch":
+        image_width = raw_width * dpi
+        image_height = raw_height * dpi
+    else:
+        image_width = raw_width
+        image_height = raw_height
+
     converter = BoundingBoxConverter(
-        image_width_px=int(page_dims["width"]),
-        image_height_px=int(page_dims["height"]),
+        image_width_px=image_width,
+        image_height_px=image_height,
         dpi=dpi,
     )
 
@@ -164,12 +178,23 @@ def _process_import(template_id: UUID, image_bytes: bytes, page_index: int) -> F
     words = ocr_result.get("words", [])
 
     for word in words:
+        # Convert bbox coordinates from inches to pixels when needed,
+        # so all coordinates are in the same unit as the converter's image dimensions
+        word_bbox = word["bbox"]
+        if ocr_unit == "inch":
+            word_bbox = {
+                "x": word_bbox["x"] * dpi,
+                "y": word_bbox["y"] * dpi,
+                "width": word_bbox["width"] * dpi,
+                "height": word_bbox["height"] * dpi,
+            }
+
         if target_width_mm and target_height_mm:
             bbox_mm = converter.convert_bbox_to_page(
-                word["bbox"], target_width_mm, target_height_mm
+                word_bbox, target_width_mm, target_height_mm
             )
         else:
-            bbox_mm = converter.convert_bbox(word["bbox"])
+            bbox_mm = converter.convert_bbox(word_bbox)
         nearby_labels = classifier.get_nearby_labels(
             word["bbox"], words, max_distance=100
         )
@@ -196,14 +221,21 @@ def _process_import(template_id: UUID, image_bytes: bytes, page_index: int) -> F
     # T051: Deduplicate overlapping detections (IoU > 0.8)
     detected_fields = _deduplicate_detections(detected_fields)
 
-    page_width_mm, page_height_mm = converter.get_page_dimensions_mm()
+    # Use target page dimensions when available, otherwise fall back to DPI-based.
+    # This ensures page_dimensions matches the coordinate space of the bboxes.
+    if target_width_mm and target_height_mm:
+        effective_width_mm = round(target_width_mm, 2)
+        effective_height_mm = round(target_height_mm, 2)
+    else:
+        effective_width_mm, effective_height_mm = converter.get_page_dimensions_mm()
+
     client = get_supabase_client()
 
     insert_data = {
         "template_id": str(template_id),
         "page_index": page_index,
         "detected_fields": [field.model_dump() for field in detected_fields],
-        "page_dimensions": {"width": page_width_mm, "height": page_height_mm},
+        "page_dimensions": {"width": effective_width_mm, "height": effective_height_mm},
     }
 
     response = client.table("form_detections").insert(insert_data).execute()
@@ -225,7 +257,7 @@ def _process_import(template_id: UUID, image_bytes: bytes, page_index: int) -> F
         template_id=template_id,
         page_index=page_index,
         detected_fields=detected_fields,
-        page_dimensions={"width": page_width_mm, "height": page_height_mm},
+        page_dimensions={"width": effective_width_mm, "height": effective_height_mm},
         created_at=detection_record["created_at"],
     )
 

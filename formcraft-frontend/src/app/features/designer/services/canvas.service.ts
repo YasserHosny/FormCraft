@@ -99,6 +99,7 @@ export class CanvasService implements OnDestroy {
     this.redoStack = [];
     this._selectedElement.next(null);
     this._dirty.next(false);
+    this._zoom.next(1);
     this.detections = [];
     this.init(containerId, widthMm, heightMm);
   }
