@@ -3,20 +3,22 @@
     <div class="group-label" *ngIf="group.label">{{ group.label }}</div>
     <a *ngFor="let item of group.items"
        class="fc-side-link"
+       [class.disabled]="!item.route"
        [routerLink]="item.route || null"
        routerLinkActive="active"
-       [routerLinkActiveOptions]="{ exact: true }">
+       [routerLinkActiveOptions]="{ exact: true }"
+       [matTooltip]="!item.route ? 'قريباً' : ''"
+       (click)="!item.route && $event.preventDefault()">
       <mat-icon>{{ item.icon }}</mat-icon>
       <span>{{ item.label }}</span>
-      <span class="count" *ngIf="item.count !== undefined">{{ item.count }}</span>
     </a>
   </ng-container>
 
   <div class="sidebar-spacer"></div>
 
-  <div class="sidebar-footer">
+  <button class="sidebar-footer" type="button" (click)="toggleLanguage()">
     <mat-icon>language</mat-icon>
-    <span class="lang-label">اللغة: العربية</span>
-    <span class="lang-alt">EN</span>
-  </div>
+    <span class="lang-label">{{ currentLang === 'ar' ? 'اللغة: العربية' : 'Language: English' }}</span>
+    <span class="lang-alt">{{ currentLang === 'ar' ? 'EN' : 'عربي' }}</span>
+  </button>
 </aside>

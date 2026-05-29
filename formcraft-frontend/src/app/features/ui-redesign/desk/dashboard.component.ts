@@ -1,10 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
 import { StatusChipComponent } from '../shared/components/status-chip.component';
 import { AvatarComponent } from '../shared/components/avatar.component';
 import { KpiCardComponent } from '../shared/components/kpi-card.component';
+import { TemplateService } from '../../../core/services/template.service';
 
 interface PinnedForm {
   icon: string;
@@ -36,11 +38,37 @@ interface DraftItem {
 @Component({
   selector: 'fc-desk-dashboard',
   standalone: true,
-  imports: [CommonModule, MatIconModule, PageHeaderComponent, StatusChipComponent, AvatarComponent, KpiCardComponent],
+  imports: [CommonModule, RouterModule, MatIconModule, PageHeaderComponent, StatusChipComponent, AvatarComponent, KpiCardComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
+  publishedTemplates: { id: string; name: string; code: string }[] = [];
+
+  constructor(private router: Router, private templateService: TemplateService) {}
+
+  ngOnInit(): void {
+    this.templateService.list({ limit: 50 }).subscribe({
+      next: (response) => {
+        this.publishedTemplates = (response.data || [])
+          .filter((t: any) => t.status === 'published')
+          .map((t: any) => ({ id: t.id, name: t.name, code: t.id.slice(0, 8) }));
+      },
+    });
+  }
+
+  fillNewForm(): void {
+    this.router.navigate(['/desk']);
+  }
+
+  viewAllTransactions(): void {
+    this.router.navigate(['/desk/history']);
+  }
+
+  viewAllCustomers(): void {
+    this.router.navigate(['/ui/desk/customers']);
+  }
+
   pinnedForms: PinnedForm[] = [
     { icon: 'account_balance', color: '#3F51B5', name: 'طلب فتح حساب جاري', code: 'AC-001 · v4.2', lastUsed: 'قبل ١٢ دقيقة', count: '٨', accent: true },
     { icon: 'credit_card', color: '#1565C0', name: 'إصدار بطاقة الصراف', code: 'CRD-007 · v1.5', lastUsed: 'قبل ٢٤ دقيقة', count: '٥', accent: true },

@@ -7,6 +7,7 @@ import { FeedbackRealtimeService } from '../../../features/feedback/services/fee
 import { MyFeedbackService } from '../../../features/my-feedback/services/my-feedback.service';
 import { OrgAdminService } from '../../../core/services/org-admin.service';
 import { GlobalSearchBarComponent } from '../global-search/global-search-bar.component';
+import { ThemePreferenceService } from '../../../core/services/theme-preference.service';
 
 interface ModeTab {
   key: string;
@@ -68,6 +69,16 @@ export function getDefaultRouteForRole(role: string): string {
       <ng-container *ngIf="user && showSearchBar">
         <fc-global-search-bar class="global-search-bar"></fc-global-search-bar>
       </ng-container>
+
+      <a
+        mat-button
+        class="theme-switch-link"
+        *ngIf="user"
+        (click)="switchToNewTheme()"
+      >
+        <mat-icon>compare_arrows</mat-icon>
+        الثيم الجديد
+      </a>
 
       <span class="spacer"></span>
 
@@ -176,6 +187,14 @@ export function getDefaultRouteForRole(role: string): string {
       max-width: 400px;
       width: 100%;
     }
+    .theme-switch-link {
+      color: rgba(255, 255, 255, 0.88);
+      white-space: nowrap;
+      min-width: 0;
+    }
+    .theme-switch-link mat-icon {
+      margin-inline-end: 4px;
+    }
     .shell-content {
       height: calc(100vh - 64px);
       overflow: auto;
@@ -209,6 +228,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
     private realtimeService: FeedbackRealtimeService,
     private myFeedbackService: MyFeedbackService,
     private orgAdminService: OrgAdminService,
+    private themePreference: ThemePreferenceService,
   ) {}
 
   ngOnInit(): void {
@@ -286,6 +306,12 @@ export class AppShellComponent implements OnInit, OnDestroy {
   toggleLanguage(): void {
     this.languageService.toggleLanguage();
     this.currentLang = this.languageService.getLanguage();
+  }
+
+  switchToNewTheme(): void {
+    this.themePreference.setPreference('new');
+    const target = this.themePreference.mapRouteToTheme(this.router.url, 'new', this.user?.role || 'admin');
+    this.router.navigate([target]);
   }
 
   logout(): void {

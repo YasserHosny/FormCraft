@@ -1,8 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AvatarComponent } from '../shared/components/avatar.component';
 import { StatusChipComponent } from '../shared/components/status-chip.component';
+import { TemplateService } from '../../../core/services/template.service';
 
 interface FormField {
   label: string;
@@ -34,12 +37,54 @@ interface SideSection {
 @Component({
   selector: 'fc-form-filler',
   standalone: true,
-  imports: [CommonModule, MatIconModule, AvatarComponent, StatusChipComponent],
+  imports: [CommonModule, MatIconModule, MatSnackBarModule, AvatarComponent, StatusChipComponent],
   templateUrl: './form-filler.component.html',
   styleUrl: './form-filler.component.scss',
 })
-export class FormFillerComponent {
+export class FormFillerComponent implements OnInit {
   showCustomerPicker = false;
+  templateId = '';
+  templateName = 'طلب فتح حساب جاري للأفراد';
+  templateCode = 'AC-001 · v4.2';
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private snackBar: MatSnackBar,
+    private templateService: TemplateService,
+  ) {}
+
+  ngOnInit(): void {
+    this.templateId = this.route.snapshot.paramMap.get('templateId') || '';
+    if (this.templateId) {
+      this.templateService.get(this.templateId).subscribe({
+        next: (t: any) => {
+          this.templateName = t.name || this.templateName;
+          this.templateCode = `v${t.version || 1}`;
+        },
+      });
+    }
+  }
+
+  goBack(): void {
+    this.router.navigate(['/ui/desk']);
+  }
+
+  saveDraft(): void {
+    this.snackBar.open('تم حفظ المسودة بنجاح', '', { duration: 3000 });
+  }
+
+  printPdf(): void {
+    if (this.templateId) {
+      this.router.navigate(['/desk/fill', this.templateId], { queryParams: { print: true } });
+    } else {
+      this.snackBar.open('افتح النموذج من مكتب النماذج للطباعة', '', { duration: 3000 });
+    }
+  }
+
+  submitForm(): void {
+    this.snackBar.open('تم إرسال النموذج بنجاح', '', { duration: 3000 });
+  }
 
   sideSections: SideSection[] = [
     { number: '١', label: 'بيانات مقدم الطلب', state: 'done', count: '٧/٧' },
@@ -90,6 +135,11 @@ export class FormFillerComponent {
     { name: 'فاطمة بنت محمد العنزي', en: 'Fatima Mohammed Al-Anzi', id: '1956-2284-7401', phone: '+971 50 117 9032', forms: 2, last: 'قبل شهرين', color: 'c5', selected: false },
     { name: 'فاطمة بنت سعد الزهراني', en: 'Fatima Saad Al-Zahrani', id: '3092-8814-2266', phone: '+971 55 802 4413', forms: 7, last: 'قبل ٣ أسابيع', color: 'c3', selected: false },
   ];
+
+  createNewCustomer(): void {
+    this.closeCustomerPicker();
+    this.router.navigate(['/desk/customers/new']);
+  }
 
   openCustomerPicker(): void {
     this.showCustomerPicker = true;

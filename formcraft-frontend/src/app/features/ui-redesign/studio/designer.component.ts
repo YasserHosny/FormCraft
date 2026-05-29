@@ -1,6 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { TemplateService } from '../../../core/services/template.service';
 
 interface PaletteGroup {
   label: string;
@@ -34,12 +37,65 @@ interface ObjectItem {
 @Component({
   selector: 'fc-designer',
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule, MatSnackBarModule],
   templateUrl: './designer.component.html',
   styleUrl: './designer.component.scss',
 })
-export class DesignerComponent {
+export class DesignerComponent implements OnInit {
   activePropTab = 'props';
+  templateId = '';
+  templateName = 'طلب فتح حساب جاري للأفراد';
+  templateCode = 'AC-001 · v4.2';
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private snackBar: MatSnackBar,
+    private templateService: TemplateService,
+  ) {}
+
+  ngOnInit(): void {
+    this.templateId = this.route.snapshot.paramMap.get('pageId') || '';
+    if (this.templateId) {
+      this.templateService.get(this.templateId).subscribe({
+        next: (t: any) => {
+          this.templateName = t.name || this.templateName;
+          this.templateCode = `${t.id?.slice(0, 8) || 'AC-001'} · v${t.version || 1}`;
+        },
+      });
+    }
+  }
+
+  goBack(): void {
+    this.router.navigate(['/ui/studio/templates']);
+  }
+
+  saveDraft(): void {
+    this.snackBar.open('تم حفظ المسودة', '', { duration: 3000 });
+  }
+
+  submitForReview(): void {
+    if (!this.templateId) {
+      this.snackBar.open('هذا نموذج تجريبي', '', { duration: 3000 });
+      return;
+    }
+    this.templateService.publish(this.templateId).subscribe({
+      next: () => {
+        this.snackBar.open('تم إرسال النموذج للمراجعة', '', { duration: 3000 });
+      },
+      error: () => {
+        this.snackBar.open('فشل إرسال النموذج للمراجعة', '', { duration: 3000 });
+      },
+    });
+  }
+
+  preview(): void {
+    if (this.templateId) {
+      this.router.navigate(['/designer', this.templateId]);
+    } else {
+      this.snackBar.open('افتح نموذجاً حقيقياً للمعاينة', '', { duration: 3000 });
+    }
+  }
 
   propTabs: PropTab[] = [
     { key: 'props', label: 'الخصائص' },

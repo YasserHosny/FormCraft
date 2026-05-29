@@ -2,7 +2,7 @@
   <div actions>
     <button class="fc-btn outline"><mat-icon>file_download</mat-icon>تصدير CSV</button>
     <button class="fc-btn outline"><mat-icon>merge_type</mat-icon>دمج التكرارات<span class="dup-badge">٤</span></button>
-    <button class="fc-btn primary"><mat-icon>person_add</mat-icon>إضافة عميل</button>
+    <button class="fc-btn primary" (click)="addCustomer()"><mat-icon>person_add</mat-icon>إضافة عميل</button>
   </div>
 </fc-page-header>
 
@@ -73,8 +73,8 @@
         <td><fc-status-chip [status]="c.status"></fc-status-chip></td>
         <td>
           <div class="action-btns">
-            <button class="fc-icon-btn" title="عرض"><mat-icon>visibility</mat-icon></button>
-            <button class="fc-icon-btn" title="تعبئة نموذج"><mat-icon>edit_document</mat-icon></button>
+            <button class="fc-icon-btn" title="عرض" (click)="viewCustomer(c.id)"><mat-icon>visibility</mat-icon></button>
+            <button class="fc-icon-btn" title="تعبئة نموذج" (click)="fillFormForCustomer()"><mat-icon>edit_document</mat-icon></button>
             <button class="fc-icon-btn"><mat-icon>more_horiz</mat-icon></button>
           </div>
         </td>

@@ -1,10 +1,25 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { NgModule, Component, inject } from '@angular/core';
+import { RouterModule, Routes, Router } from '@angular/router';
 
 import { AuthGuard } from './core/auth/auth.guard';
 import { RoleGuard } from './core/auth/role.guard';
 import { InvitationAcceptComponent } from './features/auth/invitation/invitation-accept.component';
 import { InvitationExpiredComponent } from './features/auth/invitation/invitation-expired.component';
+import { ThemePreferenceService } from './core/services/theme-preference.service';
+import { AuthService } from './core/auth/auth.service';
+
+@Component({ standalone: true, selector: 'fc-theme-redirect', template: '' })
+class ThemeRedirectComponent {
+  constructor() {
+    const router = inject(Router);
+    const themePref = inject(ThemePreferenceService);
+    const authService = inject(AuthService);
+    const user = authService.getCurrentUser();
+    const role = user?.role || 'admin';
+    const target = themePref.getDefaultRoute(themePref.getPreference(), role);
+    router.navigate([target], { replaceUrl: true });
+  }
+}
 
 const routes: Routes = [
   // Public invitation routes (no guard)
@@ -51,6 +66,32 @@ const routes: Routes = [
     data: { roles: ['admin'] },
   },
   {
+    path: 'admin/analytics',
+    loadChildren: () =>
+      import('./features/analytics/analytics.module').then(
+        (m) => m.AnalyticsModule
+      ),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['admin', 'designer'] },
+  },
+  {
+    path: 'admin/ocr-onboarding',
+    loadChildren: () =>
+      import('./features/admin/ocr-onboarding/ocr-onboarding.module').then(
+        (m) => m.OcrOnboardingModule
+      ),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['admin'] },
+  },
+  // F042: Enterprise SSO and MFA
+  {
+    path: 'admin/sso',
+    loadChildren: () =>
+      import('./features/sso/sso.module').then((m) => m.SsoModule),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['admin'] },
+  },
+  {
     path: 'admin',
     loadChildren: () =>
       import('./features/admin/admin.module').then(
@@ -67,6 +108,12 @@ const routes: Routes = [
     data: { roles: ['admin', 'branch_manager', 'operator'] },
   },
   {
+    path: 'platform',
+    loadChildren: () =>
+      import('./features/platform/platform.module').then((m) => m.PlatformModule),
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'my-feedback',
     loadChildren: () =>
       import('./features/my-feedback/my-feedback.module').then(
@@ -81,30 +128,14 @@ const routes: Routes = [
         (m) => m.PublicPortalModule
       ),
   },
-  {
-    path: 'admin/analytics',
-    loadChildren: () =>
-      import('./features/analytics/analytics.module').then(
-        (m) => m.AnalyticsModule
-      ),
-    canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['admin', 'designer'] },
-  },
-  // UI Redesign prototype (standalone, no auth guard for dev)
+  // UI Redesign shell. Kept alongside the classic routes so users can switch themes.
   {
     path: 'ui',
     loadChildren: () =>
       import('./features/ui-redesign/ui-redesign.routes').then(
         (m) => m.UI_REDESIGN_ROUTES
       ),
-  },
-  // F042: Enterprise SSO and MFA
-  {
-    path: 'admin/sso',
-    loadChildren: () =>
-      import('./features/sso/sso.module').then((m) => m.SsoModule),
-    canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['admin'] },
+    canActivate: [AuthGuard],
   },
   {
     path: 'mfa',
@@ -112,9 +143,9 @@ const routes: Routes = [
       import('./features/mfa/mfa.module').then((m) => m.MfaModule),
     canActivate: [AuthGuard],
   },
-  // F15: Default redirect to /templates (Studio). Role-based redirect happens at login and in RoleGuard.
-  { path: '', redirectTo: '/templates', pathMatch: 'full' },
-  { path: '**', redirectTo: '/templates' },
+  // Theme-aware default redirect: checks localStorage preference to land on correct theme.
+  { path: '', component: ThemeRedirectComponent, pathMatch: 'full', canActivate: [AuthGuard] },
+  { path: '**', component: ThemeRedirectComponent, canActivate: [AuthGuard] },
 ];
 
 @NgModule({
