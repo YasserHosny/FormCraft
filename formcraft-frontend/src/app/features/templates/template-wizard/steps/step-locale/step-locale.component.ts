@@ -11,9 +11,8 @@ export class StepLocaleComponent {
   @Input() form!: FormGroup;
 
   languages = [
-    { value: 'AR', label: 'العربية' },
-    { value: 'EN', label: 'English' },
-    { value: 'BOTH', label: 'Both / كلاهما' },
+    { value: 'ar', label: 'العربية' },
+    { value: 'en', label: 'English' },
   ];
 
   countries = [

@@ -68,7 +68,7 @@ export class TemplateWizardService {
 
   buildLocaleForm(): FormGroup {
     return this.fb.group({
-      language: ['AR', Validators.required],
+      language: ['ar', Validators.required],
       country: ['EG', Validators.required],
       currency: ['EGP', Validators.required],
     });
