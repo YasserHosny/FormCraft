@@ -25,6 +25,8 @@ import { CustomerDetailComponent } from './customers/customer-detail.component';
 
 const routes: Routes = [
   { path: '', component: DashboardComponent },
+  { path: 'fill', loadChildren: () => import('./fill/fill.module').then(m => m.FormFillerModule) },
+  { path: 'history', loadChildren: () => import('./history/history.module').then(m => m.HistoryModule) },
   { path: 'customers', component: CustomerListComponent },
   { path: 'customers/new', component: CustomerDetailComponent },
   { path: 'customers/:id', component: CustomerDetailComponent },

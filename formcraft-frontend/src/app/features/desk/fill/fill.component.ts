@@ -20,6 +20,7 @@ import { OfflineSyncService } from '../offline/offline-sync.service';
 
 @Component({
   selector: 'fc-fill',
+  standalone: false,
   templateUrl: './fill.component.html',
   styleUrls: ['./fill.component.scss'],
 })
@@ -348,18 +349,18 @@ export class FillComponent implements OnInit, OnDestroy {
 
     const formatting = boundElement.formatting as Record<string, unknown> | undefined;
     const refBinding = formatting?.['ref_binding'] as Record<string, any> | undefined;
-    if (!refBinding || !refBinding.auto_fill) return;
+    if (!refBinding || !refBinding['auto_fill']) return;
 
     const visibleKeys = new Set<string>(
       this.template.pages.flatMap(p => p.elements).map(e => e.key)
     );
 
     this.autoFillService.executeAutoFill(
-      refBinding.auto_fill,
+      refBinding['auto_fill'],
       event.values,
       this.form,
       visibleKeys,
-      refBinding.clear_on_deselect ?? false,
+      refBinding['clear_on_deselect'] ?? false,
     );
   }
 

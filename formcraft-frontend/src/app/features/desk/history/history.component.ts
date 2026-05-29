@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 
 @Component({
   selector: 'fc-history',
+  standalone: false,
   templateUrl: './history.component.html',
   styleUrls: ['./history.component.scss'],
 })
