@@ -22,25 +22,25 @@ class BoundingBoxConverter:
     MM_PER_INCH = 25.4
     DEFAULT_DPI = 96  # Screen DPI; adjust based on actual scan resolution
 
-    def __init__(self, image_width_px: int, image_height_px: int, dpi: int = DEFAULT_DPI):
+    def __init__(self, image_width_px: float, image_height_px: float, dpi: int = DEFAULT_DPI):
         """
         Initialize converter.
 
         Args:
-            image_width_px: Image width in pixels
-            image_height_px: Image height in pixels
-            dpi: Dots per inch (resolution)
+            image_width_px: Image width in source units (pixels or other)
+            image_height_px: Image height in source units (pixels or other)
+            dpi: Dots per inch (resolution), used only for DPI-based conversion
         """
         self.image_width_px = image_width_px
         self.image_height_px = image_height_px
         self.dpi = dpi
 
-        # Calculate page dimensions in mm
+        # Calculate page dimensions in mm (DPI-based, assumes input is pixels)
         self.page_width_mm = (image_width_px / dpi) * self.MM_PER_INCH
         self.page_height_mm = (image_height_px / dpi) * self.MM_PER_INCH
 
         logger.info(
-            f"Initialized converter: {image_width_px}x{image_height_px}px @ {dpi}dpi "
+            f"Initialized converter: {image_width_px}x{image_height_px} @ {dpi}dpi "
             f"→ {self.page_width_mm:.2f}x{self.page_height_mm:.2f}mm"
         )
 
@@ -88,47 +88,29 @@ class BoundingBoxConverter:
         target_width_mm: float,
         target_height_mm: float,
     ) -> BBox:
-        """Convert bounding box from pixels to mm, scaled to a target page size.
+        """Convert bounding box from source coordinates to mm, scaled to a target page size.
 
-        Instead of using DPI-based conversion, this scales pixel coordinates
-        directly to the target page dimensions.  When the image aspect ratio
-        differs from the page aspect ratio the image is letterboxed /
-        pillarboxed (centred) and coordinates are adjusted accordingly.
+        Uses stretch-to-fill scaling (independent X/Y scale factors) to match
+        how the frontend renders the background image — stretched to fill the
+        entire page rectangle without letterboxing or pillarboxing.
 
         Args:
-            bbox_px: {x, y, width, height} in pixels
+            bbox_px: {x, y, width, height} in source units (pixels or inches)
             target_width_mm: Target page width in millimetres
             target_height_mm: Target page height in millimetres
 
         Returns:
             {x, y, width, height} in mm, clipped to page bounds
         """
-        img_aspect = self.image_width_px / self.image_height_px
-        page_aspect = target_width_mm / target_height_mm
+        if self.image_width_px == 0 or self.image_height_px == 0:
+            return BBox(x=0, y=0, width=0, height=0)
 
-        if abs(img_aspect - page_aspect) < 0.01:
-            # Aspect ratios match — simple proportional scaling
-            scale_x = target_width_mm / self.image_width_px
-            scale_y = target_height_mm / self.image_height_px
-            offset_x = 0.0
-            offset_y = 0.0
-        elif img_aspect > page_aspect:
-            # Image is wider — fit width, letterbox vertically
-            scale_x = target_width_mm / self.image_width_px
-            scale_y = scale_x  # uniform scale
-            rendered_height = self.image_height_px * scale_y
-            offset_x = 0.0
-            offset_y = (target_height_mm - rendered_height) / 2
-        else:
-            # Image is taller — fit height, pillarbox horizontally
-            scale_y = target_height_mm / self.image_height_px
-            scale_x = scale_y  # uniform scale
-            rendered_width = self.image_width_px * scale_x
-            offset_x = (target_width_mm - rendered_width) / 2
-            offset_y = 0.0
+        # Stretch-to-fill: independent scale per axis, no offset
+        scale_x = target_width_mm / self.image_width_px
+        scale_y = target_height_mm / self.image_height_px
 
-        x = bbox_px["x"] * scale_x + offset_x
-        y = bbox_px["y"] * scale_y + offset_y
+        x = bbox_px["x"] * scale_x
+        y = bbox_px["y"] * scale_y
         w = bbox_px["width"] * scale_x
         h = bbox_px["height"] * scale_y
 

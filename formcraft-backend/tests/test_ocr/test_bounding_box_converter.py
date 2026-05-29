@@ -114,27 +114,29 @@ class TestConvertBboxToPage:
         assert result["height"] == pytest.approx(148.0, abs=0.5)
 
     def test_mismatched_aspect_wider_image(self):
-        """Wide image on tall page — letterbox vertically."""
+        """Wide image on tall page — stretch-to-fill (no letterbox)."""
         # Image 1000x500 (2:1 aspect) → Page 210x297 (0.71 aspect)
         converter = BoundingBoxConverter(1000, 500, dpi=96)
         bbox = {"x": 500, "y": 250, "width": 100, "height": 50}
         result = converter.convert_bbox_to_page(bbox, 210.0, 297.0)
-        # Scale by width: 210/1000 = 0.21
+        # scale_x = 210/1000 = 0.21, scale_y = 297/500 = 0.594
         # x = 500 * 0.21 = 105.0
         assert result["x"] == pytest.approx(105.0, abs=1.0)
-        # Rendered height = 500 * 0.21 = 105mm, offset_y = (297 - 105) / 2 = 96
-        assert result["y"] == pytest.approx(250 * 0.21 + 96, abs=1.5)
+        # y = 250 * 0.594 = 148.5 (no offset)
+        assert result["y"] == pytest.approx(148.5, abs=1.0)
 
     def test_mismatched_aspect_taller_image(self):
-        """Tall image on wide page — pillarbox horizontally."""
+        """Tall image on wide page — stretch-to-fill (no pillarbox)."""
         # Image 500x1000 (0.5 aspect) → Page 210x148 (1.42 aspect)
         converter = BoundingBoxConverter(500, 1000, dpi=96)
         bbox = {"x": 0, "y": 0, "width": 500, "height": 1000}
         result = converter.convert_bbox_to_page(bbox, 210.0, 148.0)
-        # Scale by height: 148/1000 = 0.148
-        # Rendered width = 500 * 0.148 = 74mm, offset_x = (210 - 74) / 2 = 68
-        assert result["x"] == pytest.approx(68, abs=1.0)
+        # scale_x = 210/500 = 0.42, scale_y = 148/1000 = 0.148
+        # Full image maps to full page
+        assert result["x"] == pytest.approx(0.0, abs=0.5)
         assert result["y"] == pytest.approx(0.0, abs=0.5)
+        assert result["width"] == pytest.approx(210.0, abs=0.5)
+        assert result["height"] == pytest.approx(148.0, abs=0.5)
 
     def test_page_boundary_clipping(self):
         """Detection extending past page boundary is clipped."""
