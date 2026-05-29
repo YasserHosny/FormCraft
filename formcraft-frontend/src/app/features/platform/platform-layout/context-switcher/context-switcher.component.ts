@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 
 @Component({
+  standalone: false,
   selector: 'app-context-switcher',
   template: `
     <mat-form-field appearance="outline" class="context-switcher" *ngIf="showSwitcher">
@@ -22,7 +23,7 @@ export class ContextSwitcherComponent {
   currentContext: 'platform' | 'org' = 'platform';
 
   constructor(private auth: AuthService, private router: Router) {
-    this.auth.getCurrentUser().subscribe((user) => {
+    this.auth.currentUser$.subscribe((user) => {
       this.showSwitcher = !!(user?.is_platform_admin && user?.org_id);
       this.currentContext = this.router.url.startsWith('/platform') ? 'platform' : 'org';
     });

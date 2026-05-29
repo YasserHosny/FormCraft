@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { AngularMaterialModule } from '../../shared/angular-material.module';
+import { SharedModule } from '../../shared/shared.module';
 import { PlatformRoutingModule } from './platform-routing.module';
 import { PlatformLayoutComponent } from './platform-layout/platform-layout.component';
 import { ContextSwitcherComponent } from './platform-layout/context-switcher/context-switcher.component';
@@ -35,7 +35,7 @@ import { StatsTabComponent } from './organization-detail/tabs/stats-tab/stats-ta
     RouterModule,
     ReactiveFormsModule,
     TranslateModule,
-    AngularMaterialModule,
+    SharedModule,
     PlatformRoutingModule,
   ],
 })

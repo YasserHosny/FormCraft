@@ -6,6 +6,7 @@ import { PlatformService } from '../../../core/services/platform.service';
 import { OrganizationSummary, PaginatedOrganizations } from '../../../shared/models/platform.models';
 
 @Component({
+  standalone: false,
   selector: 'app-organization-list',
   template: `
     <div class="org-list-container">
