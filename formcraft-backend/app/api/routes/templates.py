@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from app.api.deps import get_current_user, require_role
 from app.core.audit import AuditLogger
+from app.core.db_errors import is_missing_schema_error
 from app.core.supabase import get_supabase_client
 from app.models.enums import Role
 from app.models.user import UserProfile
@@ -27,6 +28,46 @@ from app.services.print_settings_service import PrintSettingsService
 from app.services.template_service import TemplateService
 
 router = APIRouter(prefix="/templates", tags=["Templates"])
+org_categories_router = APIRouter(tags=["Templates"])
+
+
+async def _list_org_categories_for_user(current_user: UserProfile):
+    if not current_user.org_id:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="User must belong to an organization",
+        )
+    client = get_supabase_client()
+    try:
+        result = (
+            client.table("org_categories")
+            .select("id, name, is_system_default")
+            .eq("org_id", str(current_user.org_id))
+            .order("sort_order")
+            .execute()
+        )
+    except Exception as exc:
+        if is_missing_schema_error(exc):
+            return OrgCategoryListResponse(items=[])
+        raise
+    items = result.data or []
+    return OrgCategoryListResponse(
+        items=[
+            {
+                "id": i["id"],
+                "name": i["name"],
+                "is_system_default": i["is_system_default"],
+            }
+            for i in items
+        ]
+    )
+
+
+@org_categories_router.get("/org-categories")
+async def list_org_categories_root(
+    current_user: Annotated[UserProfile, Depends(get_current_user)],
+):
+    return await _list_org_categories_for_user(current_user)
 
 
 # --- Template CRUD ---
@@ -495,23 +536,7 @@ async def update_print_settings(
 async def list_org_categories(
     current_user: Annotated[UserProfile, Depends(get_current_user)],
 ):
-    if not current_user.org_id:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="User must belong to an organization",
-        )
-    client = get_supabase_client()
-    result = (
-        client.table("org_categories")
-        .select("id, name, is_system_default")
-        .eq("org_id", str(current_user.org_id))
-        .order("sort_order")
-        .execute()
-    )
-    items = result.data or []
-    return OrgCategoryListResponse(
-        items=[{"id": i["id"], "name": i["name"], "is_system_default": i["is_system_default"]} for i in items]
-    )
+    return await _list_org_categories_for_user(current_user)
 
 
 # --- Package Import ---

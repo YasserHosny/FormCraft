@@ -1,9 +1,13 @@
 """Template, Page, and Element CRUD operations via Supabase."""
 
+import re
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError
 from supabase import Client
+
+from app.core.db_errors import is_missing_schema_error
 
 TRANSITION_MAP: dict[str, list[str]] = {
     "draft": ["submitted_for_review", "published"],
@@ -36,8 +40,46 @@ EDITABLE_STATUSES = {"draft", "rejected"}
 class TemplateService:
     """Template domain model CRUD with optimistic concurrency."""
 
+    OPTIONAL_TEMPLATE_COLUMNS = {"currency", "tags"}
+    OPTIONAL_PAGE_COLUMNS = {
+        "orientation",
+        "margin_top_mm",
+        "margin_bottom_mm",
+        "margin_left_mm",
+        "margin_right_mm",
+    }
+
     def __init__(self, client: Client):
         self.client = client
+
+    def _missing_column_from_error(self, exc: Exception) -> str | None:
+        message = str(exc)
+        match = re.search(r"Could not find the '([^']+)' column", message)
+        return match.group(1) if match else None
+
+    def _insert_with_optional_column_retry(
+        self,
+        table_name: str,
+        payload: dict,
+        optional_columns: set[str],
+    ):
+        current_payload = dict(payload)
+        removed_columns: dict[str, object] = {}
+
+        while True:
+            try:
+                result = self.client.table(table_name).insert(current_payload).execute()
+                return result, removed_columns
+            except APIError as exc:
+                missing_column = self._missing_column_from_error(exc)
+                if (
+                    not missing_column
+                    or missing_column not in optional_columns
+                    or missing_column not in current_payload
+                    or not is_missing_schema_error(exc)
+                ):
+                    raise
+                removed_columns[missing_column] = current_payload.pop(missing_column)
 
     def _check_editable(self, template: dict) -> None:
         if template.get("status") not in EDITABLE_STATUSES:
@@ -189,8 +231,14 @@ class TemplateService:
             "lineage_id": new_id,
             "org_id": str(org_id) if org_id else None,
         }
-        result = self.client.table("templates").insert(template_data).execute()
+        result, removed_template_columns = self._insert_with_optional_column_retry(
+            "templates",
+            template_data,
+            self.OPTIONAL_TEMPLATE_COLUMNS,
+        )
         template = result.data[0]
+        for column, value in removed_template_columns.items():
+            template.setdefault(column, value)
 
         page_size = page_setup.get("page_size", "A4")
         orientation = page_setup.get("orientation", "portrait")
@@ -223,9 +271,19 @@ class TemplateService:
             "margin_right_mm": margins.get("right", 10.0),
             "sort_order": 0,
         }
-        self.client.table("pages").insert(page_data).execute()
+        _, removed_page_columns = self._insert_with_optional_column_retry(
+            "pages",
+            page_data,
+            self.OPTIONAL_PAGE_COLUMNS,
+        )
 
-        return await self.get_template(UUID(template["id"]))
+        created = await self.get_template(UUID(template["id"]))
+        for column, value in removed_template_columns.items():
+            created.setdefault(column, value)
+        if created.get("pages") and removed_page_columns:
+            for column, value in removed_page_columns.items():
+                created["pages"][0].setdefault(column, value)
+        return created
 
     async def get_template(self, template_id: UUID) -> dict:
         result = (
@@ -272,7 +330,9 @@ class TemplateService:
         user_role: str | None = None,
     ) -> tuple[list[dict], int]:
         offset = (page - 1) * limit
-        query = self.client.table("templates").select("*", count="exact")
+        query = self.client.table("templates").select(
+            "*, pages(id, elements(id))", count="exact"
+        )
 
         if status_filter:
             query = query.eq("status", status_filter)

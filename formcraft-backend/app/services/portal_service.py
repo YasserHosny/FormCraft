@@ -9,6 +9,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from supabase import Client
 
+from app.core.db_errors import is_missing_schema_error
 from app.schemas.portal import (
     PortalAnalyticsResponse,
     PortalConfiguration,
@@ -479,12 +480,17 @@ class PortalService:
     # ------------------------------------------------------------------
 
     async def list_portal_templates(self, org_id: UUID) -> PortalTemplateListResponse:
-        resp = (
-            self.client.table("portal_configurations")
-            .select("*, templates!inner(id, name, version, status)")
-            .eq("org_id", str(org_id))
-            .execute()
-        )
+        try:
+            resp = (
+                self.client.table("portal_configurations")
+                .select("*, templates!inner(id, name, version, status)")
+                .eq("org_id", str(org_id))
+                .execute()
+            )
+        except Exception as exc:
+            if is_missing_schema_error(exc):
+                return PortalTemplateListResponse(items=[])
+            raise
         rows = resp.data or []
         items = []
         for row in rows:
@@ -608,7 +614,12 @@ class PortalService:
             query = query.gte("created_at", date_from)
         if date_to:
             query = query.lte("created_at", date_to)
-        resp = query.execute()
+        try:
+            resp = query.execute()
+        except Exception as exc:
+            if is_missing_schema_error(exc):
+                return PortalAnalyticsResponse()
+            raise
         rows = resp.data or []
 
         submission_count = len(rows)
@@ -622,8 +633,14 @@ class PortalService:
             otp_query = otp_query.gte("created_at", date_from)
         if date_to:
             otp_query = otp_query.lte("created_at", date_to)
-        otp_resp = otp_query.execute()
-        otp_rows = otp_resp.data or []
+        try:
+            otp_resp = otp_query.execute()
+            otp_rows = otp_resp.data or []
+        except Exception as exc:
+            if is_missing_schema_error(exc):
+                otp_rows = []
+            else:
+                raise
         otp_sent_count = sum(1 for r in otp_rows if r.get("sent_at"))
         otp_failure_count = sum(
             1 for r in otp_rows if r.get("status") in ("failed", "locked", "provider_failed")

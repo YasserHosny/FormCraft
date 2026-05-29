@@ -7,6 +7,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
+from app.core.db_errors import is_missing_schema_error
 from app.core.middleware.rate_limit import limiter
 from app.core.middleware.security_headers import SecurityHeadersMiddleware
 from app.api.routes import (
@@ -82,6 +83,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router, prefix="/api")
     app.include_router(auth.router, prefix="/api")
     app.include_router(users.router, prefix="/api")
+    app.include_router(templates.org_categories_router, prefix="/api")
     app.include_router(templates.router, prefix="/api")
     app.include_router(forms.router, prefix="/api")
     app.include_router(ai.router, prefix="/api")
@@ -128,11 +130,8 @@ def create_app() -> FastAPI:
 
     # Global handler for Supabase/PostgREST errors (missing tables/columns
     # from unapplied migrations) — returns a clear 503 instead of 500.
-    _SCHEMA_CODES = ("PGRST204", "PGRST205", "42703", "42P01")
-
     def _is_schema_error(exc: Exception) -> bool:
-        msg = str(exc)
-        if any(code in msg for code in _SCHEMA_CODES):
+        if is_missing_schema_error(exc):
             return True
         # Check nested exceptions in ExceptionGroups
         if hasattr(exc, "exceptions"):

@@ -2,6 +2,8 @@ import hashlib
 import hmac
 import secrets
 
+from app.core.db_errors import is_missing_schema_error
+
 
 class IntegrationCredentialService:
     """F32 scoped integration credential service."""
@@ -60,13 +62,18 @@ class IntegrationCredentialService:
 
     async def list_credentials(self, org_id):
         """List credentials for an org."""
-        result = (
-            self.client.table("integration_credentials")
-            .select("id, name, prefix, scopes, status, expires_at, last_used_at, created_at")
-            .eq("org_id", str(org_id))
-            .order("created_at", desc=True)
-            .execute()
-        )
+        try:
+            result = (
+                self.client.table("integration_credentials")
+                .select("id, name, prefix, scopes, status, expires_at, last_used_at, created_at")
+                .eq("org_id", str(org_id))
+                .order("created_at", desc=True)
+                .execute()
+            )
+        except Exception as exc:
+            if is_missing_schema_error(exc):
+                return []
+            raise
         return result.data or []
 
     async def revoke_credential(self, org_id, credential_id, actor_id):
