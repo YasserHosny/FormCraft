@@ -13,7 +13,8 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["ng", "serve", "--proxy-config", "proxy.conf.json", "--port", "4200"],
       "port": 4200,
-      "cwd": "formcraft-frontend"
+      "cwd": "formcraft-frontend",
+      "autoPort": false
     }
   ]
 }
