@@ -13,6 +13,8 @@ import { TemplateFeedbackService } from '../../services/template-feedback.servic
 
 export interface FeedbackDialogData {
   templateId: string;
+  templateName?: string;
+  templateVersion?: number;
   pageNumber?: number | null;
   elementKey?: string | null;
 }
@@ -36,6 +38,17 @@ export interface FeedbackDialogData {
     <h2 mat-dialog-title>{{ 'template_feedback.dialog.title' | translate }}</h2>
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <mat-dialog-content>
+        <div class="feedback-context" *ngIf="data.templateName || data.templateVersion">
+          <div *ngIf="data.templateName">
+            <strong>{{ 'history.col_template' | translate }}:</strong>
+            <span>{{ data.templateName }}</span>
+          </div>
+          <div *ngIf="data.templateVersion">
+            <strong>{{ 'desk.version' | translate:{ version: data.templateVersion } }}:</strong>
+            <span>{{ data.templateVersion }}</span>
+          </div>
+        </div>
+
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>{{ 'template_feedback.dialog.category' | translate }}</mat-label>
           <mat-select formControlName="category">
@@ -68,6 +81,18 @@ export interface FeedbackDialogData {
   styles: [`
     .full-width { width: 100%; }
     mat-dialog-content { display: flex; flex-direction: column; gap: 16px; }
+    .feedback-context {
+      display: grid;
+      gap: 4px;
+      padding: 12px;
+      border-radius: 4px;
+      background: rgba(63, 81, 181, 0.08);
+    }
+    .feedback-context div {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
   `],
 })
 export class TemplateFeedbackDialogComponent {

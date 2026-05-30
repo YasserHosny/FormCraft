@@ -11,6 +11,7 @@
       <mat-label>{{ 'desk.filter_category' | translate }}</mat-label>
       <mat-select [(ngModel)]="category" (ngModelChange)="onSearch()">
         <mat-option value="">—</mat-option>
+        <mat-option *ngFor="let option of categories" [value]="option">{{ option }}</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -18,6 +19,7 @@
       <mat-label>{{ 'desk.filter_country' | translate }}</mat-label>
       <mat-select [(ngModel)]="country" (ngModelChange)="onSearch()">
         <mat-option value="">—</mat-option>
+        <mat-option *ngFor="let option of countries" [value]="option">{{ option }}</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -25,6 +27,7 @@
       <mat-label>{{ 'desk.filter_language' | translate }}</mat-label>
       <mat-select [(ngModel)]="language" (ngModelChange)="onSearch()">
         <mat-option value="">—</mat-option>
+        <mat-option *ngFor="let option of languages" [value]="option">{{ option }}</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -54,20 +57,17 @@
   <ng-container *ngIf="!loading && !error && dashboard">
     <!-- Pinned Section -->
     <fc-pinned-templates
-      *ngIf="dashboard.pinned.length > 0"
       [pinned]="dashboard.pinned"
       (pinToggle)="onPinToggle($event)">
     </fc-pinned-templates>
 
     <!-- Recent Section -->
     <fc-recent-templates
-      *ngIf="dashboard.recent.length > 0"
       [recent]="dashboard.recent">
     </fc-recent-templates>
 
     <!-- Drafts Section -->
     <fc-draft-list
-      *ngIf="dashboard.drafts.length > 0"
       [drafts]="dashboard.drafts">
     </fc-draft-list>
 

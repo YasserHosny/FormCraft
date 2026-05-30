@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { PinnedTemplate, TemplateCard } from '../../services/desk.service';
 import { TemplateCardComponent } from '../template-card/template-card.component';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'fc-pinned-templates',
@@ -11,6 +11,9 @@ import { RouterModule } from '@angular/router';
   imports: [CommonModule, TranslateModule, TemplateCardComponent, RouterModule],
   template: `
     <h2 class="section-title">{{ 'desk.section_pinned' | translate }}</h2>
+    <div class="section-empty" *ngIf="pinned.length === 0">
+      {{ 'desk.empty_pinned' | translate }}
+    </div>
     <div class="pinned-scroll">
       <fc-template-card
         *ngFor="let item of pinned"
@@ -37,11 +40,17 @@ import { RouterModule } from '@angular/router';
       min-width: 220px;
       max-width: 260px;
     }
+    .section-empty {
+      padding: 12px;
+      color: rgba(0, 0, 0, 0.54);
+    }
   `],
 })
 export class PinnedTemplatesComponent {
   @Input() pinned: PinnedTemplate[] = [];
   @Output() pinToggle = new EventEmitter<TemplateCard>();
+
+  constructor(private router: Router) {}
 
   mapPinnedToCard(item: PinnedTemplate): TemplateCard {
     return {
@@ -65,6 +74,6 @@ export class PinnedTemplatesComponent {
   }
 
   onCardClick(card: TemplateCard): void {
-    window.location.href = `/studio/designer/${card.id}`;
+    this.router.navigate(['/desk/fill', card.id]);
   }
 }

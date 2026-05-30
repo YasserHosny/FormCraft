@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { catchError, map, shareReplay } from 'rxjs/operators';
 import { Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 import { environment } from '../../../../environments/environment';
 
@@ -37,6 +37,11 @@ export class ValidationService {
         this.cache[country] = res.validators;
         delete this.cache$[country];
         return res.validators;
+      }),
+      catchError(() => {
+        this.cache[country] = [];
+        delete this.cache$[country];
+        return of([]);
       }),
       shareReplay(1),
     );
