@@ -89,6 +89,24 @@ export class HistoryComponent implements OnInit, OnDestroy {
     // this.router.navigate(['/desk/history', submission.id]);
   }
 
+  onReprint(submission: SubmissionListItem, event?: Event): void {
+    event?.stopPropagation();
+    this.historyService.requestReprint(submission.id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const printWindow = window.open(url, '_blank');
+        printWindow?.print();
+      },
+    });
+  }
+
+  onCloneAsNew(submission: SubmissionListItem, event?: Event): void {
+    event?.stopPropagation();
+    this.router.navigate(['/desk/fill', submission.template_id], {
+      queryParams: { clone: submission.id },
+    });
+  }
+
   getStatusClass(status: string): string {
     switch (status) {
       case 'printed': return 'status-printed';

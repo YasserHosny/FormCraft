@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -59,6 +59,9 @@ export class DashboardComponent implements OnInit {
   page = 1;
   limit = 20;
   totalTemplates = 0;
+  categories: string[] = [];
+  countries: string[] = [];
+  languages: string[] = [];
 
   private destroy$ = new Subject<void>();
 
@@ -66,6 +69,7 @@ export class DashboardComponent implements OnInit {
     private deskService: DeskService,
     private snackBar: MatSnackBar,
     private translate: TranslateService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -86,6 +90,7 @@ export class DashboardComponent implements OnInit {
       next: (data) => {
         this.dashboard = data;
         this.totalTemplates = data.templates.total;
+        this.refreshFilterOptions(data);
         this.loading = false;
       },
       error: () => {
@@ -136,7 +141,18 @@ export class DashboardComponent implements OnInit {
   }
 
   onCardClick(template: TemplateCard): void {
-    window.location.href = `/studio/designer/${template.id}`;
+    this.router.navigate(['/desk/fill', template.id]);
+  }
+
+  private refreshFilterOptions(data: DashboardData): void {
+    const templates = data.templates?.items || [];
+    this.categories = this.uniqueOptions(templates.map((template) => template.category));
+    this.countries = this.uniqueOptions(templates.map((template) => template.country));
+    this.languages = this.uniqueOptions(templates.map((template) => template.language));
+  }
+
+  private uniqueOptions(values: Array<string | null | undefined>): string[] {
+    return Array.from(new Set(values.filter((value): value is string => !!value))).sort();
   }
 
   onDismissNotification(notificationId: string): void {

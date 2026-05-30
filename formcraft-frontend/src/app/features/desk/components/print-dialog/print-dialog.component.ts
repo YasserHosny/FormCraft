@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule } from '@ngx-translate/core';
@@ -18,6 +19,7 @@ import { PrintSettingsService } from '../../../../core/services/print-settings.s
 export interface PrintDialogData {
   templateId: string;
   templateName: string;
+  fieldValues?: Record<string, any>;
 }
 
 @Component({
@@ -29,6 +31,7 @@ export interface PrintDialogData {
     MatDialogModule,
     MatFormFieldModule,
     MatSelectModule,
+    MatCheckboxModule,
     MatButtonModule,
     MatProgressSpinnerModule,
     TranslateModule,
@@ -54,6 +57,11 @@ export interface PrintDialogData {
           </mat-option>
         </mat-select>
       </mat-form-field>
+
+      <div class="preview-options">
+        <mat-checkbox [(ngModel)]="overlayPreview">{{ 'print_settings.overlay_preview' | translate }}</mat-checkbox>
+        <mat-checkbox [(ngModel)]="compositePreview">{{ 'overlay.composite_preview' | translate }}</mat-checkbox>
+      </div>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>{{ 'common.cancel' | translate }}</button>
@@ -65,12 +73,19 @@ export interface PrintDialogData {
   `,
   styles: [`
     .full-width { width: 100%; margin-bottom: 8px; }
+    .preview-options {
+      display: grid;
+      gap: 8px;
+      margin: 8px 0;
+    }
   `],
 })
 export class PrintDialogComponent implements OnInit {
   profiles: PrinterProfile[] = [];
   printMode = 'full';
   selectedProfileId: string | null = null;
+  overlayPreview = false;
+  compositePreview = true;
   loading = false;
 
   constructor(
@@ -83,7 +98,7 @@ export class PrintDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.profileService.list().subscribe((res) => {
-      this.profiles = res.items;
+      this.profiles = res.data;
       const def = this.profiles.find((p) => p.is_default);
       if (def) this.selectedProfileId = def.id;
     });
@@ -97,6 +112,9 @@ export class PrintDialogComponent implements OnInit {
     this.loading = true;
     const body: Record<string, unknown> = {
       print_mode_override: this.printMode,
+      field_values: this.data.fieldValues || {},
+      overlay_preview: this.overlayPreview,
+      composite_preview: this.compositePreview,
     };
     if (this.selectedProfileId) {
       body['printer_profile_id'] = this.selectedProfileId;

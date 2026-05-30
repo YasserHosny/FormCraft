@@ -70,14 +70,16 @@
       <div *ngFor="let page of template.pages; let i = index" class="fill-page">
         <div *ngIf="i > 0" class="fill-page-divider"></div>
 
-        <fc-field-renderer
-          *ngFor="let elem of getElementsForPage(i)"
-          [element]="elem"
-          [control]="getControl(elem.key)"
-          [label]="getLabel(elem)"
-          [country]="template.country || ''"
-          (entrySelected)="onEntrySelected($event)">
-        </fc-field-renderer>
+        <ng-container *ngFor="let elem of getElementsForPage(i)">
+          <fc-field-renderer
+            *ngIf="isElementVisible(elem.key)"
+            [element]="elem"
+            [control]="getControl(elem.key)"
+            [label]="getLabel(elem)"
+            [country]="template.country || ''"
+            (entrySelected)="onEntrySelected($event)">
+          </fc-field-renderer>
+        </ng-container>
       </div>
     </form>
   </ng-container>

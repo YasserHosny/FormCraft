@@ -12,6 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { VersionWarningComponent, VersionWarningData } from '../components/version-warning/version-warning.component';
 import { TemplateFeedbackDialogComponent } from '../components/template-feedback-dialog/template-feedback-dialog.component';
+import { PrintDialogComponent } from '../components/print-dialog/print-dialog.component';
 import { DraftService } from '../services/draft.service';
 import { SubmissionService } from '../services/submission.service';
 import { HistoryService } from '../services/history.service';
@@ -83,6 +84,9 @@ export class FillComponent implements OnInit, OnDestroy {
 
         this.validationService.loadValidators(tmpl.country).pipe(takeUntil(this.destroy$)).subscribe(() => {
           this.buildForm(tmpl);
+          this.form.markAllAsTouched();
+          this.formValid = this.form.valid;
+          this.updateCompletionPercent();
           this.loading = false;
           this.startAutoSave();
 
@@ -335,7 +339,11 @@ export class FillComponent implements OnInit, OnDestroy {
     if (!templateId) return;
     this.dialog.open(TemplateFeedbackDialogComponent, {
       width: '480px',
-      data: { templateId },
+      data: {
+        templateId,
+        templateName: this.template?.name,
+        templateVersion: this.template?.version,
+      },
     });
   }
 
@@ -527,18 +535,12 @@ export class FillComponent implements OnInit, OnDestroy {
   }
 
   openPrintDialog(fieldValues: Record<string, any>): void {
-    this.fillService.getPdfUrl(this.template!.id, fieldValues).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        const printWindow = window.open(url, '_blank');
-        if (printWindow) {
-          printWindow.onload = () => {
-            printWindow.print();
-          };
-        }
-      },
-      error: () => {
-        window.print();
+    this.dialog.open(PrintDialogComponent, {
+      width: '520px',
+      data: {
+        templateId: this.template!.id,
+        templateName: this.template!.name,
+        fieldValues,
       },
     });
   }

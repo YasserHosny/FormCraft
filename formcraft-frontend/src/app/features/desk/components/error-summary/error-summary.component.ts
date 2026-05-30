@@ -69,7 +69,7 @@ export class ErrorSummaryComponent {
     for (const key in controls) {
       if (controls.hasOwnProperty(key)) {
         const control = controls[key];
-        if (control.invalid && control.touched) {
+        if (control.invalid) {
           count++;
         }
       }
@@ -83,7 +83,7 @@ export class ErrorSummaryComponent {
     for (const key in controls) {
       if (controls.hasOwnProperty(key)) {
         const control = controls[key];
-        if (control.invalid && control.touched) {
+        if (control.invalid) {
           const el = document.querySelector(`[formcontrolname="${key}"]`);
           if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });

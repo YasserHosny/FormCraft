@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { RecentTemplate } from '../../services/desk.service';
 import { TemplateCardComponent } from '../template-card/template-card.component';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'fc-recent-templates',
@@ -11,6 +11,9 @@ import { RouterModule } from '@angular/router';
   imports: [CommonModule, TranslateModule, TemplateCardComponent, RouterModule],
   template: `
     <h2 class="section-title">{{ 'desk.section_recent' | translate }}</h2>
+    <div class="section-empty" *ngIf="recent.length === 0">
+      {{ 'desk.empty_recent' | translate }}
+    </div>
     <div class="recent-scroll">
       <fc-template-card
         *ngFor="let item of recent"
@@ -35,10 +38,16 @@ import { RouterModule } from '@angular/router';
       min-width: 220px;
       max-width: 260px;
     }
+    .section-empty {
+      padding: 12px;
+      color: rgba(0, 0, 0, 0.54);
+    }
   `],
 })
 export class RecentTemplatesComponent {
   @Input() recent: RecentTemplate[] = [];
+
+  constructor(private router: Router) {}
 
   mapRecentToCard(item: RecentTemplate) {
     return {
@@ -56,6 +65,6 @@ export class RecentTemplatesComponent {
   }
 
   onCardClick(card: any): void {
-    window.location.href = `/studio/designer/${card.id}`;
+    this.router.navigate(['/desk/fill', card.id]);
   }
 }
