@@ -36,7 +36,9 @@ export class AuthService {
     const token = this.getToken();
     if (token) {
       this.isAuthenticatedSubject.next(true);
-      this.loadProfile();
+      // Defer the HTTP call so the DI graph is fully resolved before HttpClient
+      // tries to instantiate HTTP_INTERCEPTORS (which depend on AuthService).
+      queueMicrotask(() => this.loadProfile());
     }
   }
 
