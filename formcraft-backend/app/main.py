@@ -48,6 +48,7 @@ from app.api.routes import (
     quickfill,
     platform,
     analytics,
+    custom_validators,
 )
 
 logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO))
@@ -120,6 +121,9 @@ def create_app() -> FastAPI:
     app.include_router(quickfill.router, prefix="/api")
     app.include_router(platform.router, prefix="/api")
     app.include_router(analytics.router, prefix="/api")
+    # Feature 048: Custom Locale Validators
+    app.include_router(custom_validators.admin_router, prefix="/api")
+    app.include_router(custom_validators.designer_router, prefix="/api")
 
     # Global handler for Supabase/PostgREST errors (missing tables/columns
     # from unapplied migrations) — returns a clear 503 instead of 500.
