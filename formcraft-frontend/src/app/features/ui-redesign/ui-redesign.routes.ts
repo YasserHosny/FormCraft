@@ -111,6 +111,13 @@ export const UI_REDESIGN_ROUTES: Routes = [
         data: { roles: ['admin'], classicRoute: '/admin/departments' },
         component: ClassicRedirectComponent,
       },
+
+      // Profile
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./shared/components/profile.component').then(m => m.ProfileComponent),
+      },
     ],
   },
 ];
