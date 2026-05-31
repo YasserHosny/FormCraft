@@ -104,7 +104,7 @@ export class DashboardComponent implements OnInit {
   }
 
   viewAllTransactions(): void {
-    this.router.navigate(['/desk/history']);
+    this.router.navigate(['/ui/desk/history']);
   }
 
   viewAllCustomers(): void {
