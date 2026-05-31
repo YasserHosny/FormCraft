@@ -25,7 +25,6 @@ from uuid import UUID
 import httpx
 from supabase import Client
 
-from app.core.audit import AuditLogger
 from app.services.connectors.encryption_service import (
     decrypt_dict_for_org,
     decrypt_for_org,
@@ -59,6 +58,26 @@ def _mask_sensitive(body_excerpt: str) -> str:
 
 def _sign_payload(payload_bytes: bytes, secret: str) -> str:
     return hmac.new(secret.encode("utf-8"), payload_bytes, hashlib.sha256).hexdigest()
+
+
+def _write_worker_audit(
+    client: Client,
+    *,
+    action: str,
+    resource_id: str,
+    metadata: dict[str, Any],
+) -> None:
+    """Write dispatcher audit rows synchronously from the worker context."""
+    client.table("audit_logs").insert(
+        {
+            "user_id": "00000000-0000-0000-0000-000000000000",
+            "action": action,
+            "resource_type": "webhook_delivery",
+            "resource_id": resource_id,
+            "metadata": metadata,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+    ).execute()
 
 
 def enqueue(
@@ -230,7 +249,6 @@ def dispatch_pending(client: Client) -> bool:
     duration_ms = int((time.monotonic() - started) * 1000)
     success = status_code is not None and 200 <= status_code < 300
 
-    audit = AuditLogger(client)
     if success:
         client.table("webhook_deliveries").update(
             {
@@ -243,20 +261,15 @@ def dispatch_pending(client: Client) -> bool:
         client.table("webhooks").update({"last_triggered_at": datetime.now(timezone.utc).isoformat()}).eq(
             "id", webhook["id"]
         ).execute()
-        # Audit (use system user id since this is a worker, not a request)
-        import asyncio
-        asyncio.create_task(
-            audit.log_event(
-                user_id="00000000-0000-0000-0000-000000000000",
-                action="WEBHOOK_DELIVERY_SUCCESS",
-                resource_type="webhook_delivery",
-                resource_id=delivery["id"],
-                metadata={
-                    "webhook_id": webhook["id"],
-                    "status_code": status_code,
-                    "duration_ms": duration_ms,
-                },
-            )
+        _write_worker_audit(
+            client,
+            action="WEBHOOK_DELIVERY_SUCCESS",
+            resource_id=delivery["id"],
+            metadata={
+                "webhook_id": webhook["id"],
+                "status_code": status_code,
+                "duration_ms": duration_ms,
+            },
         )
     else:
         _schedule_retry(
@@ -266,19 +279,15 @@ def dispatch_pending(client: Client) -> bool:
             error_message=error_message or f"HTTP {status_code}",
             status_code=status_code,
         )
-        import asyncio
-        asyncio.create_task(
-            audit.log_event(
-                user_id="00000000-0000-0000-0000-000000000000",
-                action="WEBHOOK_DELIVERY_FAILED",
-                resource_type="webhook_delivery",
-                resource_id=delivery["id"],
-                metadata={
-                    "webhook_id": webhook["id"],
-                    "status_code": status_code,
-                    "error": error_message,
-                    "attempt": delivery["attempt_number"],
-                },
-            )
+        _write_worker_audit(
+            client,
+            action="WEBHOOK_DELIVERY_FAILED",
+            resource_id=delivery["id"],
+            metadata={
+                "webhook_id": webhook["id"],
+                "status_code": status_code,
+                "error": error_message,
+                "attempt": delivery["attempt_number"],
+            },
         )
     return True

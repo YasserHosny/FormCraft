@@ -47,6 +47,25 @@ class ApiKeyCreate(BaseModel):
         return v
 
 
+class ApiKeyUpdate(BaseModel):
+    name: str | None = Field(None, min_length=1, max_length=255)
+    scopes: list[str] | None = None
+    expires_at: datetime | None = None
+
+    @field_validator("scopes")
+    @classmethod
+    def _valid_scopes(cls, v: list[str] | None) -> list[str] | None:
+        if v is None:
+            return v
+        allowed = {"read", "write", "admin"}
+        bad = [s for s in v if s not in allowed]
+        if bad:
+            raise ValueError(f"Invalid scopes: {bad}. Allowed: {sorted(allowed)}")
+        if not v:
+            raise ValueError("At least one scope is required")
+        return v
+
+
 class ApiKeyResponse(BaseModel):
     id: UUID
     org_id: UUID
@@ -138,6 +157,15 @@ class WebhookDeliveryListResponse(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class WebhookMetricsResponse(BaseModel):
+    webhook_id: UUID
+    window_hours: int = 24
+    payload_count: int
+    success_rate: float
+    p50_ms: int | None = None
+    p95_ms: int | None = None
 
 
 # ----------------------------------------------------------------------

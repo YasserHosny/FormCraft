@@ -9,7 +9,7 @@ Pre-built connector CRUD (DMS/Email/CRM/Banking) lives in Phase 4 per tasks.md.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
 from uuid import UUID
 
@@ -17,6 +17,7 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from app.api.deps import require_role
+from app.core.audit import AuditLogger
 from app.core.middleware.rate_limit import limiter
 from app.core.supabase import get_supabase_client
 from app.models.enums import Role
@@ -25,10 +26,12 @@ from app.schemas.connector import (
     ApiKeyCreate,
     ApiKeyCreatedResponse,
     ApiKeyResponse,
+    ApiKeyUpdate,
     EventType,
     WebhookCreate,
     WebhookDeliveryListResponse,
     WebhookDeliveryResponse,
+    WebhookMetricsResponse,
     WebhookResponse,
     WebhookTestResponse,
     WebhookUpdate,
@@ -83,6 +86,17 @@ async def get_api_key(
     org_id = _require_org(current_user)
     service = ApiKeyService(get_supabase_client())
     return ApiKeyResponse(**await service.get(key_id, org_id))
+
+
+@router.put("/api-keys/{key_id}", response_model=ApiKeyResponse)
+async def update_api_key(
+    key_id: UUID,
+    body: ApiKeyUpdate,
+    current_user: Annotated[UserProfile, Depends(require_role(Role.ADMIN))],
+):
+    org_id = _require_org(current_user)
+    service = ApiKeyService(get_supabase_client())
+    return ApiKeyResponse(**await service.update(key_id, body, org_id, current_user.id))
 
 
 @router.post("/api-keys/{key_id}/regenerate", response_model=ApiKeyCreatedResponse)
@@ -208,20 +222,36 @@ async def test_webhook(
                 },
             )
         duration_ms = int((time.monotonic() - started) * 1000)
-        return WebhookTestResponse(
+        result = WebhookTestResponse(
             success=200 <= resp.status_code < 300,
             status_code=resp.status_code,
             response_body_excerpt=resp.text[:512],
             duration_ms=duration_ms,
         )
+        await AuditLogger(get_supabase_client()).log_event(
+            user_id=str(current_user.id),
+            action="WEBHOOK_TEST_SENT",
+            resource_type="webhook",
+            resource_id=str(webhook_id),
+            metadata={"status_code": resp.status_code, "duration_ms": duration_ms, "success": result.success},
+        )
+        return result
     except httpx.RequestError as exc:
         duration_ms = int((time.monotonic() - started) * 1000)
-        return WebhookTestResponse(
+        result = WebhookTestResponse(
             success=False,
             status_code=None,
             error=f"{type(exc).__name__}: {str(exc)[:200]}",
             duration_ms=duration_ms,
         )
+        await AuditLogger(get_supabase_client()).log_event(
+            user_id=str(current_user.id),
+            action="WEBHOOK_TEST_SENT",
+            resource_type="webhook",
+            resource_id=str(webhook_id),
+            metadata={"duration_ms": duration_ms, "success": False, "error": type(exc).__name__},
+        )
+        return result
 
 
 @router.get("/webhooks/{webhook_id}/deliveries", response_model=WebhookDeliveryListResponse)
@@ -270,6 +300,31 @@ async def list_deliveries(
     )
 
 
+@router.get("/webhooks/{webhook_id}/deliveries/{delivery_id}", response_model=WebhookDeliveryResponse)
+async def get_delivery(
+    webhook_id: UUID,
+    delivery_id: UUID,
+    current_user: Annotated[UserProfile, Depends(require_role(Role.ADMIN))],
+):
+    org_id = _require_org(current_user)
+    client = get_supabase_client()
+    res = (
+        client.table("webhook_deliveries")
+        .select(
+            "id, webhook_id, event_type, resource_id, attempt_number, status, status_code, error_message, "
+            "created_at, sent_at, next_retry_at, completed_at"
+        )
+        .eq("id", str(delivery_id))
+        .eq("webhook_id", str(webhook_id))
+        .eq("org_id", str(org_id))
+        .maybe_single()
+        .execute()
+    )
+    if not res or not res.data:
+        raise HTTPException(status_code=404, detail="Delivery not found")
+    return WebhookDeliveryResponse(**res.data)
+
+
 @router.post("/webhooks/{webhook_id}/deliveries/{delivery_id}/retry", status_code=202)
 async def retry_delivery(
     webhook_id: UUID,
@@ -300,3 +355,62 @@ async def retry_delivery(
     if not res.data:
         raise HTTPException(status_code=404, detail="Delivery not found")
     return {"queued": True}
+
+
+@router.delete("/webhooks/{webhook_id}/deliveries/{delivery_id}", status_code=204)
+async def delete_delivery(
+    webhook_id: UUID,
+    delivery_id: UUID,
+    current_user: Annotated[UserProfile, Depends(require_role(Role.ADMIN))],
+):
+    org_id = _require_org(current_user)
+    client = get_supabase_client()
+    res = (
+        client.table("webhook_deliveries")
+        .delete()
+        .eq("id", str(delivery_id))
+        .eq("webhook_id", str(webhook_id))
+        .eq("org_id", str(org_id))
+        .execute()
+    )
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Delivery not found")
+
+
+@router.get("/webhooks/{webhook_id}/metrics", response_model=WebhookMetricsResponse)
+async def get_webhook_metrics(
+    webhook_id: UUID,
+    current_user: Annotated[UserProfile, Depends(require_role(Role.ADMIN))],
+):
+    org_id = _require_org(current_user)
+    client = get_supabase_client()
+    wh = (
+        client.table("webhooks")
+        .select("id")
+        .eq("id", str(webhook_id))
+        .eq("org_id", str(org_id))
+        .maybe_single()
+        .execute()
+    )
+    if not wh or not wh.data:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+    since = (datetime.now(timezone.utc) - timedelta(hours=24)).replace(microsecond=0).isoformat()
+    res = (
+        client.table("webhook_deliveries")
+        .select("id, status, created_at")
+        .eq("webhook_id", str(webhook_id))
+        .eq("org_id", str(org_id))
+        .gte("created_at", since)
+        .execute()
+    )
+    rows = res.data or []
+    successes = sum(1 for row in rows if row.get("status") == "success")
+    payload_count = len(rows)
+    success_rate = successes / payload_count if payload_count else 0.0
+    return WebhookMetricsResponse(
+        webhook_id=webhook_id,
+        payload_count=payload_count,
+        success_rate=success_rate,
+        p50_ms=None,
+        p95_ms=None,
+    )

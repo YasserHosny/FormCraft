@@ -25,85 +25,85 @@ Per the Constitution Scope note in `spec.md`, the following are explicitly exclu
 ## Phase 1: API Keys & Webhook Infrastructure (Backend)
 
 ### Task 1.1: Create Database Tables
-- [ ] Write migration: api_keys table with key_hash, scopes, expiry
-- [ ] Write migration: webhooks table with event_type, endpoint_url, custom_headers
-- [ ] Write migration: webhook_deliveries table for tracking attempts
-- [ ] Write migration: connectors table for pre-built connector configurations
-- [ ] Write migration: connector_field_mappings table for CRM/Banking field mapping
-- [ ] Create indexes for performance (org_id, event_type, status)
+- [x] Write migration: api_keys table with key_hash, scopes, expiry
+- [x] Write migration: webhooks table with event_type, endpoint_url, custom_headers
+- [x] Write migration: webhook_deliveries table for tracking attempts
+- [x] Write migration: connectors table for pre-built connector configurations
+- [x] Write migration: connector_field_mappings table for CRM/Banking field mapping
+- [x] Create indexes for performance (org_id, event_type, status)
 - [ ] Write and test RLS policies (org_id isolation)
 
 ### Task 1.2: Implement RLS Policies
-- [ ] Create RLS policy: users can read api_keys only for their org
-- [ ] Create RLS policy: users can write api_keys only for their org
-- [ ] Create RLS policy: users can read/write webhooks only for their org
-- [ ] Create RLS policy: webhook_deliveries scoped to org
+- [x] Create RLS policy: users can read api_keys only for their org
+- [x] Create RLS policy: users can write api_keys only for their org
+- [x] Create RLS policy: users can read/write webhooks only for their org
+- [x] Create RLS policy: webhook_deliveries scoped to org
 - [ ] Test cross-org isolation (user from Org A cannot see Org B's keys/webhooks)
 
 ### Task 1.3: Build API Key Management Endpoints
-- [ ] `POST /admin/integrations/api-keys` — Create key with scopes
-- [ ] `GET /admin/integrations/api-keys` — List keys with usage stats
-- [ ] `GET /admin/integrations/api-keys/:id` — Get key details
-- [ ] `PUT /admin/integrations/api-keys/:id` — Update name, scopes, expiry
-- [ ] `POST /admin/integrations/api-keys/:id/regenerate` — Create new secret
-- [ ] `DELETE /admin/integrations/api-keys/:id` — Revoke key
-- [ ] Add input validation (scope validation, expiry date validation)
-- [ ] Add rate limiting to prevent key generation spam
+- [x] `POST /admin/integrations/api-keys` — Create key with scopes
+- [x] `GET /admin/integrations/api-keys` — List keys with usage stats
+- [x] `GET /admin/integrations/api-keys/:id` — Get key details
+- [x] `PUT /admin/integrations/api-keys/:id` — Update name, scopes, expiry
+- [x] `POST /admin/integrations/api-keys/:id/regenerate` — Create new secret
+- [x] `DELETE /admin/integrations/api-keys/:id` — Revoke key
+- [x] Add input validation (scope validation, expiry date validation)
+- [x] Add rate limiting to prevent key generation spam
 
 ### Task 1.4: Build Webhook CRUD Endpoints
-- [ ] `POST /admin/integrations/webhooks` — Create webhook with validation
+- [x] `POST /admin/integrations/webhooks` — Create webhook with validation
 - [ ] `GET /admin/integrations/webhooks` — List webhooks with filtering
-- [ ] `GET /admin/integrations/webhooks/:id` — Get webhook details
-- [ ] `PUT /admin/integrations/webhooks/:id` — Update webhook config
-- [ ] `DELETE /admin/integrations/webhooks/:id` — Delete webhook
-- [ ] Add validation: endpoint must be HTTPS for production
-- [ ] Add validation: event_type is valid (form_submitted, form_printed, etc.)
+- [x] `GET /admin/integrations/webhooks/:id` — Get webhook details
+- [x] `PUT /admin/integrations/webhooks/:id` — Update webhook config
+- [x] `DELETE /admin/integrations/webhooks/:id` — Delete webhook
+- [x] Add validation: endpoint must be HTTPS for production
+- [x] Add validation: event_type is valid (form_submitted, form_printed, etc.)
 
 ### Task 1.5: Implement Webhook Dispatcher (Supabase-native polling worker)
 - [ ] **1.5.T** Write failing tests covering: payload signing, retry backoff schedule (1s/5s/30s), SKIP LOCKED concurrent worker isolation, status transitions pending→sent→success/failed
 - [ ] **1.5.I** Implement FastAPI background worker that polls `webhook_deliveries` with `FOR UPDATE SKIP LOCKED LIMIT 100` every 2s
 - [ ] **1.5.I** Build canonical event payload per event_type (event_type, timestamp, resource_id, resource_data, org_id, org_name)
-- [ ] **1.5.I** Sign payload with HMAC-SHA256 using `webhook_secret`; emit signature in `X-FormCraft-Signature` header
-- [ ] **1.5.I** Decrypt and apply `custom_headers` from KMS-encrypted storage; never log header values
-- [ ] **1.5.I** Record HTTP response status code + first 1KB of body (NOT request payload) in `webhook_deliveries`
-- [ ] **1.5.I** Retry logic: on non-2xx → schedule next attempt at +1s, +5s, +30s; after attempt 3 mark `status='failed'`
+- [x] **1.5.I** Sign payload with HMAC-SHA256 using `webhook_secret`; emit signature in `X-FormCraft-Signature` header
+- [x] **1.5.I** Decrypt and apply `custom_headers` from KMS-encrypted storage; never log header values
+- [x] **1.5.I** Record HTTP response status code + first 1KB of body (NOT request payload) in `webhook_deliveries`
+- [x] **1.5.I** Retry logic: on non-2xx → schedule next attempt at +1s, +5s, +30s; after attempt 3 mark `status='failed'`
 - [ ] **1.5.I** Form submission/print/publish/batch handlers enqueue rows but NEVER await dispatcher (verified by integration test)
 
 ### Task 1.5b: Encryption-at-Rest for Header Values & Connector Credentials
-- [ ] **1.5b.T** Write failing tests proving: header values are NEVER stored in plaintext, decryption only succeeds inside dispatcher worker, admin UI returns `●●●●●` mask
-- [ ] **1.5b.I** Generate per-org KMS DEK on first integration write (reuse Supabase Vault if available; else AES-256-GCM with key stored in env-protected master key)
+- [x] **1.5b.T** Write failing tests proving: header values are NEVER stored in plaintext, decryption only succeeds inside dispatcher worker, admin UI returns `●●●●●` mask
+- [x] **1.5b.I** Generate per-org KMS DEK on first integration write (reuse Supabase Vault if available; else AES-256-GCM with key stored in env-protected master key)
 - [ ] **1.5b.I** Encrypt `webhooks.custom_headers` values and `connectors.config` secret fields at write time
-- [ ] **1.5b.I** Implement masking in `GET /admin/integrations/webhooks/:id` and `GET /admin/integrations/connectors/:id`
+- [x] **1.5b.I** Implement masking in `GET /admin/integrations/webhooks/:id` and `GET /admin/integrations/connectors/:id`
 
 ### Task 1.6: Implement Webhook Test Endpoint
-- [ ] `POST /admin/integrations/webhooks/:id/test` — Send test event
-- [ ] Build sample payload for each event type
-- [ ] POST to webhook endpoint and return response status + body
+- [x] `POST /admin/integrations/webhooks/:id/test` — Send test event
+- [x] Build sample payload for each event type
+- [x] POST to webhook endpoint and return response status + body
 - [ ] Show results to admin (success/failure, response time, response body)
 
 ### Task 1.7: Build Webhook Delivery Log Endpoints
-- [ ] `GET /admin/integrations/webhooks/:id/deliveries` — List attempts (paginated)
+- [x] `GET /admin/integrations/webhooks/:id/deliveries` — List attempts (paginated)
 - [ ] Filter by: status (pending, sent, failed, success), date range
 - [ ] Sort by: created_at, sent_at, status
-- [ ] `GET /admin/integrations/webhooks/:id/deliveries/:deliveryId` — Get details
+- [x] `GET /admin/integrations/webhooks/:id/deliveries/:deliveryId` — Get details
 - [ ] Show: attempt number, endpoint, status code, response body (truncated), error message
-- [ ] `POST /admin/integrations/webhooks/:id/deliveries/:deliveryId/retry` — Retry failed
-- [ ] `DELETE /admin/integrations/webhooks/:id/deliveries/:deliveryId` — Clear log
+- [x] `POST /admin/integrations/webhooks/:id/deliveries/:deliveryId/retry` — Retry failed
+- [x] `DELETE /admin/integrations/webhooks/:id/deliveries/:deliveryId` — Clear log
 
 ### Task 1.8: Implement Webhook Security
-- [ ] HMAC-SHA256 signature generation (shared secret per webhook)
+- [x] HMAC-SHA256 signature generation (shared secret per webhook)
 - [ ] Signature verification on webhook receipt (external systems verify)
 - [ ] Rate limiting per API key (e.g., 1000 requests/minute)
 - [ ] Rate limiting per webhook endpoint (e.g., 100 requests/minute)
-- [ ] Custom header filtering in logs (never store secret/password headers)
-- [ ] HTTPS validation for production endpoints
+- [x] Custom header filtering in logs (never store secret/password headers)
+- [x] HTTPS validation for production endpoints
 
 ### Task 1.9: Implement Audit Logging
-- [ ] Log: API_KEY_CREATED, API_KEY_REGENERATED, API_KEY_REVOKED
-- [ ] Log: WEBHOOK_CREATED, WEBHOOK_UPDATED, WEBHOOK_DELETED
-- [ ] Log: WEBHOOK_TEST_SENT, WEBHOOK_DELIVERY_SUCCESS, WEBHOOK_DELIVERY_FAILED
-- [ ] Ensure logs never contain sensitive data (API key secrets, webhook payloads)
-- [ ] Add operator identity and timestamp to all logs
+- [x] Log: API_KEY_CREATED, API_KEY_REGENERATED, API_KEY_REVOKED
+- [x] Log: WEBHOOK_CREATED, WEBHOOK_UPDATED, WEBHOOK_DELETED
+- [x] Log: WEBHOOK_TEST_SENT, WEBHOOK_DELIVERY_SUCCESS, WEBHOOK_DELIVERY_FAILED
+- [x] Ensure logs never contain sensitive data (API key secrets, webhook payloads)
+- [x] Add operator identity and timestamp to all logs
 
 ---
 
