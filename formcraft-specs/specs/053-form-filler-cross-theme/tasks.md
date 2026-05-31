@@ -18,9 +18,11 @@
 
 **⚠️ CRITICAL**: These tasks unblock all downstream phases.
 
-- [ ] T001 Extend `TemplateElement` interface in `formcraft-frontend/src/app/features/desk/services/form-filler.service.ts` — add `options?: Array<{ value: string; label_ar: string; label_en: string }>`, `visible_when?: { conditions: Array<{ field: string; operator: string; value: unknown }>; logic: 'AND' } | null`, `required_when?: (same shape) | null`, `tafqeet_enabled?: boolean` (see data-model.md for full shape)
-- [ ] T002 Verify `formcraft-backend/app/api/routes/drafts.py` exposes `GET /desk/drafts` returning all drafts for the authenticated user (operator_id = auth.uid()); add the route + `DraftService.list_drafts()` in `formcraft-backend/app/services/draft_service.py` if missing
-- [ ] T003 Add `listDrafts(): Observable<DraftResponse[]>` method to `formcraft-frontend/src/app/features/desk/services/draft.service.ts` calling `GET {apiUrl}` (no params; backend filters by auth.uid())
+- [ ] T001 Extend `TemplateElement` interface in `formcraft-frontend/src/app/features/desk/services/form-filler.service.ts` — add `options?: Array<{ value: string; label_ar: string; label_en: string }>`, `visible_when?: { conditions: Array<{ field: string; operator: string; value: string | number | boolean | null }>; logic: 'AND' } | null`, `required_when?: { conditions: Array<{ field: string; operator: string; value: string | number | boolean | null }>; logic: 'AND' } | null`, `tafqeet_enabled?: boolean`
+- [ ] T001a [P] Write failing pytest for `GET /desk/drafts` in `formcraft-backend/tests/test_drafts.py` — assert status 200 returns array of drafts for the authenticated user; assert other users' drafts are not included (RLS); test runs and fails before T002 is implemented
+- [ ] T002 Verify `formcraft-backend/app/api/routes/drafts.py` exposes `GET /desk/drafts` returning all drafts for the authenticated user (operator_id = auth.uid()); add the route + `DraftService.list_drafts()` in `formcraft-backend/app/services/draft_service.py` if missing — T001a tests must pass after this task
+- [ ] T002a [P] Write failing Karma spec for `DraftService.listDrafts()` in `formcraft-frontend/src/app/features/desk/services/draft.service.spec.ts` — assert `listDrafts()` makes GET request to `${apiUrl}` with no query params; assert it returns `Observable<DraftResponse[]>`; test must fail before T003 is implemented
+- [ ] T003 Add `listDrafts(): Observable<DraftResponse[]>` method to `formcraft-frontend/src/app/features/desk/services/draft.service.ts` calling `GET {apiUrl}` (no params; backend filters by auth.uid()) — T002a tests must pass after this task
 - [ ] T004 [P] Verify `formcraft-frontend/src/app/features/desk/services/submission.service.ts` `submit()` return type matches `SubmissionResponse` contract (id, reference_number, template_id, template_version, created_at) from `formcraft-specs/specs/053-form-filler-cross-theme/contracts/api-contracts.md`; update the interface if the shape differs
 
 **Checkpoint**: `TemplateElement` has all required fields, `DraftService.listDrafts()` exists, `SubmissionResponse` contract matches — all components can now compile.
@@ -49,6 +51,7 @@
 - [ ] T009 [US2] Add complete field-type renderer to `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.html` — implement `@switch (element.type)` with cases for `text` (mat-input), `number` (mat-input type="number"), `date` (mat-datepicker), `select` (mat-select with `*ngFor` over `element.options`), `checkbox` (mat-checkbox), `textarea` (mat-input textarea), `signature` (fc-signature-pad); bind each to `formGroup.get(element.key)`
 - [ ] T010 [US2] Import `SignaturePadComponent` into standalone `imports` array of `FormFillerComponent` in `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.ts`; handle `(confirmed)` output → `formGroup.get(element.key)?.setValue(base64String)`; handle `(cleared)` output → `formGroup.get(element.key)?.setValue(null)`
 - [ ] T011 [US2] Update `buildFormFromTemplate()` in `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.ts` to call `this.validationService.getValidatorFn(element)` and spread the returned validators into the `FormControl` alongside `Validators.required` when `element.required === true` (already partially done — verify country-specific validators are included)
+- [ ] T011a [US2] Add required field indicators (FR-036) to `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.html` — in the field label area of every field renderer case, add `<span class="required-indicator" *ngIf="element.required || requiredKeys.has(element.key)" aria-hidden="true">*</span>`; add `.required-indicator { color: #d32f2f; margin-inline-start: 2px; font-weight: 600; }` to `form-filler.component.scss`; verify same indicator exists in `formcraft-frontend/src/app/features/desk/fill/fill.component.html` (classic desk)
 - [ ] T012 [US2] Add error summary panel to `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.html` — render a `mat-card` with class `error-summary` above the submit button only when `submitted === true && formGroup.invalid`; list each invalid visible control's label and error message; add `submitted = false` property and set to `true` on submit click
 - [ ] T013 [P] [US2] Add `error-summary` and `signature-pad-wrapper` styles to `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.scss` — red border, error icon, RTL-aware layout; ensure mat-error messages display below each field in both RTL and LTR
 - [ ] T014 [P] [US2] Add missing validation i18n keys to `formcraft-frontend/src/assets/i18n/ar.json` and `en.json`: `desk.form_filler.validation_error_summary`, `desk.form_filler.field_required`, `desk.form_filler.field_invalid`, `desk.form_filler.submit_blocked`
@@ -77,7 +80,7 @@
 
 **Independent Test**: Start filling a form in new-theme, save as draft (or navigate away), re-open the desk dashboard, find the draft in "My Drafts" panel, click to resume — verify all saved field values are restored. Repeat with a draft saved at an older template version — verify the version mismatch warning dialog appears.
 
-- [ ] T022 [US4] Add `ngOnDestroy` auto-save to `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.ts` — in `ngOnDestroy()`, if `this.formGroup.dirty && !this.submitted`, call `this.saveDraft()` synchronously (use `take(1)` subscribe); add `submitted = false` property set to `true` on successful submission
+- [ ] T022 [US4] Add safe `ngOnDestroy` draft persistence to `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.ts` — HTTP subscriptions in `ngOnDestroy` are not guaranteed to complete before component teardown; instead, on `ngOnDestroy`, if `this.formGroup.dirty && !this.submitted`, store current field values to `localStorage` with key `fc_draft_${this.templateId}` as a JSON string; on `ngOnInit` after template loads, check for this key and silently call `DraftService.saveDraft()` to flush the buffered values, then clear the key; add `submitted = false` property set to `true` on successful submission to suppress the ngOnDestroy flush
 - [ ] T023 [US4] Add template version mismatch check to `loadDraft()` in `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.ts` — after patching form values, compare `draft.template_version !== this.template?.version`; if mismatch, open `MatDialog` with `VersionWarningComponent` (import from `formcraft-frontend/src/app/features/desk/components/version-warning/version-warning.component.ts`); pass `{ currentVersion: template.version, draftVersion: draft.template_version }` as dialog data
 - [ ] T024 [US4] Replace hardcoded snackbar strings in `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.ts` — `'تم حفظ المسودة بنجاح'` → `this.translate.instant('desk.form_filler.draft_saved')`, `'فشل حفظ المسودة'` → `this.translate.instant('desk.form_filler.draft_save_failed')`, `'تم إرسال النموذج بنجاح'` → `this.translate.instant('desk.form_filler.submit_success')`
 - [ ] T025 [US4] Update `formcraft-frontend/src/app/features/desk/components/draft-list/draft-list.component.ts` — inject `DraftService`; call `draftService.listDrafts()` on init instead of using an `@Input() drafts` array; `openDraft(draft)` must navigate to `/ui/desk/fill/${draft.template_id}?draftId=${draft.id}` for new-theme context (keep classic route for backward compatibility)
@@ -93,12 +96,14 @@
 
 **Independent Test**: Complete a form in new-theme and submit. Verify the browser navigates to `/ui/desk/submission-confirmed` with the reference number visible prominently. Click "Back to Desk" and verify navigation to `/ui/desk`. Submit with a simulated backend failure — verify error banner appears with retry button and form data is preserved.
 
+- [ ] T028a [US5] Write failing Karma spec `formcraft-frontend/src/app/features/ui-redesign/desk/submission-confirmed.component.spec.ts` — assert: (1) component renders `referenceNumber` from router state; (2) component redirects to `/ui/desk` when router state is null; (3) "Back to Desk" button navigates to `/ui/desk`; test must fail before T029 is implemented
 - [ ] T029 [US5] Create `formcraft-frontend/src/app/features/ui-redesign/desk/submission-confirmed.component.ts` as a standalone component — reads `router.getCurrentNavigation()?.extras.state as SubmissionConfirmedState`; if state is null, immediately navigate to `/ui/desk`; displays `referenceNumber`, `templateName`, `submittedAt` from state; exports `SubmissionConfirmedState` interface `{ referenceNumber: string; templateName: string; submittedAt: string }`
 - [ ] T030 [US5] Create `formcraft-frontend/src/app/features/ui-redesign/desk/submission-confirmed.component.html` — large mat-card with a success icon, reference number in bold prominent text, template name, formatted submission timestamp, and a mat-button "Back to Desk" navigating to `/ui/desk`; use translate pipe for all labels
 - [ ] T031 [US5] Add route `/ui/desk/submission-confirmed` to `formcraft-frontend/src/app/features/ui-redesign/ui-redesign.routes.ts` with `canActivate: [RoleGuard]`, `data: { roles: ['admin', 'branch_manager', 'operator'] }`, `loadComponent` pointing to `SubmissionConfirmedComponent`
+- [ ] T031a [US5] Implement Designer read-only mode (FR-021a, SC-013) — in both `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.ts` and `formcraft-frontend/src/app/features/desk/fill/fill.component.ts`: inject `AuthService`; add `isReadOnly = false` property set in `ngOnInit` as `this.isReadOnly = this.authService.currentUser?.role === 'designer'`; in both templates bind the submit button `[disabled]="isReadOnly || submitting || formGroup.invalid"` and show a read-only banner `*ngIf="isReadOnly"` with translate key `desk.form_filler.read_only_mode`; add `'designer'` to the route `data.roles` arrays in `ui-redesign.routes.ts` and the classic desk routing module so designers can access the route without a 403
 - [ ] T032 [US5] Update `submitForm()` in `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.ts` — on success, set `this.submitted = true`, then `this.router.navigate(['/ui/desk/submission-confirmed'], { state: { referenceNumber: response.reference_number, templateName: this.template?.name, submittedAt: new Date().toISOString() } })`; remove the existing 2-second setTimeout and `/ui/desk` navigation
 - [ ] T033 [P] [US5] Update `submitForm()` failure handler in `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.ts` — display persistent error banner (not just a snackbar) with a "Retry" button calling `submitForm()` again; ensure form group remains unmodified so the operator can retry without re-entering data
-- [ ] T034 [P] [US5] Add submission confirmation i18n keys to `formcraft-frontend/src/assets/i18n/ar.json` and `en.json`: `desk.submission_confirmed.title`, `desk.submission_confirmed.reference_label`, `desk.submission_confirmed.submitted_at`, `desk.submission_confirmed.back_to_desk`, `desk.form_filler.submit_failed`, `desk.form_filler.retry`
+- [ ] T034 [P] [US5] Add submission confirmation + read-only mode i18n keys to `formcraft-frontend/src/assets/i18n/ar.json` and `en.json`: `desk.submission_confirmed.title`, `desk.submission_confirmed.reference_label`, `desk.submission_confirmed.submitted_at`, `desk.submission_confirmed.back_to_desk`, `desk.form_filler.submit_failed`, `desk.form_filler.retry`, `desk.form_filler.read_only_mode`
 - [ ] T035 [P] [US5] Verify `formcraft-frontend/src/app/features/desk/fill/fill.component.ts` (classic desk) submission success shows reference number via snackbar or confirmation UI; submission failure preserves form data with retry option (FR-025)
 
 ---
@@ -110,6 +115,7 @@
 **Independent Test**: Click the customer picker button in the new-theme form filler header. Search for a customer by name. Select a customer with a complete profile mapped to the current template. Verify mapped fields populate instantly. Modify one auto-filled field and verify it remains editable.
 
 - [ ] T036 [US6] Add `CustomerService` (or verify it exists) in `formcraft-frontend/src/app/features/desk/services/` — if absent, create `customer.service.ts` with `searchCustomers(query: string): Observable<Customer[]>` calling `GET /desk/customers/search?q={query}` and `getAutoFillData(customerId: string, templateId: string): Observable<AutoFillMapping>` calling `GET /desk/customers/{customerId}/auto-fill?template_id={templateId}`; define `Customer` and `AutoFillMapping` interfaces per `formcraft-specs/specs/053-form-filler-cross-theme/contracts/api-contracts.md`
+- [ ] T036a [US6] Write failing Karma spec `formcraft-frontend/src/app/features/desk/components/customer-picker/customer-picker-dialog.component.spec.ts` — assert: (1) search input debounces 300ms before calling `CustomerService.searchCustomers()`; (2) results list renders customer names; (3) clicking a row calls `dialogRef.close(customer)`; (4) empty result shows `desk.customer_picker.no_results` message; test must fail before T037 is implemented
 - [ ] T037 [US6] Create a `CustomerPickerDialogComponent` in `formcraft-frontend/src/app/features/desk/components/customer-picker/customer-picker-dialog.component.ts` as a standalone `MatDialogRef`-based component — contains a `MatInput` search field with 300ms debounce calling `CustomerService.searchCustomers(query)`; renders results list; on row click emits the selected `Customer` via `dialogRef.close(customer)`
 - [ ] T038 [US6] Update `openCustomerPicker()` in `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.ts` — open `CustomerPickerDialogComponent` via `MatDialog.open()`; subscribe to `afterClosed()` result; if a customer is returned, call `this.customerService.getAutoFillData(customer.id, this.templateId).subscribe(mapping => this.autoFillService.executeAutoFill(mapping.mappings, this.formGroup))`
 - [ ] T039 [P] [US6] Add customer picker i18n keys to `formcraft-frontend/src/assets/i18n/ar.json` and `en.json`: `desk.customer_picker.title`, `desk.customer_picker.search_placeholder`, `desk.customer_picker.no_results`, `desk.customer_picker.select`
@@ -139,25 +145,32 @@
 - [ ] T047 [P] Verify `formcraft-frontend/src/app/features/ui-redesign/desk/submission-confirmed.component.ts` handles null router state gracefully (SC-015 edge case) — navigate directly to `/ui/desk/submission-confirmed` without state; confirm immediate redirect to `/ui/desk` without error
 - [ ] T048 [P] Verify `SignaturePadComponent` serialises to non-empty base64 PNG on confirm and returns null on clear — confirm `formGroup.get(signatureKey).value` is null when cleared and a non-empty string after confirm; confirm required validation blocks submission when signature is empty (SC-012)
 - [ ] T049 [P] Run full FR checklist verification: confirm FR-001 to FR-038 are satisfied by the final state of both `fill.component.ts` (classic) and `form-filler.component.ts` (new-theme); document any remaining gaps as follow-up items
+- [ ] T050 [P] Verify backend audit log coverage (FR-025a/b, SC-016) — run `pytest formcraft-backend/tests/` and confirm `AuditLogger.log_event(action="DRAFT_SAVED")` is called by `DraftService.create_draft()` and `update_draft()`; confirm `AuditLogger.log_event(action="FORM_SUBMITTED")` is called by `SubmissionService.create_submission()` on success; confirm no audit entry is created on submission failure
+- [ ] T051 [P] Manual performance verification (SC-003–SC-008) — using browser DevTools Performance panel: (1) measure time from field blur to error display (target ≤300ms, SC-003); (2) measure condition visibility change time (target ≤200ms, SC-004); (3) measure auto-fill population time from customer selection (target ≤500ms, SC-005); (4) measure tafqeet update time per keystroke (target ≤200ms, SC-006); (5) confirm draft auto-save does not block UI interaction (target ≤2s background, SC-007); (6) measure submission response time (target ≤3s, SC-008); document results; block sign-off if any target is missed by >50%
 
 ---
 
 ## Dependencies
 
 ```
-T001 → T005, T009, T011, T016, T041   (TemplateElement interface unblocks all field rendering)
-T002 → T003                            (backend list route unblocks frontend listDrafts)
-T003 → T025, T026                      (listDrafts() unblocks My Drafts panel)
-T004 → T032                            (SubmissionResponse shape unblocks submit navigation)
-T005, T008 → T006                      (i18n keys needed for loading/error states)
-T009 → T010                            (field renderer must exist before signature import)
-T011 → T012                            (validators wired before error summary)
-T016 → T017, T018, T019               (initialize() must be called before subscriptions)
-T017, T018, T019 → T020               (visibility/required sets needed for payload filter)
-T022 → T023                            (ngOnDestroy order: save before destroy)
-T029 → T030, T031, T032               (component must exist before route and navigation)
-T036 → T037, T038                      (CustomerService must exist before picker)
-T041 → T042                            (tafqeetValues map populated before template renders it)
+T001 → T005, T009, T011, T016, T041    (TemplateElement interface unblocks all field rendering)
+T001a → T002                            (failing test must exist before backend implementation)
+T002 → T003                             (backend list route unblocks frontend listDrafts)
+T002a → T003                            (failing frontend test must exist before service method)
+T003 → T025, T026                       (listDrafts() unblocks My Drafts panel)
+T004 → T032                             (SubmissionResponse shape unblocks submit navigation)
+T005, T008 → T006                       (i18n keys needed for loading/error states)
+T009 → T010                             (field renderer must exist before signature import)
+T011 → T011a, T012                      (validators wired before required indicators + error summary)
+T016 → T017, T018, T019                (initialize() must be called before subscriptions)
+T017, T018, T019 → T020                (visibility/required sets needed for payload filter)
+T022 → T023                             (localStorage flush on init before draft load)
+T028a → T029                            (failing test before component creation)
+T029 → T030, T031, T031a, T032         (component must exist before route, read-only, and navigation)
+T036 → T036a, T037, T038               (CustomerService must exist before picker)
+T036a → T037                            (failing test before dialog component creation)
+T041 → T042                             (tafqeetValues map populated before template renders it)
+T049 → T050, T051                       (full FR checklist before audit + perf verification)
 ```
 
 ## Parallel Execution Opportunities
@@ -182,7 +195,7 @@ Complete functional form filler in both themes: load, validate, conditional logi
 **P2 Extensions (US6–US7 — T036–T044)**:
 Customer auto-fill and tafqeet for numeric fields.
 
-**Total tasks**: 49 (T001–T049)
-**P1 tasks**: 35 (T001–T035)
-**P2 tasks**: 9 (T036–T044)
-**Polish tasks**: 5 (T045–T049)
+**Total tasks**: 58 (T001–T051 + T001a, T002a, T011a, T028a, T031a, T036a, T050, T051)
+**P1 tasks**: 40 (T001–T031a, T032–T035)
+**P2 tasks**: 10 (T036–T044 + T036a)
+**Polish tasks**: 8 (T045–T051)

@@ -94,7 +94,7 @@ As an operator, I can save in-progress forms as drafts and resume them later, pr
 **Acceptance Scenarios**:
 
 1. **Given** an operator partially fills a form and clicks "Save Draft" or navigates away, **When** the action occurs, **Then** all current field values are persisted to the backend draft record.
-2. **Given** a saved draft, **When** the operator reopens it via `/desk/fill/{templateId}?draft={draftId}`, **Then** all previously entered values are restored in the form.
+2. **Given** a saved draft, **When** the operator reopens it via `/desk/fill/{templateId}?draftId={draftId}`, **Then** all previously entered values are restored in the form.
 3. **Given** a draft was saved at template version 1 and the template is now version 2, **When** the draft is loaded, **Then** a version mismatch warning displays, offering the option to reload with the latest template structure.
 4. **Given** the operator submits a resumed draft, **When** submission succeeds, **Then** the draft record is archived/deleted.
 
@@ -209,8 +209,8 @@ As an operator entering numeric amounts in fields with tafqeet enabled, I see th
 - **FR-025**: On backend failure, a user-friendly error MUST display; form data MUST be preserved for retry.
 
 #### Audit Logging
-- **FR-025a**: On successful submission, `AuditLogService.log()` MUST be called with `action = "form_submitted"`, `resource_type = "submission"`, `resource_id = reference_number`.
-- **FR-025b**: On each draft-save (both auto-save and manual), `AuditLogService.log()` MUST be called with `action = "draft_saved"`, `resource_type = "draft"`, `resource_id = draftId`.
+- **FR-025a**: The backend MUST record a `form_submitted` audit log entry (via `AuditLogger.log_event()` in `formcraft-backend/app/core/audit.py`) with `action = "FORM_SUBMITTED"`, `resource_type = "submission"`, `resource_id = reference_number` on every successful submission. No frontend audit call is required — audit integrity is guaranteed server-side and cannot be spoofed.
+- **FR-025b**: The backend MUST record a `draft_saved` audit log entry (via `AuditLogger.log_event()`) with `action = "DRAFT_SAVED"`, `resource_type = "draft"`, `resource_id = draftId` on every draft create and update. This is already implemented in `DraftService.create_draft()` and `update_draft()` — a verification task must confirm coverage.
 
 #### Customer Auto-Fill (P2)
 - **FR-026**: A customer picker dialog MUST allow search by name, phone, or national ID.
