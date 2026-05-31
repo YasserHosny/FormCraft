@@ -17,7 +17,7 @@ from fastapi import HTTPException, status
 from supabase import Client
 
 from app.core.audit import AuditLogger
-from app.schemas.connector import ApiKeyCreate
+from app.schemas.connector import ApiKeyCreate, ApiKeyUpdate
 
 
 _SECRET_PREFIX = "fck_"
@@ -105,6 +105,56 @@ class ApiKeyService:
         if not result or not result.data:
             raise HTTPException(status_code=404, detail="API key not found")
         return result.data
+
+    async def update(self, key_id: UUID, data: ApiKeyUpdate, org_id: UUID, by_user: UUID) -> dict:
+        existing = await self.get(key_id, org_id)
+        updates: dict = {}
+        changes: dict = {}
+
+        if data.name is not None and data.name != existing["name"]:
+            updates["name"] = data.name
+            changes["name"] = {"before": existing["name"], "after": data.name}
+        if data.scopes is not None and data.scopes != existing["scopes"]:
+            updates["scopes"] = data.scopes
+            changes["scopes"] = {"before": existing["scopes"], "after": data.scopes}
+        if data.expires_at is not None:
+            expires_at = data.expires_at.isoformat()
+            if expires_at != existing.get("expires_at"):
+                updates["expires_at"] = expires_at
+                changes["expires_at"] = {"before": existing.get("expires_at"), "after": expires_at}
+
+        if not changes:
+            return existing
+
+        try:
+            result = (
+                self.client.table("api_keys")
+                .update(updates)
+                .eq("id", str(key_id))
+                .eq("org_id", str(org_id))
+                .execute()
+            )
+        except Exception as exc:  # noqa: BLE001
+            if "duplicate key" in str(exc).lower() or "23505" in str(exc):
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail={"code": "API_KEY_NAME_EXISTS", "message": "Name already in use"},
+                ) from exc
+            raise
+
+        await self._audit.log_event(
+            user_id=str(by_user),
+            action="API_KEY_UPDATED",
+            resource_type="api_key",
+            resource_id=str(key_id),
+            metadata={"changes": changes, "key_prefix": existing.get("key_prefix")},
+        )
+        updated = result.data[0] if result.data else {**existing, **updates}
+        return {
+            k: updated[k]
+            for k in ("id", "org_id", "name", "key_prefix", "scopes", "created_at", "last_used_at", "expires_at", "is_active")
+            if k in updated
+        }
 
     async def regenerate(self, key_id: UUID, org_id: UUID, by_user: UUID) -> dict:
         existing = await self.get(key_id, org_id)
