@@ -23,6 +23,14 @@ The Form Filler is the core operational tool for filling and submitting forms in
 - **Tafqeet & auto-fill priority**: P2 (defer after core). Core features (template rendering, validation, conditions, draft, submit) are P1.
 - **Auto-save strategy**: Classic — periodic 10-second interval plus `ngOnDestroy`. New theme — `ngOnDestroy` only. Both persist to the same `drafts` table.
 
+### Session 2026-06-01
+
+- Q: How is the signature field implemented (drawn canvas, typed name, or base64 image upload)? → A: Canvas-drawn signature — operator draws on a canvas element; result serialised as base64 PNG stored in `field_values`.
+- Q: Which user roles are authorised to access form-filler routes? → A: Operators and Admins. Admins require full access for testing; Designers may open the filler in read-verify mode but cannot submit.
+- Q: How do operators discover and resume existing drafts — direct draftId URL only, or via a draft list panel? → A: Draft list panel visible in the desk header/dashboard; operators select a draft from the list and the draftId is resolved automatically.
+- Q: After a successful submission, where does the operator navigate? → A: A dedicated submission-confirmed screen displaying the reference number prominently, with a "Back to Desk" button; no immediate auto-redirect.
+- Q: Should key form-filler events (submission, draft-save) be logged to the existing audit log? → A: Yes — submit events and draft-save events are written to `AuditLogService` with `resource_type = "submission"` / `"draft"` respectively.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 — Load Real Template Structure (Priority: P1)
@@ -165,6 +173,8 @@ As an operator entering numeric amounts in fields with tafqeet enabled, I see th
 
 #### Field Types
 - **FR-005**: Both implementations MUST render: `text`, `number`, `date`, `select`, `checkbox`, `textarea`, `signature`.
+- **FR-005a**: The `signature` field MUST render a canvas drawing surface; the operator draws a wet-ink equivalent signature. On completion the canvas content is serialised as a base64 PNG string and stored as the field value in `field_values`.
+- **FR-005b**: The signature canvas MUST support clear/reset action. The base64 PNG MUST be validated as non-empty before submission when the field is required.
 - **FR-006**: Select field `options` MUST be populated from `element.options` (fetched as part of the template) — never hardcoded.
 - **FR-007**: All field values MUST be bound to Angular reactive `FormControl` instances keyed by `element.key`.
 
@@ -187,16 +197,24 @@ As an operator entering numeric amounts in fields with tafqeet enabled, I see th
 - **FR-019**: Classic desk MUST additionally auto-save on a 10-second interval.
 - **FR-020**: When `draftId` is present in query params, form filler MUST call `DraftService.getDraft(draftId)` and patch the form with returned `field_values`.
 - **FR-021**: If `draft.template_version !== template.version`, a mismatch warning MUST be shown offering to reload or continue.
+- **FR-021b**: The desk header/dashboard MUST expose a **"My Drafts" panel** that lists the current user's saved drafts (template name, last-saved timestamp). Selecting a draft navigates to the form filler with the resolved `draftId` query param — operators never need to know or bookmark raw draft IDs.
+
+#### Route Authorization
+- **FR-021a**: Form-filler routes (`/desk/fill/**` and `/ui/desk/fill/**`) MUST be guarded to allow only users with role `operator` or `admin`. Designers may access in read-verify mode (form rendered but submit button disabled). Viewers are blocked.
 
 #### Form Submission
 - **FR-022**: Submission MUST call `SubmissionService.submit(templateId, version, visibleFieldValues)`.
 - **FR-023**: Only values for currently visible fields MUST be included in the submission payload.
-- **FR-024**: On success, a snackbar or confirmation screen MUST display the backend-returned `reference_number`.
+- **FR-024**: On success, the operator MUST be navigated to a dedicated **submission-confirmed screen** that displays the backend-returned `reference_number` prominently and provides a "Back to Desk" button. No immediate auto-redirect.
 - **FR-025**: On backend failure, a user-friendly error MUST display; form data MUST be preserved for retry.
+
+#### Audit Logging
+- **FR-025a**: On successful submission, `AuditLogService.log()` MUST be called with `action = "form_submitted"`, `resource_type = "submission"`, `resource_id = reference_number`.
+- **FR-025b**: On each draft-save (both auto-save and manual), `AuditLogService.log()` MUST be called with `action = "draft_saved"`, `resource_type = "draft"`, `resource_id = draftId`.
 
 #### Customer Auto-Fill (P2)
 - **FR-026**: A customer picker dialog MUST allow search by name, phone, or national ID.
-- **FR-027**: On customer selection, form filler MUST call `CustomerService.getAutoPopulateData(customerId, templateId)`.
+- **FR-027**: On customer selection, form filler MUST call `CustomerService.getAutoFillData(customerId, templateId)` (formerly `getAutoPopulateData`).
 - **FR-028**: `AutoFillService.executeAutoFill(mappings, formGroup)` MUST populate matched form controls.
 - **FR-029**: Auto-filled fields MUST remain fully editable.
 
@@ -243,6 +261,11 @@ As an operator entering numeric amounts in fields with tafqeet enabled, I see th
 - **SC-009**: Conditional logic behaviour is identical between classic desk and new theme across all tested templates.
 - **SC-010**: All UI text, labels, and errors display correctly in both Arabic (RTL) and English (LTR) with no layout breakage.
 - **SC-011**: All edge cases (missing template, empty options, draft mismatch, submission failure) produce appropriate UI states with no crashes.
+- **SC-012**: A canvas-drawn signature serialises to a valid non-empty base64 PNG within 100ms of the operator completing the stroke; the clear action resets the control to null.
+- **SC-013**: Form-filler routes reject access from Viewer role with a 403/redirect; Designer role sees the form rendered with submit disabled; Operator and Admin can submit.
+- **SC-014**: "My Drafts" panel lists all drafts for the current user across both themes; selecting a draft restores the form within the standard template-load time (< 1s backend latency assumption).
+- **SC-015**: Post-submission, the operator lands on the confirmation screen with the correct reference number visible before any navigation occurs.
+- **SC-016**: `AuditLogService` receives a log entry for every successful submission and every draft-save; no audit entry is created for failed submission attempts (backend rejection logs separately).
 
 ## Assumptions
 
