@@ -7,7 +7,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { AvatarComponent } from '../shared/components/avatar.component';
 import { StatusChipComponent } from '../shared/components/status-chip.component';
 import { FormFillerService, FillTemplate, TemplateElement } from '../../../features/desk/services/form-filler.service';
-import { ConditionEngineService } from '../../../features/desk/services/condition-engine.service';
+import { ConditionEngineService, ConditionalElement } from '../../../features/desk/services/condition-engine.service';
 import { AutoFillService } from '../../../features/desk/services/auto-fill.service';
 import { FillerTafqeetService } from '../../../features/desk/services/filler-tafqeet.service';
 import { ValidationService } from '../../../features/desk/services/validation.service';
@@ -15,6 +15,7 @@ import { SubmissionService } from '../../../features/desk/services/submission.se
 import { DraftService } from '../../../features/desk/services/draft.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'fc-form-filler',
@@ -38,12 +39,11 @@ export class FormFillerComponent implements OnInit, OnDestroy {
 
   sections: any[] = [];
   sideSections: any[] = [];
-  shortcuts: any[] = [
-    { label: 'حفظ', key: 'Ctrl+S' },
-    { label: 'إرسال', key: 'Ctrl+Enter' },
-  ];
   recentCustomers: string[] = [];
   customerResults: any[] = [];
+  visibleFields = new Set<string>();
+  requiredFields = new Set<string>();
+  hasUnsavedChanges = false;
 
   private destroy$ = new Subject<void>();
 
@@ -101,6 +101,9 @@ export class FormFillerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.hasUnsavedChanges && this.templateId) {
+      this.saveDraft();
+    }
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -134,12 +137,14 @@ export class FormFillerComponent implements OnInit, OnDestroy {
         title: `صفحة ${sectionNumber}`,
         complete: false,
         fields: page.elements.map((el: TemplateElement) => ({
+          key: el.key,
+          type: el.type,
           label: this.currentLanguage === 'ar' ? el.label_ar : el.label_en,
           placeholder: '',
-          value: '',
-          filled: false,
-          valid: false,
-          error: false,
+          required: el.required,
+          validation: el.validation,
+          options: (el as any).options || [],
+          element: el,
         })),
         columns: 2,
       });
@@ -153,6 +158,46 @@ export class FormFillerComponent implements OnInit, OnDestroy {
     });
 
     this.formGroup = this.fb.group(controls);
+
+    const conditionalElements: ConditionalElement[] = [];
+    const allElements = template.pages.flatMap(p => p.elements);
+    allElements.forEach(el => {
+      conditionalElements.push({
+        key: el.key,
+        required: el.required,
+        visible_when: (el as any).visible_when,
+        required_when: (el as any).required_when,
+      });
+    });
+
+    this.conditionEngineService.initialize(conditionalElements, this.formGroup);
+
+    this.conditionEngineService.visibilityChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(visibleKeys => {
+        this.visibleFields = visibleKeys;
+      });
+
+    this.conditionEngineService.requiredChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(requiredKeys => {
+        this.requiredFields = requiredKeys;
+        requiredKeys.forEach(key => {
+          const control = this.formGroup.get(key);
+          if (control) {
+            const validators = control.validator ? [control.validator] : [];
+            validators.push(Validators.required);
+            control.setValidators(validators);
+            control.updateValueAndValidity({ emitEvent: false });
+          }
+        });
+      });
+
+    this.formGroup.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.hasUnsavedChanges = true;
+      });
   }
 
   private loadDraft(draftId: string): void {
@@ -161,6 +206,15 @@ export class FormFillerComponent implements OnInit, OnDestroy {
         if (draft.field_values) {
           this.formGroup.patchValue(draft.field_values);
         }
+
+        if (this.template && draft.template_version && draft.template_version !== this.template.version) {
+          this.snackBar.open(
+            `تحذير: تم تحديث النموذج منذ حفظ هذه المسودة. الإصدار المحفوظ: v${draft.template_version}، الإصدار الحالي: v${this.template.version}`,
+            'تحديث',
+            { duration: 7000 }
+          );
+        }
+
         this.loading = false;
       },
       error: (err) => {
@@ -184,6 +238,7 @@ export class FormFillerComponent implements OnInit, OnDestroy {
     if (this.draftId) {
       this.draftService.updateDraft(this.draftId, this.formGroup.value).subscribe({
         next: () => {
+          this.hasUnsavedChanges = false;
           this.snackBar.open('تم حفظ المسودة بنجاح', '', { duration: 3000 });
         },
         error: (err) => {
@@ -195,6 +250,7 @@ export class FormFillerComponent implements OnInit, OnDestroy {
       this.draftService.saveDraft(this.templateId, templateVersion, this.formGroup.value).subscribe({
         next: (response: any) => {
           this.draftId = response.id;
+          this.hasUnsavedChanges = false;
           this.snackBar.open('تم حفظ المسودة بنجاح', '', { duration: 3000 });
         },
         error: (err) => {
