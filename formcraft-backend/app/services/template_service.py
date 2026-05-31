@@ -455,9 +455,11 @@ class TemplateService:
                     "height_mm",
                     "validation",
                     "formatting",
+                    "properties",
                     "required",
                     "direction",
                     "sort_order",
+                    "custom_validators_ids",
                 }
                 element_data = {
                     k: v for k, v in element_data.items() if k in _BASE_ELEMENT_COLS
@@ -507,9 +509,11 @@ class TemplateService:
                     "height_mm",
                     "validation",
                     "formatting",
+                    "properties",
                     "required",
                     "direction",
                     "sort_order",
+                    "custom_validators_ids",
                 }
                 data = {k: v for k, v in data.items() if k in _BASE_ELEMENT_COLS}
                 result = (

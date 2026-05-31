@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.models.enums import Direction, ElementType
 
@@ -29,6 +29,9 @@ class CreateElementRequest(BaseModel):
     y_mm: float = 0
     width_mm: float = 50
     height_mm: float = 10
+    validation: dict = Field(default_factory=dict)
+    formatting: dict = Field(default_factory=dict)
+    properties: dict | None = None
     required: bool = False
     direction: Direction = Direction.AUTO
     visible_when: ConditionObject | None = None
@@ -36,6 +39,7 @@ class CreateElementRequest(BaseModel):
     computed_value: str | None = None
     default_value: str | None = None
     placeholder_text: PlaceholderText | None = None
+    custom_validators_ids: list[UUID] = []
 
 
 class UpdateElementRequest(BaseModel):
@@ -47,6 +51,7 @@ class UpdateElementRequest(BaseModel):
     height_mm: float | None = None
     validation: dict | None = None
     formatting: dict | None = None
+    properties: dict | None = None
     required: bool | None = None
     direction: Direction | None = None
     visible_when: ConditionObject | None = None
@@ -54,6 +59,7 @@ class UpdateElementRequest(BaseModel):
     computed_value: str | None = None
     default_value: str | None = None
     placeholder_text: PlaceholderText | None = None
+    custom_validators_ids: list[UUID] | None = None
 
 
 class ReorderElementsRequest(BaseModel):
@@ -81,3 +87,4 @@ class ElementResponse(BaseModel):
     computed_value: str | None = None
     default_value: str | None = None
     placeholder_text: dict | None = None
+    custom_validators_ids: list[UUID] = []

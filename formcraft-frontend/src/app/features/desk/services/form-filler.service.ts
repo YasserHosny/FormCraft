@@ -14,6 +14,7 @@ export interface TemplateElement {
   sort_order: number;
   validation: any;
   formatting: any;
+  custom_validators_ids?: string[];
 }
 
 export interface TemplatePage {

@@ -77,7 +77,10 @@ export class FillComponent implements OnInit, OnDestroy {
         this.templateVersion = tmpl.version;
         this.isDeprecated = tmpl.is_deprecated || false;
 
-        this.validationService.loadValidators(tmpl.country).pipe(takeUntil(this.destroy$)).subscribe(() => {
+        forkJoin([
+          this.validationService.loadValidators(tmpl.country),
+          this.validationService.loadCustomValidators(),
+        ]).pipe(takeUntil(this.destroy$)).subscribe(() => {
           this.buildForm(tmpl);
           this.loading = false;
           this.startAutoSave();
@@ -102,7 +105,11 @@ export class FillComponent implements OnInit, OnDestroy {
 
     for (const elem of allElements) {
       const initialValue = this.getInitialValue(elem);
-      const validators = this.validationService.getValidatorFn(elem, template.country);
+      const validators = this.validationService.getValidatorFn(
+        elem,
+        template.country,
+        this.translate.currentLang || template.language,
+      );
       controls[elem.key] = new FormControl(initialValue, validators);
     }
 
@@ -365,15 +372,25 @@ export class FillComponent implements OnInit, OnDestroy {
     this.submitting = true;
 
     const fieldValues = this.form.value;
-    this.submissionService.submit(
-      this.template!.id,
-      this.template!.version,
-      fieldValues,
-    ).pipe(
-      switchMap((response) => this.resolveSignatureUploads(response.id, fieldValues).pipe(map(() => response))),
+    this.validationService.refreshCustomValidators().pipe(
+      switchMap(() => {
+        this.rebuildValidators();
+        if (this.form.invalid) {
+          this.submitting = false;
+          this.form.markAllAsTouched();
+          return of(null);
+        }
+        return this.submissionService.submit(
+          this.template!.id,
+          this.template!.version,
+          fieldValues,
+        );
+      }),
+      switchMap((response) => response ? this.resolveSignatureUploads(response.id, fieldValues).pipe(map(() => response)) : of(null)),
       takeUntil(this.destroy$),
     ).subscribe({
       next: (response) => {
+        if (!response) return;
         this.submitting = false;
         this.deleteDraftIfLoaded();
         this.snackBar.open(
@@ -392,20 +409,46 @@ export class FillComponent implements OnInit, OnDestroy {
     });
   }
 
+  private rebuildValidators(): void {
+    if (!this.template || !this.form) return;
+    const allElements = this.template.pages.flatMap((p) => p.elements);
+    for (const elem of allElements) {
+      const control = this.form.get(elem.key);
+      if (!control) continue;
+      control.setValidators(this.validationService.getValidatorFn(
+        elem,
+        this.template.country,
+        this.translate.currentLang || this.template.language,
+      ));
+      control.updateValueAndValidity({ emitEvent: false });
+    }
+    this.formValid = this.form.valid;
+  }
+
   onPrintAndNext(): void {
     if (!this.formValid || this.submitting) return;
     this.submitting = true;
 
     const fieldValues = this.form.value;
-    this.submissionService.submit(
-      this.template!.id,
-      this.template!.version,
-      fieldValues,
-    ).pipe(
-      switchMap((response) => this.resolveSignatureUploads(response.id, fieldValues).pipe(map(() => response))),
+    this.validationService.refreshCustomValidators().pipe(
+      switchMap(() => {
+        this.rebuildValidators();
+        if (this.form.invalid) {
+          this.submitting = false;
+          this.form.markAllAsTouched();
+          return of(null);
+        }
+        return this.submissionService.submit(
+          this.template!.id,
+          this.template!.version,
+          fieldValues,
+        );
+      }),
+      switchMap((response) => response ? this.resolveSignatureUploads(response.id, fieldValues).pipe(map(() => response)) : of(null)),
       takeUntil(this.destroy$),
     ).subscribe({
       next: (response) => {
+        if (!response) return;
         this.submitting = false;
         this.deleteDraftIfLoaded();
         this.snackBar.open(
