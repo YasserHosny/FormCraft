@@ -6,6 +6,24 @@ A pluggable integration framework that enables FormCraft to securely connect to 
 ## Objective
 Enable FormCraft submissions to seamlessly integrate with downstream systems — automatically archiving PDFs to document management, syncing customer data to CRM, triggering bank workflows, sending notifications — all without custom development.
 
+## Constitution Scope (Principle IX — YAGNI)
+
+This feature is **explicitly scoped to four pre-built connectors and four event types** to avoid violating Principle IX (Simplicity and YAGNI), which forbids a "general-purpose bulk automation engine".
+
+**In Scope (Phase 1):**
+- 4 event types only: `form_submitted`, `form_printed`, `template_published`, `batch_completed`
+- 4 pre-built connectors only: DMS, Email, CRM, Banking
+- HTTPS webhooks to admin-configured URLs (org-bounded)
+
+**Out of Scope (REMOVED from this spec):**
+- Connector marketplace (was FR-8) — deferred until ≥3 customer requests document a need
+- Custom connector builder UI — admins use raw webhooks only in Phase 1
+- A/B testing across connector configurations
+- Custom JSON/XML payload templating (only one canonical payload schema per event type)
+- Webhook batching (was Phase 5)
+
+Any future extension MUST be filed as a separate spec amendment.
+
 ## User Stories
 
 ### US-1: Configure API Keys & Webhooks (Org Admin)
@@ -95,37 +113,39 @@ Support initial connectors with field mapping and credential management:
 - **Banking System**: Send transaction data (amount, beneficiary, account) for processing
 - Each connector: status UI, field mapper, test connection, error handling
 
-### FR-4: Custom Webhook Support
-- Organizations can configure custom HTTP endpoints
-- Admin provides: endpoint URL, custom headers (for auth), HTTP method
-- Flexible payload: can choose full payload, flattened fields, or custom template
-- No schema validation: accepts any endpoint that returns 2xx
+### FR-4: Custom Webhook Support (scope-limited)
+- Organizations can configure custom HTTPS endpoints (HTTPS only — HTTP rejected at validation)
+- Admin provides: endpoint URL, custom headers (for auth, stored encrypted), HTTP method (POST only in Phase 1)
+- Payload schema is **fixed** per event type (no custom templating in Phase 1 — see Constitution Scope)
+- Endpoint is accepted only after one successful test delivery (`POST /admin/integrations/webhooks/:id/test` returns 2xx)
 
-### FR-5: Data Transformations
-- Field mapping: transform FormCraft field names/values to external system format
-- Template support: admins define custom JSON/XML templates for webhook payloads
-- Expression support: simple path expressions for nested field access (e.g., `customer.email`)
+### FR-5: Field Mapping (CRM/Banking connectors only)
+- For CRM and Banking connectors, admins map FormCraft element IDs → external field keys via `connector_field_mappings` table
+- Mapping is a simple 1:1 key mapping; no expressions, no transformations in Phase 1
+- DMS and Email connectors do not require field mapping (they consume the canonical event payload)
 
 ### FR-6: Security & Compliance
-- API keys: scoped to organization (never cross-org)
-- Webhooks: HTTPS required for production endpoints
-- Signature verification: webhook payloads signed with org secret (HMAC-SHA256)
-- Rate limiting: per-key throttling + per-endpoint throttling
-- Audit trail: all webhook deliveries logged with payload excerpt (no sensitive data)
-- Data minimization: webhook payloads include only necessary fields (configurable)
+- API keys: scoped to organization (never cross-org); stored as bcrypt/HMAC-SHA256 hash; plaintext returned only on `POST` and `regenerate` responses
+- Webhooks: HTTPS required (HTTP rejected at creation time with 400)
+- Signature verification: webhook payloads signed with `webhook_secret` (HMAC-SHA256) sent in `X-FormCraft-Signature` header
+- Header values for `custom_headers` are encrypted at rest using the organization's KMS data-encryption key (DEK) and decrypted only inside the dispatcher worker. Audit logs and the admin UI display header names only — values are masked as `●●●●●` and not retrievable after creation.
+- Connector credentials (DMS tokens, CRM OAuth refresh tokens, banking API keys) follow the same encryption rule as `custom_headers`.
+- Rate limiting (enforced via Supabase row-level throttling): API keys ≤ 1000 req/min/org; webhook test endpoint ≤ 10 req/min/webhook; outbound dispatcher ≤ 100 req/min/endpoint.
+- Audit trail: webhook deliveries log status code + first 1KB of response body + timestamps; payload bodies are NOT logged (only the event_type + resource_id are recorded).
+- Banking connector: any outbound payload containing PAN/account numbers must mask all but last-4 digits before logging; no full PAN is ever persisted in `webhook_deliveries.response_body`.
 
-### FR-7: Monitoring & Debugging
-- Webhook delivery logs: searchable, filterable by status, event type, date range
-- Failed delivery alerts: admin notified of repeated failures
-- Retry dashboard: manually trigger retry for failed webhooks
-- Delivery metrics: success rate, avg latency, payload size tracking
-- Sample payloads: admin can view recent successful and failed payloads (redacted)
+### FR-7: Monitoring, Alerting & Debugging
+- Webhook delivery logs: searchable, filterable by status, event type, date range; retained 30 days then archived
+- Failed delivery alerts: when an endpoint records ≥ 2 consecutive failures, send an in-app notification + email to the webhook's `created_by` user (uses the existing F-NOTIFY infrastructure — no new alerting subsystem)
+- Retry dashboard: manually trigger retry for failed webhooks via `POST .../deliveries/:id/retry`
+- Delivery metrics: rolling 24h success rate, P50/P95 latency, payload size — exposed via `GET /admin/integrations/webhooks/:id/metrics`
+- Sample payloads: admin can view the last 10 successful and last 10 failed payloads per webhook (sensitive fields redacted)
 
-### FR-8: Connector Extensibility (Phase 2)
-- Custom connector builder: define HTTP endpoint + field mapping + auth
-- Connector marketplace: pre-built connectors from partner ecosystem
-- Connector versioning: manage multiple versions of same connector
-- A/B testing: test new connector configuration against live events
+### FR-8: Async Dispatch Queue (Supabase-native)
+- Webhook events are persisted as rows in `webhook_deliveries` with `status='pending'` and `next_retry_at=NOW()`
+- A FastAPI background worker (single instance per environment in Phase 1) polls `SELECT ... FROM webhook_deliveries WHERE status='pending' AND next_retry_at <= NOW() FOR UPDATE SKIP LOCKED LIMIT 100` every 2 seconds
+- No external message queue is introduced (consistent with Constitution technology constraints — Supabase only). If throughput exceeds 1000 deliveries/min the team must amend this spec before adding a real MQ.
+- Workers update row status to `sent` / `success` / `failed` and set `next_retry_at` for retries (1s, 5s, 30s backoff). After attempt #3, status becomes `failed` permanently.
 
 ---
 
@@ -304,8 +324,12 @@ CREATE INDEX idx_connector_field_mappings_connector_id ON connector_field_mappin
 - `GET /admin/integrations/connectors/:id/field-mappings` — List field mappings
 - `DELETE /admin/integrations/connectors/:id/field-mappings/:mappingId` — Remove mapping
 
-### Public Webhook Event Endpoints
-- `POST /webhooks/{event}/{webhook_id}` — Receive webhook event (internal, triggered by system)
+### Internal Dispatcher (not exposed publicly)
+- The webhook dispatcher is a backend worker; there is no public `/webhooks/...` ingress endpoint in Phase 1.
+- All event triggers originate inside FastAPI (form submission, print, publish, batch handlers) and enqueue rows in `webhook_deliveries`.
+
+### Webhook Metrics
+- `GET /admin/integrations/webhooks/:id/metrics` — Returns 24h rolling success rate, P50/P95 latency, payload count (see FR-7)
 
 ---
 
@@ -324,10 +348,10 @@ CREATE INDEX idx_connector_field_mappings_connector_id ON connector_field_mappin
    - Failed delivery doesn't block form operations (async, non-blocking)
 
 3. **Data Security**
-   - Webhook payloads signed with HMAC-SHA256
-   - HTTPS required for production endpoints
-   - Custom headers stored (header names only, not values)
-   - Audit logs never contain sensitive data from payloads
+   - Webhook payloads signed with HMAC-SHA256, sent in `X-FormCraft-Signature` header
+   - HTTPS required (HTTP rejected at creation with 400)
+   - Custom header VALUES are stored encrypted at rest (KMS DEK per org); only header NAMES are displayed in admin UI; values are masked as `●●●●●` after creation and never retrievable in cleartext
+   - Audit logs and `webhook_deliveries.response_body` never contain request payload bodies; banking responses mask PAN/account numbers to last-4 digits
 
 4. **Admin Experience**
    - Webhook configuration in < 5 minutes

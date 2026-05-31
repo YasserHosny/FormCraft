@@ -1,5 +1,27 @@
 # Feature 049: Implementation Tasks
 
+## Test-First Discipline (Constitution Principle V)
+
+Every implementation task below is **gated by a preceding test task**. The convention is:
+
+- `Task X.Y.T` — failing test must land first (Red)
+- `Task X.Y.I` — implementation makes the test pass (Green)
+- `Task X.Y.R` — refactor only if the test still passes (Refactor)
+
+No `.I` task may be marked complete unless its matching `.T` task has been merged and was demonstrably red before the implementation commit. CI must enforce this via a "tests-precede-impl" check on PR labels.
+
+Phase 5 retains only **system-level** tests (E2E, performance, security scenarios) that cannot be written until the feature is end-to-end functional.
+
+## Out of Scope — Do NOT Implement
+
+Per the Constitution Scope note in `spec.md`, the following are explicitly excluded from this implementation:
+- Connector marketplace UI/API
+- Custom connector builder
+- Custom JSON/XML payload templates
+- A/B testing across connectors
+- Webhook batching
+- External message queue (Kafka, RabbitMQ, SQS, etc.) — Supabase only
+
 ## Phase 1: API Keys & Webhook Infrastructure (Backend)
 
 ### Task 1.1: Create Database Tables
@@ -37,18 +59,21 @@
 - [ ] Add validation: endpoint must be HTTPS for production
 - [ ] Add validation: event_type is valid (form_submitted, form_printed, etc.)
 
-### Task 1.5: Implement Webhook Dispatcher (Background Job)
-- [ ] Create webhook event queue (database table or message queue)
-- [ ] Implement webhook dispatcher logic:
-  - Fetch pending webhook deliveries from queue
-  - Build event payload (event_type, timestamp, resource_data, org_context)
-  - Add HMAC-SHA256 signature to payload
-  - POST to webhook endpoint with custom headers
-  - Record response status and body
-- [ ] Implement retry logic:
-  - Failed attempt → schedule next retry at 1s, then 5s, then 30s
-  - After 3 failures, mark as failed and send admin alert
-- [ ] Ensure webhooks don't block form operations (async, background)
+### Task 1.5: Implement Webhook Dispatcher (Supabase-native polling worker)
+- [ ] **1.5.T** Write failing tests covering: payload signing, retry backoff schedule (1s/5s/30s), SKIP LOCKED concurrent worker isolation, status transitions pending→sent→success/failed
+- [ ] **1.5.I** Implement FastAPI background worker that polls `webhook_deliveries` with `FOR UPDATE SKIP LOCKED LIMIT 100` every 2s
+- [ ] **1.5.I** Build canonical event payload per event_type (event_type, timestamp, resource_id, resource_data, org_id, org_name)
+- [ ] **1.5.I** Sign payload with HMAC-SHA256 using `webhook_secret`; emit signature in `X-FormCraft-Signature` header
+- [ ] **1.5.I** Decrypt and apply `custom_headers` from KMS-encrypted storage; never log header values
+- [ ] **1.5.I** Record HTTP response status code + first 1KB of body (NOT request payload) in `webhook_deliveries`
+- [ ] **1.5.I** Retry logic: on non-2xx → schedule next attempt at +1s, +5s, +30s; after attempt 3 mark `status='failed'`
+- [ ] **1.5.I** Form submission/print/publish/batch handlers enqueue rows but NEVER await dispatcher (verified by integration test)
+
+### Task 1.5b: Encryption-at-Rest for Header Values & Connector Credentials
+- [ ] **1.5b.T** Write failing tests proving: header values are NEVER stored in plaintext, decryption only succeeds inside dispatcher worker, admin UI returns `●●●●●` mask
+- [ ] **1.5b.I** Generate per-org KMS DEK on first integration write (reuse Supabase Vault if available; else AES-256-GCM with key stored in env-protected master key)
+- [ ] **1.5b.I** Encrypt `webhooks.custom_headers` values and `connectors.config` secret fields at write time
+- [ ] **1.5b.I** Implement masking in `GET /admin/integrations/webhooks/:id` and `GET /admin/integrations/connectors/:id`
 
 ### Task 1.6: Implement Webhook Test Endpoint
 - [ ] `POST /admin/integrations/webhooks/:id/test` — Send test event
@@ -157,11 +182,17 @@
 - [ ] Export logs as CSV
 
 ### Task 2.11: Implement Webhook Status Dashboard
-- [ ] Summary card: total webhooks, active, errors, last sync time
-- [ ] Webhook health: success rate per endpoint
-- [ ] Trend chart: delivery success rate over time
-- [ ] Alert indicators: endpoints with > 5% failure rate
-- [ ] Manual action: retry all failed deliveries in a webhook
+- [ ] **2.11.T** Test the `GET /admin/integrations/webhooks/:id/metrics` contract returns 24h success rate, P50/P95, payload count
+- [ ] **2.11.I** Summary card: total webhooks, active, errors, last sync time
+- [ ] **2.11.I** Webhook health: success rate per endpoint
+- [ ] **2.11.I** Trend chart: delivery success rate over time
+- [ ] **2.11.I** Alert indicators: endpoints with > 5% failure rate
+- [ ] **2.11.I** Manual action: retry all failed deliveries in a webhook
+
+### Task 2.12: Failed-Delivery Alerting (reuses F-NOTIFY)
+- [ ] **2.12.T** Test: simulate 2 consecutive failures → assert one in-app notification + one email queued to webhook's `created_by`
+- [ ] **2.12.I** Hook into existing notification infrastructure (F-NOTIFY); do NOT build a new alerting subsystem
+- [ ] **2.12.I** Notification template (AR+EN) per Constitution Principle VII (i18n keys, no hardcoded strings)
 
 ---
 
@@ -239,12 +270,15 @@
 - [ ] Error handling: log failures, show in connector status
 
 ### Task 4.5: Implement Banking Connector
-- [ ] Support systems: Core banking API, custom protocol
-- [ ] Configuration: API endpoint, credentials, transaction mapping
-- [ ] Field mapping: amount, beneficiary, account, etc.
-- [ ] On form_submitted event: send transaction to banking system
-- [ ] Response handling: confirm transaction ID, store in submission
-- [ ] Error handling: alert on transaction failures
+- [ ] **4.5.T** Test: PAN / account number masking (last-4 only) in `webhook_deliveries.response_body` and audit logs
+- [ ] **4.5.T** Test: outbound payload uses TLS 1.2+ and validates server certificate
+- [ ] **4.5.I** Support systems: Core banking API, custom protocol (REST/JSON in Phase 1; ISO 20022/SWIFT deferred to future spec)
+- [ ] **4.5.I** Configuration: API endpoint (HTTPS only), credentials (encrypted at rest per Task 1.5b), transaction mapping
+- [ ] **4.5.I** Field mapping: amount, beneficiary, account, etc., via `connector_field_mappings`
+- [ ] **4.5.I** On form_submitted event: enqueue dispatcher row → worker sends transaction
+- [ ] **4.5.I** Response handling: parse `transaction_id` from response and persist to submission metadata
+- [ ] **4.5.I** Compliance: mask PAN/account/IBAN to last-4 in all log and audit storage; never persist full PAN
+- [ ] **4.5.I** Error handling: reuse Task 2.12 alerting; do not duplicate
 
 ### Task 4.6: Build Connector UI (Admin Console)
 - [ ] Page: `/admin/integrations/connectors`
@@ -267,25 +301,13 @@
 
 ---
 
-## Phase 5: Advanced Features & Refinement
+## Phase 5: System-Level Tests & Hardening
 
-### Task 5.1: Custom Webhook Templates
-- [ ] Admin can define custom JSON/XML payload templates
-- [ ] Template support simple path expressions: `{{submission.customer_name}}`
-- [ ] Pre-built templates for common formats
-- [ ] Test template with sample data
+(Per Constitution Principle V, unit/integration tests for each component were written in Phases 1–4 alongside their implementations. Phase 5 only contains tests that require the full system to be running.)
 
-### Task 5.2: Connector Marketplace Preparation
-- [ ] Define connector manifest format (name, version, required config fields)
-- [ ] Implement connector versioning (support multiple versions per connector)
-- [ ] Partner connector submission guidelines
-- [ ] Security review process for marketplace connectors
-
-### Task 5.3: Webhook Batching
-- [ ] Group multiple events before sending (e.g., batch 10 submissions into one webhook)
-- [ ] Configurable batch size and timeout (send when batch full OR timeout reached)
-- [ ] Payload: array of events (not single event)
-- [ ] Benefits: reduced endpoint load, better throughput
+### ~~Task 5.1: Custom Webhook Templates~~ — REMOVED (out of scope per Constitution Scope)
+### ~~Task 5.2: Connector Marketplace~~ — REMOVED (out of scope per Constitution Scope)
+### ~~Task 5.3: Webhook Batching~~ — REMOVED (out of scope per Constitution Scope)
 
 ### Task 5.4: Performance Optimization
 - [ ] Profile webhook dispatcher: measure latency, queue depth
