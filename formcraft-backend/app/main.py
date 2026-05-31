@@ -52,6 +52,7 @@ from app.api.routes import (
     retention,
     digital_signatures,
     custom_validators,
+    connector_framework,
 )
 
 logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO))
@@ -131,6 +132,8 @@ def create_app() -> FastAPI:
     # Feature 048: Custom Locale Validators
     app.include_router(custom_validators.admin_router, prefix="/api")
     app.include_router(custom_validators.designer_router, prefix="/api")
+    # Feature 049: Connector Framework (Phase 1)
+    app.include_router(connector_framework.router, prefix="/api/admin")
 
     # Global handler for Supabase/PostgREST errors (missing tables/columns
     # from unapplied migrations) — returns a clear 503 instead of 500.
