@@ -262,6 +262,39 @@
           {{ 'designer.properties.required' | translate }}
         </mat-slide-toggle>
 
+        <mat-divider style="margin: 12px 0;"></mat-divider>
+        <section class="custom-validators-section">
+          <h4>{{ 'designer.validators.title' | translate }}</h4>
+          <p class="empty-hint" *ngIf="validatorsLoading">{{ 'common.loading' | translate }}</p>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'designer.validators.search' | translate }}</mat-label>
+            <input matInput [value]="validatorSearch" (input)="validatorSearch = $any($event.target).value" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'designer.validators.dropdown' | translate }}</mat-label>
+            <mat-select
+              multiple
+              [value]="getSelectedValidatorIds()"
+              (selectionChange)="onCustomValidatorsChange($event.value)">
+              <mat-option *ngFor="let validator of getFilteredCustomValidators()" [value]="validator.id">
+                {{ validator.name }}
+                <span *ngIf="validator.description"> — {{ validator.description }}</span>
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-chip-set *ngIf="getAppliedCustomValidators().length > 0">
+            <mat-chip
+              *ngFor="let validator of getAppliedCustomValidators()"
+              [matTooltip]="(validator.description || '') + ' ' + validator.regex_pattern">
+              {{ validator.name }}
+              <button matChipRemove (click)="removeCustomValidator(validator.id)">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip>
+          </mat-chip-set>
+          <p class="empty-hint" *ngIf="!validatorsLoading && customValidators.length === 0">{{ 'designer.validators.empty' | translate }}</p>
+        </section>
+
         <!-- Tafqeet-specific property panel (US2–US4, US7) -->
         <ng-container *ngIf="selectedElement.data['type'] === 'tafqeet'">
           <mat-divider style="margin: 12px 0;"></mat-divider>

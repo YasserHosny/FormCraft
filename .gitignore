@@ -19,3 +19,7 @@
 **/*.swp
 .vscode/
 .idea/
+
+# E2E test folders
+e2e/
+**/e2e/

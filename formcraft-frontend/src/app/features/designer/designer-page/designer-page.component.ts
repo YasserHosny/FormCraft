@@ -14,6 +14,7 @@ import { DetectionResponse, DetectedField } from '../models/detected-field.model
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateService } from '@ngx-translate/core';
 import { TemplateFeedbackService } from '../../desk/services/template-feedback.service';
+import { CustomValidator, CustomValidatorService } from '../../../core/services/custom-validator.service';
 
 @Component({
   selector: 'fc-designer-page',
@@ -104,6 +105,9 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   feedbackItems: any[] = [];
   feedbackLoading = false;
   newFeedbackCount = 0;
+  customValidators: CustomValidator[] = [];
+  validatorsLoading = false;
+  validatorSearch = '';
 
   get canEdit(): boolean {
     return this.templateStatus === 'draft' || this.templateStatus === 'rejected';
@@ -132,6 +136,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBar: MatSnackBar,
     private translate: TranslateService,
     private feedbackService: TemplateFeedbackService,
+    private customValidatorService: CustomValidatorService,
   ) {}
 
   @HostListener('document:keydown', ['$event'])
@@ -166,6 +171,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.templateId = this.route.snapshot.paramMap.get('templateId') || '';
     this.currentLang = this.getSupportedLang(this.translate.currentLang);
     this.loadDepartments();
+    this.loadCustomValidators();
 
     // Auto-save: debounce dirty changes by 2 seconds
     this.subs.push(
@@ -693,6 +699,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
       direction: 'auto',
       validation: {},
       formatting: {},
+      custom_validators_ids: [],
     });
   }
 
@@ -727,6 +734,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
       direction: 'auto',
       validation: {},
       formatting: {},
+      custom_validators_ids: [],
     });
   }
 
@@ -776,6 +784,50 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.canvasService.updateElementData(this.selectedElement.id, {
       formatting: { ...formatting, ref_binding: binding },
     });
+  }
+
+  loadCustomValidators(): void {
+    this.validatorsLoading = true;
+    this.customValidatorService.listForDesigner().subscribe({
+      next: (validators) => {
+        this.customValidators = validators;
+        this.validatorsLoading = false;
+      },
+      error: () => {
+        this.customValidators = [];
+        this.validatorsLoading = false;
+      },
+    });
+  }
+
+  getSelectedValidatorIds(): string[] {
+    const ids = this.selectedElement?.data['custom_validators_ids'];
+    return Array.isArray(ids) ? ids as string[] : [];
+  }
+
+  getFilteredCustomValidators(): CustomValidator[] {
+    const term = this.validatorSearch.trim().toLowerCase();
+    if (!term) return this.customValidators;
+    return this.customValidators.filter((validator) =>
+      `${validator.name} ${validator.description || ''}`.toLowerCase().includes(term)
+    );
+  }
+
+  getAppliedCustomValidators(): CustomValidator[] {
+    const selected = new Set(this.getSelectedValidatorIds());
+    return this.customValidators.filter((validator) => selected.has(validator.id));
+  }
+
+  onCustomValidatorsChange(ids: string[]): void {
+    if (!this.selectedElement) return;
+    this.canvasService.updateElementData(this.selectedElement.id, {
+      custom_validators_ids: ids.slice(0, 10),
+    });
+  }
+
+  removeCustomValidator(id: string): void {
+    const next = this.getSelectedValidatorIds().filter((selectedId) => selectedId !== id);
+    this.onCustomValidatorsChange(next);
   }
 
   getPageElementKeys(): { key: string; type: string }[] {
@@ -846,6 +898,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
         validation: data['validation'],
         formatting: data['formatting'],
         properties: data['properties'],
+        custom_validators_ids: data['custom_validators_ids'] || [],
       })
     );
 
@@ -860,8 +913,10 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
         height_mm: element['height_mm'],
         required: element['required'],
         direction: element['direction'],
+        validation: element['validation'],
         formatting: element['formatting'],
         properties: element['properties'],
+        custom_validators_ids: element['custom_validators_ids'] || [],
       }).pipe(
         map((response: any) => ({ response, canvasId }))
       )

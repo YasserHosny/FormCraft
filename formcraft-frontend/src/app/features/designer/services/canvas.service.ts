@@ -515,6 +515,11 @@ export class CanvasService implements OnDestroy {
   updateElementData(elementId: string, patch: Record<string, unknown>): void {
     const el = this.elements.get(elementId);
     if (!el) return;
+    const before: Record<string, unknown> = {};
+    for (const key of Object.keys(patch)) {
+      before[key] = el.data[key];
+    }
+    this.pushUndo({ type: 'update', elementId, before, after: { ...patch } });
     Object.assign(el.data, patch);
     this.updateElementVisual(el);
     this._dirty.next(true);

@@ -232,6 +232,12 @@
       "export_pdf": "Export PDF",
       "preview": "Preview"
     },
+    "validators": {
+      "title": "Custom Validators",
+      "search": "Search validators",
+      "dropdown": "Apply validators",
+      "empty": "No custom validators available"
+    },
     "import": {
       "title": "Import Form (OCR)",
       "uploadImage": "Upload Image",
@@ -532,6 +538,31 @@
       "category": "Category",
       "status": "Status",
       "template": "Template"
+    }
+  },
+  "admin": {
+    "validators": {
+      "title": "Custom Validators",
+      "subtitle": "Create reusable org-scoped regex rules with Arabic and English error messages.",
+      "create": "Create Validator",
+      "edit": "Edit Validator",
+      "delete": "Delete Validator",
+      "search": "Search validators",
+      "name": "Name",
+      "description": "Description",
+      "pattern": "Regex Pattern",
+      "createdBy": "Created By",
+      "updated": "Updated",
+      "errorAr": "Arabic Error Message",
+      "errorEn": "English Error Message",
+      "usage": "Templates Using This",
+      "empty": "No validators found",
+      "noDescription": "No description",
+      "noUsage": "No templates use this validator yet",
+      "updateWarning": "Changes apply to all templates using this validator.",
+      "deleteConfirm": "Delete validator {{name}}? It is used by {{count}} templates. Existing element references remain but the rule is skipped.",
+      "saved": "Validator saved",
+      "deleted": "Validator deleted"
     }
   },
   "signature": {

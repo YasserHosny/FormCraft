@@ -17,6 +17,7 @@ import { DataExportComponent } from './data-export/data-export.component';
 import { ExportSchedulesComponent } from './export-schedules/export-schedules.component';
 import { IntegrationsComponent } from './integrations/integrations.component';
 import { PortalAdminComponent } from './portal/portal-admin.component';
+import { ValidatorsAdminComponent } from './validators/validators-admin.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'settings', pathMatch: 'full' },
@@ -37,6 +38,7 @@ const routes: Routes = [
   { path: 'integrations', component: IntegrationsComponent },
   { path: 'reports', loadChildren: () => import('./reports/reports.module').then(m => m.ReportsModule) },
   { path: 'portal', component: PortalAdminComponent },
+  { path: 'validators', component: ValidatorsAdminComponent },
   { path: 'batch-schedules', loadChildren: () => import('./batch-schedules/batch-schedules.module').then(m => m.BatchSchedulesModule) },
   { path: 'retention', loadChildren: () => import('./retention/retention-routing.module').then(m => m.RetentionRoutingModule) },
 ];
@@ -62,6 +64,7 @@ const routes: Routes = [
     ExportSchedulesComponent,
     IntegrationsComponent,
     PortalAdminComponent,
+    ValidatorsAdminComponent,
   ],
 })
 export class AdminModule {}

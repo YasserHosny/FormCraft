@@ -329,14 +329,11 @@ class CustomValidatorService:
         if not template_ids:
             return [], 0
 
-        offset = (page - 1) * page_size
         tpl_q = (
             self.client.table("templates")
-            .select("id, name, status, updated_at", count="exact")
+            .select("id, name, status", count="exact")
             .in_("id", template_ids)
             .eq("org_id", str(org_id))
-            .order("updated_at", desc=True)
-            .range(offset, offset + page_size - 1)
             .execute()
         )
 
@@ -360,5 +357,7 @@ class CustomValidatorService:
                 }
             )
 
+        items.sort(key=lambda item: item["last_submission_at"] or "", reverse=True)
         total = tpl_q.count if tpl_q.count is not None else len(items)
-        return items, total
+        offset = (page - 1) * page_size
+        return items[offset : offset + page_size], total
