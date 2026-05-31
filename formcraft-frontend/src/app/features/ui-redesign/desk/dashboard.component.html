@@ -50,7 +50,7 @@
   </div>
 
   <div class="pin-grid">
-    <div class="pin-card" *ngFor="let p of pinnedTemplates" (click)="fillNewForm()">
+    <div class="pin-card" *ngFor="let p of pinnedTemplates" (click)="fillTemplate(p.template_id)">
       <div class="pin-icon" [style.background]="'#3F51B5'">
         <mat-icon>edit_document</mat-icon>
       </div>
@@ -59,6 +59,9 @@
         <span>{{ p.template_id?.slice(0, 8) }}</span>
         <span>{{ p.pinned_at | date:'short' }}</span>
       </div>
+    </div>
+    <div *ngIf="pinnedTemplates.length === 0" class="empty-pins">
+      <p>لا توجد نماذج مثبّتة. ثبّت النماذج المفضلة لديك للوصول السريع.</p>
     </div>
   </div>
 

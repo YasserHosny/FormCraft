@@ -142,4 +142,8 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/ui/desk/fill', draft.template_id], { queryParams: { draftId: draft.id } });
   }
 
+  fillTemplate(templateId: string): void {
+    this.router.navigate(['/ui/desk/fill', templateId]);
+  }
+
 }
