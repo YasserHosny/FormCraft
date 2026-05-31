@@ -6,8 +6,34 @@
 </fc-page-header>
 
 <div class="page-body">
-  <!-- KPIs -->
-  <div class="kpi-grid">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="skeleton kpi-grid">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state">
+    <mat-icon>error_outline</mat-icon>
+    <h3>حدث خطأ</h3>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="isEmpty && !loading && !error" class="empty-state">
+    <mat-icon>inbox</mat-icon>
+    <h3>لا توجد بيانات</h3>
+    <p>ابدأ بتعبئة نموذج جديد</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading && !error && !isEmpty">
+    <!-- KPIs -->
+    <div class="kpi-grid">
     <fc-kpi-card label="نماذج معبأة اليوم" value="٢٣" delta="+18% عن المتوسط اليومي" deltaDir="up" icon="task_alt"></fc-kpi-card>
     <fc-kpi-card label="مسوّدات بانتظارك" value="٦" delta="٢ تنتهي صلاحيتها غداً" deltaDir="down" icon="pending_actions"></fc-kpi-card>
     <fc-kpi-card label="عملاء جدد هذا الأسبوع" value="٤٧" delta="+12 عن الأسبوع الماضي" deltaDir="up" icon="person_add"></fc-kpi-card>
@@ -110,5 +136,6 @@
         </div>
       </div>
     </div>
+  </div>
   </div>
 </div>

@@ -44,6 +44,9 @@ interface DraftItem {
 })
 export class DashboardComponent implements OnInit {
   publishedTemplates: { id: string; name: string; code: string }[] = [];
+  loading = true;
+  error: string | null = null;
+  isEmpty = false;
 
   constructor(private router: Router, private templateService: TemplateService) {}
 

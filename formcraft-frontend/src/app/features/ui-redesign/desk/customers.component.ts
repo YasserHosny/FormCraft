@@ -5,7 +5,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
 import { StatusChipComponent } from '../shared/components/status-chip.component';
 import { AvatarComponent } from '../shared/components/avatar.component';
-import { CUSTOMERS } from '../shared/mock-data';
 
 interface Stat {
   label: string;
@@ -24,7 +23,9 @@ interface Stat {
   styleUrl: './customers.component.scss',
 })
 export class CustomersComponent {
-  customers = CUSTOMERS;
+  customers: any[] = [];
+  loading = true;
+  error: string | null = null;
 
   constructor(private router: Router) {}
 

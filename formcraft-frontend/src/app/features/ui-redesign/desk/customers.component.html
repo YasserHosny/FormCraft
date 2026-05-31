@@ -21,8 +21,20 @@
   <button class="fc-btn ghost sm"><mat-icon>sort</mat-icon>آخر تعامل ↓</button>
 </div>
 
+<!-- Loading State -->
+<div *ngIf="loading" class="loading-state">
+  <div class="skeleton">Loading customers...</div>
+</div>
+
+<!-- Error State -->
+<div *ngIf="error && !loading" class="error-state">
+  <mat-icon>error_outline</mat-icon>
+  <h3>حدث خطأ</h3>
+  <p>{{ error }}</p>
+</div>
+
 <!-- Stats strip -->
-<div class="stat-strip">
+<div *ngIf="!loading && !error" class="stat-strip">
   <div class="stat-item" *ngFor="let s of stats">
     <div class="stat-label">{{ s.label }}</div>
     <div class="stat-value" [class.warn]="s.warn">{{ s.value }}</div>
@@ -31,7 +43,7 @@
 </div>
 
 <!-- Customer table -->
-<div class="table-container">
+<div *ngIf="!loading && !error" class="table-container">
   <table class="fc-table">
     <thead>
       <tr>

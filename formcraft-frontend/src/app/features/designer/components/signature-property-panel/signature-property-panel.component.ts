@@ -45,7 +45,7 @@ import { TranslateModule } from '@ngx-translate/core';
       </div>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>{{ 'signature.penColor' | translate }}</mat-label>
+        <mat-label>{{ 'signature.pen_color' | translate }}</mat-label>
         <input matInput type="text" formControlName="pen_color" placeholder="#000000" />
       </mat-form-field>
     </div>

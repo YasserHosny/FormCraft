@@ -1,6 +1,16 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { STATUS_LABELS } from '../mock-data';
+
+const STATUS_LABELS: Record<string, string> = {
+  draft: 'مسوّدة',
+  'in-review': 'قيد المراجعة',
+  approved: 'معتمد',
+  published: 'منشور',
+  archived: 'مؤرشف',
+  rejected: 'مرفوض',
+  active: 'نشط',
+  inactive: 'موقوف',
+};
 
 @Component({
   selector: 'fc-status-chip',
