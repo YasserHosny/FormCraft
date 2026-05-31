@@ -68,6 +68,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           const displayName = user.display_name || user.email || 'المستخدم';
           this.userGreeting = `مرحباً ${displayName}`;
 
+          // Get current date with day name
           const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
           const dateStr = new Date().toLocaleDateString('ar-AE', options);
           this.pageSubtitle = dateStr;
@@ -76,53 +77,59 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadDashboardData(): void {
-    this.deskService.getDashboard({}).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (dashboardData) => {
-        // T007: Extract KPI counts from dashboard
-        this.pendingDrafts = dashboardData.drafts?.length || 0;
-        this.activeTemplates = dashboardData.templates?.total || 0;
+    this.deskService.getDashboard({})
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (dashboardData) => {
+          // T007: Extract KPI counts from dashboard
+          this.pendingDrafts = dashboardData.drafts?.length || 0;
+          this.activeTemplates = dashboardData.templates?.total || 0;
 
-        // Extract pinned templates (max 6, published only)
-        this.pinnedTemplates = (dashboardData.pinned || [])
-          .filter((p: any) => p.is_published === true)
-          .slice(0, 6);
+          // Extract pinned templates (max 6, published only)
+          this.pinnedTemplates = (dashboardData.pinned || [])
+            .filter((p: any) => p.is_published === true)
+            .slice(0, 6);
 
-        // Extract drafts
-        this.drafts = dashboardData.drafts || [];
+          // Extract drafts
+          this.drafts = dashboardData.drafts || [];
 
-        // T008: Get today's submissions count
-        const today = new Date().toISOString().split('T')[0];
-        this.historyService.getSubmissions({ date_from: today, limit: 1 }).pipe(takeUntil(this.destroy$)).subscribe({
-          next: (submissionsResponse) => {
-            this.todaySubmissions = submissionsResponse.total || 0;
-            this.loading = false;
-            this.error = null;
-            this.isEmpty = this.todaySubmissions === 0 && this.pendingDrafts === 0 && this.activeTemplates === 0;
-          },
-          error: (err) => {
-            console.error('Failed to load submissions:', err);
-            this.loading = false;
-            this.error = 'Failed to load submissions data';
-          },
-        });
+          // T008: Get today's submissions count
+          const today = new Date().toISOString().split('T')[0];
+          this.historyService.getSubmissions({ date_from: today, limit: 1 })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (submissionsResponse) => {
+                this.todaySubmissions = submissionsResponse.total || 0;
+                this.loading = false;
+                this.error = null;
+                this.isEmpty = this.todaySubmissions === 0 && this.pendingDrafts === 0 && this.activeTemplates === 0;
+              },
+              error: (err) => {
+                console.error('Failed to load submissions:', err);
+                this.loading = false;
+                this.error = 'Failed to load submissions data';
+              },
+            });
 
-        // Load recent activity
-        this.historyService.getSubmissions({ limit: 10, sort_by: 'created_at', sort_dir: 'desc' }).pipe(takeUntil(this.destroy$)).subscribe({
-          next: (response) => {
-            this.activities = response.items || [];
-          },
-          error: (err) => {
-            console.error('Failed to load activities:', err);
-            this.activities = [];
-          },
-        });
-      },
-      error: (err) => {
-        console.error('Failed to load dashboard:', err);
-        this.loading = false;
-        this.error = 'Failed to load dashboard data';
-      },
-    });
+          // Load recent activity
+          this.historyService.getSubmissions({ limit: 10, sort_by: 'created_at', sort_dir: 'desc' })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (response) => {
+                this.activities = response.items || [];
+              },
+              error: (err) => {
+                console.error('Failed to load activities:', err);
+                this.activities = [];
+              },
+            });
+        },
+        error: (err) => {
+          console.error('Failed to load dashboard:', err);
+          this.loading = false;
+          this.error = 'Failed to load dashboard data';
+        },
+      });
   }
 
   ngOnDestroy(): void {
