@@ -6,6 +6,14 @@ Organization administrators can define custom regex-based validators with biling
 ## Objective
 Enable org-scoped validator management that supports bilingual error messaging, audit trails, and seamless integration into the Design Studio canvas for template designers.
 
+## Constitution Alignment
+
+This feature **supplements** the built-in deterministic validator library required by Constitution Principle IV; it does **not** replace it. When a form element has a deterministic field type detected (national ID, IBAN, VAT, phone, CR number, TRN), the built-in validator runs **first**. Custom validators only run on elements whose detected field type is `unknown` / `generic`, or are explicitly added by the designer **after** all matching deterministic validators have already passed.
+
+This precedence is non-negotiable:
+
+> **Validator Precedence Rule:** `deterministic_validator(element) → custom_validator_1(element) → custom_validator_2(element) → ...`. If a deterministic validator rejects a value, no custom validator is evaluated and the deterministic error message is shown.
+
 ## User Stories
 
 ### US-1: Define Custom Validators (Org Admin)
@@ -37,8 +45,9 @@ Enable org-scoped validator management that supports bilingual error messaging, 
 
 **Acceptance Criteria:**
 - Custom Validators dropdown displays validator name and description
-- Validators searchable/filterable by name
-- Validators appear in order of relevance or creation date
+- Validators searchable/filterable by name AND description (case-insensitive `ILIKE` over `name || ' ' || COALESCE(description, '')`)
+- Default sort: `ORDER BY name ASC` (deterministic; no "relevance" scoring in Phase 1)
+- Dropdown loads ≤ 200ms with up to 500 validators per org (see Performance Requirements)
 
 ### US-4: Audit Validator Usage (Org Admin)
 **As an** Org Admin  
@@ -55,12 +64,18 @@ Enable org-scoped validator management that supports bilingual error messaging, 
 ### FR-1: Custom Validator CRUD
 - Admin can create, read, update, delete custom validators via `/admin/validators` API endpoints
 - All operations are org-scoped; templates in Org A cannot see validators from Org B
-- Validator fields: `id`, `org_id`, `name`, `description`, `regex_pattern`, `error_message_ar`, `error_message_en`, `created_at`, `updated_by`, `deleted_at` (soft delete)
+- Validator fields (reconciled with schema): `id`, `org_id`, `name`, `description` (nullable), `regex_pattern`, `error_message_ar`, `error_message_en`, `created_at`, `updated_at`, `created_by`, `updated_by`, `deleted_at` (soft delete; NULL = active)
+- Hard limits: max **500 custom validators per org**, max **10 custom validators per element**
+- Rate limits: `POST /admin/validators` and `PUT /admin/validators/:id` capped at **30 req/min/org** (mitigates regex-DoS via mass creation)
 
 ### FR-2: Bilingual Error Messages
-- Each validator stores `error_message_ar` and `error_message_en`
-- During form fill, operator sees error in their preferred language (from profile setting)
-- Error message displayed inline next to form field when validation fails
+- Each validator stores `error_message_ar` and `error_message_en`. Both are required (`NOT NULL`, non-empty).
+- During form fill, the error message is selected via this fallback chain:
+  1. **Internal operator (Form Desk):** `profiles.preferred_language` → AR or EN
+  2. **External portal user:** `template.language` field → AR or EN
+  3. **Default fallback:** `error_message_en`
+- Error message displayed inline next to form field when validation fails (consistent with built-in validator UI).
+- All admin/designer UI strings (`"Custom Validators"`, `"Usage"`, `"Templates Using This"`, dialog text) MUST use i18n translation keys per Constitution Principle VII — no hardcoded strings. Key prefix: `admin.validators.*` and `designer.validators.*`.
 
 ### FR-3: Org-Scoped Isolation
 - Custom validators are isolated per organization
@@ -80,18 +95,26 @@ Enable org-scoped validator management that supports bilingual error messaging, 
 
 ### FR-6: Template Audit Trail
 - Reverse reference: Admin can see which templates use a specific custom validator
-- Shows: template name, last used date, current usage status (active/inactive form)
-- API endpoint: `GET /admin/validators/:id/templates` returns list of using templates
+- Shows for each template: `template_name`, `template_status` (draft/published/archived), `last_submission_at` (derived: `MAX(submissions.created_at) WHERE submission.template_id = template.id AND validator_id ∈ element.custom_validators_ids`; NULL if never used)
+- Computation: `last_submission_at` is computed on demand per request (no materialized column); query is indexed via existing `submissions.template_id` index and the new GIN index on `elements.custom_validators_ids` — see data-model.md
+- API endpoint: `GET /admin/validators/:id/templates` returns paginated list (50/page) sorted by `last_submission_at DESC NULLS LAST`
 
 ### FR-7: Safe Update Semantics
-- When an admin updates validator regex or error message, change applies to ALL templates using it immediately
-- Validators maintain referential integrity; no orphaned references
-- Audit log records: VALIDATOR_UPDATED event with before/after values
+- When an admin updates validator regex or error message, the new definition applies to **all subsequent form-fill validations** for templates referencing it (by ID).
+- **In-flight form fills:** clients cache validators for the duration of a single fill session; the cache is refreshed (a) on each navigation between pages, and (b) at submission time — so the final submit always validates against the latest definition.
+- Validators maintain referential integrity via the `custom_validators_ids UUID[]` on elements; soft-deleted validators (deleted_at NOT NULL) are skipped at validation time (no error raised — they simply don't fire).
+- Audit log records: `VALIDATOR_UPDATED` event with before/after values for changed fields only.
 
 ### FR-8: Validator Naming and Discovery
 - Clear, descriptive names help designers choose the right validator (e.g., "Egypt Commercial Register", "Saudi SADAD Bill Number")
-- Optional description field for additional context
-- Full-text search across name + description in dropdown
+- Optional `description` field for additional context. When NULL, dropdown shows name only.
+- Search engine: PostgreSQL `ILIKE '%query%'` over `name || ' ' || COALESCE(description, '')`. Phase 1 does not use `to_tsvector` (deferred until ≥ 500 validators/org becomes common).
+
+### FR-9: Regex Safety (ReDoS Prevention)
+- `regex_pattern` max length: **500 characters** (enforced at API + DB CHECK)
+- Pattern is compiled at create/update time in a sandboxed worker with a **100ms timeout** against a fixed suite of adversarial probe strings; patterns that timeout are rejected with `400 INVALID_REGEX_REDOS_RISK`.
+- Runtime evaluation in form fill uses a **50ms per-pattern timeout**; on timeout the validation is treated as **pass** (fail-open) and an audit event `VALIDATOR_TIMEOUT` is logged for admin review (fail-closed would block legitimate forms during pathological inputs).
+- Nested unbounded quantifiers (`(.+)+`, `(.*)*`) are rejected by a static pre-check before compilation.
 
 ## Data Model
 

@@ -1,5 +1,20 @@
 # Feature 048: Implementation Tasks
 
+## Test-First Discipline (Constitution Principle V)
+
+Every implementation task below is **gated by a preceding test task**:
+
+- `Task X.Y.T` — failing tests land first (Red)
+- `Task X.Y.I` — implementation makes tests pass (Green)
+- `Task X.Y.R` — refactor with tests still green (Refactor)
+
+No `.I` task may merge unless its `.T` peer was demonstrably red beforehand (CI gate via PR labels). Phase 5 retains only end-to-end / performance / cross-system tests that cannot be authored before the feature is integrated.
+
+## Precedence & Scope Reminders
+
+- **Deterministic validators always run before custom validators** (Constitution Principle IV + spec.md "Validator Precedence Rule"). Implementation must wire custom validators into the existing validation engine **after** the deterministic chain, not in parallel.
+- All new UI strings use i18n translation keys (`admin.validators.*`, `designer.validators.*`) — no hardcoded labels.
+
 ## Phase 1: Data Model & API (Backend)
 
 ### Task 1.1: Create custom_validators Table
@@ -20,23 +35,32 @@
 - [ ] Test RLS isolation (user from Org A cannot see Org B validators)
 
 ### Task 1.4: Build Validator CRUD API Endpoints
-- [ ] `GET /admin/validators` — List validators with pagination, search by name
-- [ ] `POST /admin/validators` — Create validator with validation (regex test, required fields)
-- [ ] `GET /admin/validators/:id` — Get single validator
-- [ ] `PUT /admin/validators/:id` — Update validator
-- [ ] `DELETE /admin/validators/:id` — Soft delete (set deleted_at)
-- [ ] Add input validation: regex pattern, required bilingual messages
-- [ ] Add rate limiting to prevent regex DoS attacks
+- [ ] **1.4.T** Contract tests for each endpoint (GET list, GET one, POST, PUT, DELETE) — including rate-limit headers, 400 on bad regex, 403 cross-org, 404 missing, and unique-name constraint
+- [ ] **1.4.I** `GET /admin/validators` — paginated, `ILIKE` search across `name || ' ' || COALESCE(description, '')` (FR-8)
+- [ ] **1.4.I** `POST /admin/validators` — create with validation (required bilingual messages, regex compiled in sandbox + nested-quantifier check + 100ms probe timeout per FR-9)
+- [ ] **1.4.I** `GET /admin/validators/:id`
+- [ ] **1.4.I** `PUT /admin/validators/:id` — same FR-9 regex checks on changed pattern; emit `VALIDATOR_UPDATED` with changed-field diff
+- [ ] **1.4.I** `DELETE /admin/validators/:id` — soft delete; cascade behavior: existing element references remain but validator is skipped at runtime
+- [ ] **1.4.I** Rate limiting: 30 req/min/org on POST and PUT (FR-1)
+- [ ] **1.4.I** Enforce hard cap: reject POST if `COUNT(* WHERE org_id=? AND deleted_at IS NULL) >= 500`
+
+### Task 1.4b: Regex Safety Sandbox
+- [ ] **1.4b.T** Tests: ReDoS probe set must reject `(a+)+$`, `(.*a){10}b`, `(x+x+)+y`; benign patterns must pass; timeout returns specific 400 code
+- [ ] **1.4b.I** Implement compile-time pre-check (length ≤ 500, no `(...+)+` / `(...*)*` chains via AST scan)
+- [ ] **1.4b.I** Implement compile-time probe runner with 100ms hard timeout (Python `signal.SIGALRM` or subprocess)
+- [ ] **1.4b.I** Implement runtime 50ms per-pattern timeout with fail-open + `VALIDATOR_TIMEOUT` audit event
 
 ### Task 1.5: Build Validator Query API for Designers
-- [ ] `GET /api/validators/org` — Return all active (not deleted) custom validators for user's org
-- [ ] Format response with: id, name, description, regex_pattern (for validation display)
-- [ ] Add caching for quick dropdown population
+- [ ] **1.5.T** Contract test asserts response shape (`{id, name, description, regex_pattern}[]`), org isolation, `ORDER BY name ASC`, and dropdown payload ≤ 200ms at 500 validators
+- [ ] **1.5.I** `GET /api/validators/org` — return active validators sorted `ORDER BY name ASC` (US-3)
+- [ ] **1.5.I** In-process cache keyed by `org_id`, TTL 60s, explicit invalidation hook called from POST/PUT/DELETE on `/admin/validators`
+- [ ] **1.5.I** Cache miss path measured: target ≤ 100ms for 500 validators (use `(org_id, deleted_at)` partial index)
 
 ### Task 1.6: Implement Template Usage Endpoint
-- [ ] `GET /admin/validators/:id/templates` — Return list of templates using this validator
-- [ ] Include: template_id, template_name, last_used_date, is_active
-- [ ] Add pagination for validators with many template uses
+- [ ] **1.6.T** Contract test: returns templates that reference validator via `elements.custom_validators_ids` (GIN-indexed); paginated 50/page; sorted `last_submission_at DESC NULLS LAST`; org-scoped
+- [ ] **1.6.I** `GET /admin/validators/:id/templates` — derived join: `templates → pages → elements WHERE :validator_id = ANY(elements.custom_validators_ids)`
+- [ ] **1.6.I** `last_submission_at` computed via correlated subquery `MAX(submissions.created_at) WHERE submissions.template_id = templates.id` (FR-6, U1 resolved)
+- [ ] **1.6.I** Response fields: `template_id`, `template_name`, `template_status`, `last_submission_at` (nullable)
 
 ### Task 1.7: Add Audit Logging
 - [ ] Create audit log entries for VALIDATOR_CREATED event
@@ -130,15 +154,18 @@
 
 ## Phase 4: Form Filler Integration (Frontend)
 
-### Task 4.1: Extend Validation Engine
-- [ ] Modify form fill validator to check custom_validators_ids array
-- [ ] For each custom validator: fetch validator definition, test regex against field value
-- [ ] Return validation error if regex fails
+### Task 4.1: Extend Validation Engine (Deterministic-First per Constitution Principle IV)
+- [ ] **4.1.T** Test the precedence rule: deterministic validator for a national-ID-typed element MUST run and short-circuit before any custom validator; if deterministic fails, no custom validator is evaluated and the deterministic error message is shown
+- [ ] **4.1.T** Test: soft-deleted validators (`deleted_at IS NOT NULL`) are skipped silently — they do NOT produce an error
+- [ ] **4.1.T** Test: per-pattern 50ms timeout returns "pass" and emits `VALIDATOR_TIMEOUT` audit event (fail-open per FR-9)
+- [ ] **4.1.I** Modify form-fill validator pipeline to: deterministic_chain → custom_chain (per `element.custom_validators_ids` in order)
+- [ ] **4.1.I** Fetch validator definitions via the cached `GET /api/validators/org` data loaded at form open; refresh cache on page navigation and at submit (FR-7 in-flight semantics)
+- [ ] **4.1.I** Return structured error: `{validator_id, error_message_ar, error_message_en}`
 
-### Task 4.2: Implement Bilingual Error Messages
-- [ ] Fetch operator's language preference from profile
-- [ ] Display error_message_ar if operator language is AR, else error_message_en
-- [ ] Show error inline next to field (consistent with built-in validation)
+### Task 4.2: Implement Bilingual Error Messages (with fallback chain — FR-2)
+- [ ] **4.2.T** Test fallback order: internal operator → `profiles.preferred_language`; external portal user → `template.language`; unsupported / missing → `error_message_en`
+- [ ] **4.2.I** Implement selector function `pickErrorMessage(validator, context) → string` honoring the chain
+- [ ] **4.2.I** Show error inline next to field; use existing built-in validator UI component (no duplicate styling)
 
 ### Task 4.3: Add Real-Time Validation UI
 - [ ] As operator types, check against custom validators in real-time
@@ -156,32 +183,22 @@
 
 ---
 
-## Phase 5: Testing & Documentation
+## Phase 5: System-Level Tests & Documentation
 
-### Task 5.1: Unit Tests - Backend
-- [ ] Test validator CRUD operations
-- [ ] Test regex pattern validation before storage
-- [ ] Test RLS policies (isolation between orgs)
-- [ ] Test audit logging
-- [ ] Test regex evaluation logic
+(Per Constitution Principle V, unit/integration tests for each component were written in Phases 1–4 alongside their `.I` implementations. Phase 5 retains only tests that require the full system end-to-end.)
 
-### Task 5.2: Unit Tests - Frontend
-- [ ] Test dropdown population from API
-- [ ] Test regex pattern validation UI
-- [ ] Test bilingual message selection
-- [ ] Test validator removal/addition from element
-
-### Task 5.3: Integration Tests
-- [ ] Admin creates validator, designer uses it, operator validates against it
-- [ ] Validator update propagates to all templates
-- [ ] Audit trail records all operations
+### ~~Task 5.1: Unit Tests - Backend~~ — MOVED into Phase 1 `.T` tasks
+### ~~Task 5.2: Unit Tests - Frontend~~ — MOVED into Phases 2/3/4 `.T` tasks
+### ~~Task 5.3: Integration Tests~~ — MOVED into Phase 1 `.T` and Phase 4 `.T` tasks
 
 ### Task 5.4: E2E Tests
 - [ ] Playwright: Admin creates custom validator
-- [ ] Designer applies to form field
-- [ ] Operator submits form with invalid data, sees error in AR/EN
+- [ ] Designer applies to form field; deterministic validator on same field still runs first
+- [ ] Operator submits form with invalid data, sees error in AR/EN per fallback chain
 - [ ] Operator corrects field, submits successfully
-- [ ] Admin updates validator message, new operator sees new message
+- [ ] Admin updates validator message; in-flight fill picks up new message at next-page navigation or submit
+- [ ] Cross-org isolation: User in Org A cannot fetch Org B validator by ID (HTTP 403/404)
+- [ ] Soft-deleted validator: referenced by element → element validates as if validator were absent (no error raised)
 
 ### Task 5.5: Performance Testing
 - [ ] Load test with 100+ validators per org
