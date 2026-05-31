@@ -69,7 +69,7 @@
       <div class="card-header">
         <div class="card-header-info">
           <h3>آخر المعاملات</h3>
-          <span class="card-sub">٢٣ معاملة اليوم</span>
+          <span class="card-sub">{{ activities.length }} معاملة</span>
         </div>
         <button class="fc-btn ghost sm" (click)="viewAllTransactions()">عرض الكل<mat-icon>chevron_left</mat-icon></button>
       </div>
@@ -119,7 +119,7 @@
         <button class="fc-btn ghost sm">عرض الكل</button>
       </div>
       <div class="drafts-list">
-        <div class="draft-item" *ngFor="let d of drafts; let last = last" [class.no-border]="last">
+        <div class="draft-item" *ngFor="let d of drafts; let last = last" [class.no-border]="last" (click)="resumeDraft(d)" style="cursor: pointer;">
           <div class="draft-header">
             <span class="draft-form">{{ d.name || 'Draft' }}</span>
             <span class="draft-time">{{ d.updated_at | date:'short' }}</span>

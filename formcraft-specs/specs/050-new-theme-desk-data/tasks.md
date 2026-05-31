@@ -17,10 +17,10 @@
 
 **Purpose**: Prepare the codebase for live data integration
 
-- [ ] T001 Delete mock data file at formcraft-frontend/src/app/features/ui-redesign/shared/mock-data.ts and remove all imports referencing it across ui-redesign components
-- [ ] T002 Verify all existing desk services compile and are injectable by running `ng build` from formcraft-frontend/
+- [x] T001 Delete mock data file at formcraft-frontend/src/app/features/ui-redesign/shared/mock-data.ts and remove all imports referencing it across ui-redesign components
+- [x] T002 Verify all existing desk services compile and are injectable by running `ng build` from formcraft-frontend/
 
-**Checkpoint**: Mock data removed, existing services verified available
+**Checkpoint**: Mock data removed, existing services verified available ✓
 
 ---
 
@@ -30,10 +30,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Add loading and empty state support to formcraft-frontend/src/app/features/ui-redesign/desk/dashboard.component.ts — add `loading`, `error`, and `isEmpty` state properties with corresponding template blocks in dashboard.component.html (skeleton loaders while fetching, error message on failure, empty state per section)
-- [ ] T004 Add loading and error state support to formcraft-frontend/src/app/features/ui-redesign/desk/customers.component.ts — add `loading` and `error` properties with corresponding template blocks in customers.component.html
+- [x] T003 Add loading and empty state support to formcraft-frontend/src/app/features/ui-redesign/desk/dashboard.component.ts — add `loading`, `error`, and `isEmpty` state properties with corresponding template blocks in dashboard.component.html (skeleton loaders while fetching, error message on failure, empty state per section)
+- [x] T004 Add loading and error state support to formcraft-frontend/src/app/features/ui-redesign/desk/customers.component.ts — add `loading` and `error` properties with corresponding template blocks in customers.component.html
 
-**Checkpoint**: Foundation ready — user story implementation can now begin
+**Checkpoint**: Foundation ready — user story implementation can now begin ✓
 
 ---
 
@@ -47,17 +47,17 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T005 [P] [US1] Integration test: dashboard KPIs display real counts in formcraft-frontend/src/app/features/ui-redesign/desk/dashboard.component.spec.ts — mock DeskService.getDashboard() and HistoryService.getSubmissions(), verify KPI values render in template, verify zero state renders "0", verify error state shows error message
+- [x] T005 [P] [US1] Integration test: dashboard KPIs display real counts in formcraft-frontend/src/app/features/ui-redesign/desk/dashboard.component.spec.ts — mock DeskService.getDashboard() and HistoryService.getSubmissions(), verify KPI values render in template, verify zero state renders "0", verify error state shows error message
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Inject DeskService and HistoryService into formcraft-frontend/src/app/features/ui-redesign/desk/dashboard.component.ts constructor
-- [ ] T007 [US1] In dashboard.component.ts ngOnInit, call DeskService.getDashboard() and store the response — extract drafts count, pinned count, and templates total for KPI cards
-- [ ] T008 [US1] In dashboard.component.ts ngOnInit, call HistoryService.getSubmissions() with date_from set to today's date (ISO format) and limit=1 to get total today's submissions count from the response.total field
-- [ ] T009 [US1] In dashboard.component.html, replace all hardcoded KPI values (e.g., "٢٣", "٧", "١٢٨") with bound properties: todaySubmissions, pendingDrafts, activeTemplates — format numbers with Angular's number pipe or custom Arabic numeral display
-- [ ] T010 [US1] In dashboard.component.html, wrap KPI section with loading/error states from T003
+- [x] T006 [US1] Inject DeskService and HistoryService into formcraft-frontend/src/app/features/ui-redesign/desk/dashboard.component.ts constructor
+- [x] T007 [US1] In dashboard.component.ts ngOnInit, call DeskService.getDashboard() and store the response — extract drafts count, pinned count, and templates total for KPI cards
+- [x] T008 [US1] In dashboard.component.ts ngOnInit, call HistoryService.getSubmissions() with date_from set to today's date (ISO format) and limit=1 to get total today's submissions count from the response.total field
+- [x] T009 [US1] In dashboard.component.html, replace all hardcoded KPI values (e.g., "٢٣", "٧", "١٢٨") with bound properties: todaySubmissions, pendingDrafts, activeTemplates — format numbers with Angular's number pipe or custom Arabic numeral display
+- [x] T010 [US1] In dashboard.component.html, wrap KPI section with loading/error states from T003
 
-**Checkpoint**: KPI cards show real numbers from backend. Zero state works. Error state works.
+**Checkpoint**: KPI cards show real numbers from backend. Zero state works. Error state works. ✓
 
 ---
 
@@ -71,17 +71,17 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T011 [P] [US2] Integration test: recent activity table displays real submissions in formcraft-frontend/src/app/features/ui-redesign/desk/dashboard.component.spec.ts — mock HistoryService.getSubmissions() with 3 items, verify table renders 3 rows with correct template_name, status, reference_number; verify empty state when 0 items
+- [x] T011 [P] [US2] Integration test: recent activity table displays real submissions in formcraft-frontend/src/app/features/ui-redesign/desk/dashboard.component.spec.ts — mock HistoryService.getSubmissions() with 3 items, verify table renders 3 rows with correct template_name, status, reference_number; verify empty state when 0 items
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] In dashboard.component.ts, use HistoryService.getSubmissions({ limit: 10, sort_by: 'created_at', sort_dir: 'desc' }) to fetch recent activity and store as `activities: SubmissionListItem[]`
-- [ ] T013 [US2] Remove the hardcoded `activities` array from dashboard.component.ts
-- [ ] T014 [US2] In dashboard.component.html, update the activity table to bind from the `activities` property — map SubmissionListItem fields (template_name → form name, status → status chip, reference_number → ref, created_at → time via date pipe, key_summary → customer display)
+- [x] T012 [US2] In dashboard.component.ts, use HistoryService.getSubmissions({ limit: 10, sort_by: 'created_at', sort_dir: 'desc' }) to fetch recent activity and store as `activities: SubmissionListItem[]`
+- [x] T013 [US2] Remove the hardcoded `activities` array from dashboard.component.ts
+- [x] T014 [US2] In dashboard.component.html, update the activity table to bind from the `activities` property — map SubmissionListItem fields (template_name → form name, status → status chip, reference_number → ref, created_at → time via date pipe, key_summary → customer display)
 - [ ] T015 [US2] In dashboard.component.html, add "View All" link navigating to /ui/desk/history (or /desk/history via ClassicRedirect) after the activity table
-- [ ] T016 [US2] In dashboard.component.html, add empty state for activity section when activities array is empty
+- [x] T016 [US2] In dashboard.component.html, add empty state for activity section when activities array is empty
 
-**Checkpoint**: Activity table shows real submissions. Empty state works. "View All" link navigates to history.
+**Checkpoint**: Activity table shows real submissions. Empty state works. "View All" link navigates to history. ✓ (partial)
 
 ---
 
@@ -95,17 +95,17 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T017 [P] [US3] Integration test: drafts panel displays real drafts in formcraft-frontend/src/app/features/ui-redesign/desk/dashboard.component.spec.ts — mock DeskService.getDashboard() with 2 drafts, verify panel renders 2 items with name, completion_percent, updated_at; verify empty state when 0 drafts; verify click calls router.navigate with correct draftId
+- [x] T017 [P] [US3] Integration test: drafts panel displays real drafts in formcraft-frontend/src/app/features/ui-redesign/desk/dashboard.component.spec.ts — mock DeskService.getDashboard() with 2 drafts, verify panel renders 2 items with name, completion_percent, updated_at; verify empty state when 0 drafts; verify click calls router.navigate with correct draftId
 
 ### Implementation for User Story 3
 
-- [ ] T018 [US3] In dashboard.component.ts, extract drafts from the DashboardData response (already fetched in T007) and store as `drafts: DraftResponse[]` (reuse DraftResponse type from DraftService)
-- [ ] T019 [US3] Remove the hardcoded `drafts` array from dashboard.component.ts
-- [ ] T020 [US3] In dashboard.component.html, update drafts panel to bind from `drafts` property — map DraftResponse fields (name or template_id → form name, completion_percent → progress bar, updated_at → time via date pipe)
+- [x] T018 [US3] In dashboard.component.ts, extract drafts from the DashboardData response (already fetched in T007) and store as `drafts: DraftResponse[]` (reuse DraftResponse type from DraftService)
+- [x] T019 [US3] Remove the hardcoded `drafts` array from dashboard.component.ts
+- [x] T020 [US3] In dashboard.component.html, update drafts panel to bind from `drafts` property — map DraftResponse fields (name or template_id → form name, completion_percent → progress bar, updated_at → time via date pipe)
 - [ ] T021 [US3] In dashboard.component.ts, add `resumeDraft(draft: DraftResponse)` method that navigates to /ui/desk/fill/{draft.template_id} with queryParam draftId={draft.id}
-- [ ] T022 [US3] In dashboard.component.html, add empty state for drafts panel when drafts array is empty
+- [x] T022 [US3] In dashboard.component.html, add empty state for drafts panel when drafts array is empty
 
-**Checkpoint**: Drafts panel shows real drafts. Click navigates to form filler. Empty state works.
+**Checkpoint**: Drafts panel shows real drafts. Click navigates to form filler. Empty state works. ✓ (partial)
 
 ---
 
