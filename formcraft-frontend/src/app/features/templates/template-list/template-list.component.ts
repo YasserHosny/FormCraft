@@ -26,7 +26,7 @@ export class TemplateListComponent implements OnInit {
   }
 
   loadTemplates(): void {
-    this.templateService.list().subscribe({
+    this.templateService.list({ limit: 100 }).subscribe({
       next: (response) => {
         this.templates = response.data;
       },
