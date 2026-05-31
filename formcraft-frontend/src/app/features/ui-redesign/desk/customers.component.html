@@ -10,7 +10,7 @@
 <div class="filter-bar">
   <div class="fc-search-box">
     <mat-icon>search</mat-icon>
-    <input placeholder="ابحث برقم الهوية، الجوال، الاسم، أو البريد..." />
+    <input placeholder="ابحث برقم الهوية، الجوال، الاسم، أو البريد..." [(ngModel)]="searchQuery" (input)="onSearch(searchQuery)" />
   </div>
   <div class="fc-filter-pill"><span class="label-key">الحالة:</span><span>نشط</span><mat-icon>expand_more</mat-icon></div>
   <div class="fc-filter-pill"><span class="label-key">نوع الهوية:</span><span>الكل</span><mat-icon>expand_more</mat-icon></div>
@@ -60,29 +60,35 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let c of customers" [class.dup-row]="c.dup">
+      <tr *ngIf="customers.length === 0">
+        <td colspan="10" class="empty-cell">
+          <div class="empty-state">
+            <mat-icon>person_off</mat-icon>
+            <p>لا توجد بيانات عملاء متاحة</p>
+          </div>
+        </td>
+      </tr>
+      <tr *ngFor="let c of customers">
         <td><div class="checkbox"></div></td>
         <td>
           <div class="customer-cell">
-            <fc-avatar [name]="c.name" size="md" [color]="c.color"></fc-avatar>
+            <fc-avatar [name]="c.name" size="md" [color]="c.color || 'c1'"></fc-avatar>
             <div class="customer-info">
               <div class="customer-name-row">
                 <span class="name">{{ c.name }}</span>
-                <span class="tag premium" *ngIf="c.tag === 'متميز'"><mat-icon>star</mat-icon>{{ c.tag }}</span>
-                <span class="tag corporate" *ngIf="c.tag === 'مؤسسي'"><mat-icon>business</mat-icon>{{ c.tag }}</span>
-                <span class="tag duplicate" *ngIf="c.tag === 'تكرار محتمل'"><mat-icon>warning</mat-icon>{{ c.tag }}</span>
+                <span class="tag premium" *ngIf="c.is_premium"><mat-icon>star</mat-icon>متميز</span>
               </div>
-              <span class="customer-en">{{ c.en }}</span>
+              <span class="customer-en">{{ c.name_en || c.name }}</span>
             </div>
           </div>
         </td>
-        <td class="text-secondary">{{ c.idType }}</td>
-        <td class="fc-num">{{ c.id }}</td>
-        <td class="fc-num">{{ c.phone }}</td>
-        <td class="text-secondary">{{ c.branch }}</td>
-        <td class="col-center"><span class="forms-count fc-num">{{ c.forms }}</span></td>
-        <td class="text-secondary">{{ c.last }}</td>
-        <td><fc-status-chip [status]="c.status"></fc-status-chip></td>
+        <td class="text-secondary">{{ c.id_type || 'هوية وطنية' }}</td>
+        <td class="fc-num">{{ c.national_id || c.id?.slice(0, 12) }}</td>
+        <td class="fc-num">{{ c.phone || '-' }}</td>
+        <td class="text-secondary">{{ c.branch || '-' }}</td>
+        <td class="col-center"><span class="forms-count fc-num">{{ c.submission_count || 0 }}</span></td>
+        <td class="text-secondary">{{ c.updated_at | date:'short' }}</td>
+        <td><fc-status-chip [status]="c.is_active ? 'active' : 'inactive'"></fc-status-chip></td>
         <td>
           <div class="action-btns">
             <button class="fc-icon-btn" title="عرض" (click)="viewCustomer(c.id)"><mat-icon>visibility</mat-icon></button>
@@ -96,14 +102,14 @@
 
   <!-- Pagination -->
   <div class="pagination">
-    <span class="page-info">عرض <b class="fc-num">١ - ١١</b> من <b class="fc-num">٢٨٤١</b> عميل</span>
+    <span class="page-info">عرض <b class="fc-num">{{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalCustomers) }}</b> من <b class="fc-num">{{ totalCustomers }}</b> عميل</span>
     <div class="page-controls">
-      <div class="fc-filter-pill"><span class="label-key">السطور بالصفحة:</span><span>٥٠</span><mat-icon>expand_more</mat-icon></div>
-      <button class="fc-icon-btn" disabled><mat-icon>first_page</mat-icon></button>
-      <button class="fc-icon-btn"><mat-icon>chevron_right</mat-icon></button>
-      <span class="page-number fc-num">صفحة 1 من 57</span>
-      <button class="fc-icon-btn"><mat-icon>chevron_left</mat-icon></button>
-      <button class="fc-icon-btn"><mat-icon>last_page</mat-icon></button>
+      <div class="fc-filter-pill"><span class="label-key">السطور بالصفحة:</span><span (click)="onPageSizeChange(pageSize)">{{ pageSize }}</span><mat-icon>expand_more</mat-icon></div>
+      <button class="fc-icon-btn" [disabled]="currentPage === 1" (click)="onPageChange(1)"><mat-icon>first_page</mat-icon></button>
+      <button class="fc-icon-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)"><mat-icon>chevron_right</mat-icon></button>
+      <span class="page-number fc-num">صفحة {{ currentPage }} من {{ Math.ceil(totalCustomers / pageSize) }}</span>
+      <button class="fc-icon-btn" [disabled]="currentPage >= Math.ceil(totalCustomers / pageSize)" (click)="onPageChange(currentPage + 1)"><mat-icon>chevron_left</mat-icon></button>
+      <button class="fc-icon-btn" [disabled]="currentPage >= Math.ceil(totalCustomers / pageSize)" (click)="onPageChange(Math.ceil(totalCustomers / pageSize))"><mat-icon>last_page</mat-icon></button>
     </div>
   </div>
 </div>
