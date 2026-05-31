@@ -166,6 +166,377 @@ As an operator, I can browse and search real customer profiles from the customer
 - **SC-007**: Dashboard correctly handles empty states for all sections (zero submissions, zero drafts, zero pinned templates) without displaying broken UI.
 - **SC-008**: All content displays correctly in both Arabic (RTL) and English (LTR) with no layout breakage.
 
+## Form Filler Feature Specification (Cross-Theme)
+
+### Overview
+
+The Form Filler is the primary operational tool for filling and submitting forms. It is implemented in two variations:
+
+1. **Classic Desk**: `formcraft-frontend/src/app/features/desk/fill/fill.component.ts` — Full-featured implementation with offline support, auto-save intervals, and extended features
+2. **New Theme**: `formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.ts` — Streamlined standalone component implementation
+
+Both implementations share the same underlying data models and services, ensuring feature parity and consistent user experience.
+
+### Data Sources & Real Data Binding
+
+All Form Filler data is fetched from backend APIs at runtime. There is **zero hardcoded mock data** in either implementation:
+
+#### Template Loading (Real Data)
+- **API**: `FormFillerService.getTemplate(templateId: string): Observable<FillTemplate>`
+- **Data Structure**: `FillTemplate` contains:
+  - Template metadata: `id`, `name`, `version`, `is_published`, `country`, `is_deprecated`
+  - Pages: Array of `TemplatePage` objects
+  - Elements: Array of `TemplateElement` objects with full field definitions
+- **Example Flow**: 
+  1. User clicks "Open Template" or navigates to `/desk/fill/{templateId}`
+  2. Component calls `FormFillerService.getTemplate(templateId)`
+  3. Backend returns complete template structure from database
+  4. Component dynamically builds form from template structure
+  5. No mock data used at any point
+
+#### Draft Loading (Real Data)
+- **API**: `DraftService.getDraft(draftId: string): Observable<Draft>`
+- **Data Structure**: `Draft` contains:
+  - `id`, `template_id`, `template_version`
+  - `field_values`: Object mapping field keys to saved values
+  - `created_at`, `updated_at`
+  - Metadata: customer info, operator info, progress percentage
+- **Example Flow**:
+  1. User navigates to `/desk/fill/{templateId}?draftId={draftId}` or resumes from drafts panel
+  2. Component calls `DraftService.getDraft(draftId)`
+  3. Backend returns saved field values from database
+  4. Component populates reactive form with actual saved data
+  5. If draft template version differs from published version, warning displayed
+
+#### Customer Profile Auto-Fill (Real Data)
+- **API**: `CustomerService.getAutoPopulateData(customerId: string, templateId: string): Observable<AutoFillMapping>`
+- **Data Structure**: `AutoFillMapping` contains field-to-customer mappings (e.g., `first_name` → customer first name)
+- **Example Flow**:
+  1. User selects customer from customer picker dialog
+  2. Component calls `CustomerService.getAutoPopulateData(customerId, templateId)`
+  3. Backend returns mappings for fields that exist in both template and customer profile
+  4. Component calls `AutoFillService.executeAutoFill(mappings, formGroup)`
+  5. Form fields auto-populate with actual customer data (not mock defaults)
+
+#### Submission Creation (Real Data)
+- **API**: `SubmissionService.submit(templateId: string, version: number, fieldValues: object): Observable<SubmissionResponse>`
+- **Data Structure**: `SubmissionResponse` contains:
+  - `id`: Unique submission identifier
+  - `reference_number`: Human-readable reference
+  - `status`: Submission status from backend
+  - Links to view submission in history
+- **Example Flow**:
+  1. User completes form and clicks "Submit"
+  2. Component validates all visible required fields
+  3. Component calls `SubmissionService.submit(templateId, version, formValues)`
+  4. Backend validates, creates submission record, returns confirmation
+  5. Component navigates to dashboard, shows success confirmation
+
+### Field Type System
+
+The Form Filler supports dynamic rendering of all field types defined in the template:
+
+#### Text Input Fields
+- **Data Source**: `TemplateElement` with `type: "text"`
+- **Binding**: `formGroup.get(element.key).valueChanges` → real user input
+- **Validation**: Regex pattern from `element.validation.pattern`, required constraint from `element.required`
+- **Rendering**: Dynamic label from `element.label_ar` or `element.label_en` (based on language service)
+- **Example**: Customer name field displays Arabic label "اسم العميل", accepts text input, validates against name pattern
+
+#### Number Input Fields
+- **Data Source**: `TemplateElement` with `type: "number"`
+- **Binding**: `formGroup.get(element.key).valueChanges` → numeric value
+- **Validation**: `min`, `max` constraints from `element.validation`, required constraint
+- **Tafqeet Support**: If `element.tafqeet_enabled === true`, component subscribes to valueChanges and calls `FillerTafqeetService.compute(value)` to display Arabic number-to-words representation
+- **Example**: Amount field accepts "12345" and displays "اثنا عشر ألف وثلاثمائة وخمسة وأربعون" (Arabic tafqeet)
+
+#### Date Input Fields
+- **Data Source**: `TemplateElement` with `type: "date"`
+- **Binding**: `formGroup.get(element.key).valueChanges` → ISO date string
+- **Validation**: Date format, optional date range constraints
+- **Rendering**: Browser date picker with locale-aware formatting
+- **Example**: Birth date field accepts date input, validates against logical date constraints
+
+#### Select/Dropdown Fields
+- **Data Source**: `TemplateElement` with `type: "select"` and `options` array
+- **Options Format**: Array of `{ value: string, label_ar: string, label_en: string }`
+- **Binding**: `formGroup.get(element.key).valueChanges` → selected option value
+- **Validation**: Value must be from available options list
+- **Rendering**: Dynamic label from `element.label_ar` or `element.label_en`, options from `element.options`
+- **Example**: Branch selection field displays "اختر الفرع" label, populated with actual branches from database
+
+#### Checkbox Fields
+- **Data Source**: `TemplateElement` with `type: "checkbox"`
+- **Binding**: `formGroup.get(element.key).valueChanges` → boolean value
+- **Validation**: If required, user must check the box
+- **Rendering**: Checkbox with associated label text
+- **Example**: "I agree to terms" checkbox requires explicit user action
+
+#### Textarea Fields
+- **Data Source**: `TemplateElement` with `type: "textarea"`
+- **Binding**: `formGroup.get(element.key).valueChanges` → multi-line text
+- **Validation**: Optional length constraints, pattern validation
+- **Rendering**: Multi-line text input with appropriate styling
+- **Example**: Comments field for customer remarks
+
+#### Signature Fields
+- **Data Source**: `TemplateElement` with `type: "signature"`
+- **Binding**: `formGroup.get(element.key).valueChanges` → signature data (canvas data or image)
+- **Validation**: If required, signature must be provided
+- **Rendering**: Signature pad or image upload (depending on implementation)
+- **Example**: Form signature field displays signature capture interface
+
+### Validation System (Real Data)
+
+All validation rules are loaded from the template definition and applied dynamically:
+
+#### Validation Types
+1. **Required Fields**: Enforced via Angular `Validators.required` when `element.required === true`
+2. **Pattern Validation**: Applied from `element.validation.pattern` using regex matching
+3. **Min/Max Constraints**: Applied from `element.validation.min` and `element.validation.max` for numbers and strings
+4. **Custom Validators**: Loaded from `ValidationService` based on field type and country-specific rules
+5. **Custom Rules**: Any field-specific validation logic stored in `element.validation.custom_rule`
+
+#### Validation Flow
+1. Component loads template via `FormFillerService.getTemplate()`
+2. For each element, component extracts validation rules
+3. Component calls `ValidationService.getValidatorFn(element)` to load custom validators
+4. Component applies validators to form control: `this.fb.control(value, validators)`
+5. As user types, reactive form validates in real-time
+6. Invalid fields display inline error messages: "This field is required" or specific validation error
+
+#### Error Display
+- Errors only shown after user touches field (`.touched` state)
+- Inline error message appears below field
+- Error summary panel shows all current validation errors with field names
+- Form submission blocked if any visible required field is invalid
+
+### Conditional Logic (Real Data)
+
+Field visibility and requirement are dynamically evaluated based on other field values:
+
+#### Conditional Element Structure
+- **Data Source**: `element.visible_when` and `element.required_when` contain condition expressions
+- **Format**: Expression rules like `"field_a == 'yes' AND field_b > 100"`
+- **Evaluation**: `ConditionEngineService` evaluates expressions at runtime
+
+#### Visibility Conditions
+1. Component initializes `ConditionEngineService` with all elements and form group
+2. Service subscribes to form value changes
+3. On each form change, service re-evaluates all `visible_when` expressions
+4. Service emits `visibilityChanged$` observable with updated set of visible field keys
+5. Component iterates template fields and only renders those in visible set
+6. Hidden fields are excluded from form validation
+
+#### Requirement Conditions
+1. Service evaluates all `required_when` expressions
+2. Service emits `requiredChanged$` observable with updated set of required field keys
+3. Component updates form control validators dynamically
+4. Example: "Phone number" field becomes required only when `contact_method == 'phone'`
+
+#### Example Scenario
+- Template has field "Account Type" (select: Individual/Corporate) and field "Company Name" (text)
+- "Company Name" has `visible_when: "Account_Type == 'Corporate'"`
+- User selects "Individual" → "Company Name" field hidden
+- User changes to "Corporate" → "Company Name" field appears with required validation
+
+### Tafqeet Integration (Real Data)
+
+Arabic number-to-words conversion for numeric fields:
+
+#### Tafqeet Configuration
+- **Source**: `element.tafqeet_enabled` boolean flag in template element
+- **Applies To**: Numeric fields where `element.type == "number"` and `tafqeet_enabled === true`
+
+#### Tafqeet Flow
+1. Component loads template and identifies fields with `tafqeet_enabled === true`
+2. For each tafqeet field, component subscribes to its `valueChanges`
+3. On value change, component calls `FillerTafqeetService.compute(value, rules)`
+4. Service returns Arabic number-to-words string
+5. Component displays tafqeet result below numeric field
+6. Example: User enters "1234" → tafqeet displays "ألف ومائتان وأربعة وثلاثون"
+
+### Auto-Fill from Customer (Real Data)
+
+When a customer is selected, matching form fields auto-populate with customer profile data:
+
+#### Auto-Fill Configuration
+- **Source**: Template element field mapping to customer profile fields
+- **Example Mapping**: Template field `first_name` maps to customer profile field `given_name`
+
+#### Auto-Fill Flow
+1. User opens customer picker dialog (displayed in form header)
+2. User searches and selects a customer from list
+3. Component calls `CustomerService.getAutoPopulateData(customerId, templateId)`
+4. Backend returns mapping of template field keys → customer values
+5. Component calls `AutoFillService.executeAutoFill(mappings, formGroup)`
+6. Service populates matching form controls with customer data
+7. Form fields update with real customer profile information
+8. User can override any auto-filled values
+9. Example: Selecting customer "فاطمة القحطاني" auto-fills first name, phone, email if they exist in template
+
+### Draft Auto-Save & Resume (Real Data)
+
+Forms are automatically saved as drafts when the user navigates away, allowing resumption later:
+
+#### Auto-Save Mechanism
+- **Trigger**: User navigates away from form (via router navigation or page close)
+- **Data Saved**: Complete current form values object
+- **Metadata Saved**: Template ID, version, timestamp, customer reference
+- **Implementation**:
+  - Classic desk: `setInterval()` every 10 seconds, or on `ngOnDestroy`
+  - New theme: `ngOnDestroy` when user navigates away
+  - Both call `DraftService.saveDraft()` or `DraftService.updateDraft()`
+
+#### Draft Loading
+1. User resumes from drafts panel or navigates to `/desk/fill/{templateId}?draftId={draftId}`
+2. Component loads both template and draft in parallel
+3. Component populates form with saved field values
+4. If draft template version differs from published version:
+   - Component shows warning snackbar
+   - Offers to reload with latest template version
+   - User can choose to continue with saved structure or reload
+
+#### Draft Persistence
+- **Storage**: Supabase `drafts` table
+- **Fields**: `id`, `operator_id`, `template_id`, `template_version`, `field_values` (JSON), `customer_id`, `created_at`, `updated_at`
+- **Retrieval**: `DraftService.getDraft(draftId)` returns saved draft data
+
+### Form Submission (Real Data)
+
+Completed forms create submission records in the backend:
+
+#### Submission Process
+1. User fills form completely and clicks "Submit" button
+2. Component validates all visible required fields
+3. If validation fails, user sees inline error messages
+4. If validation passes, component calls `SubmissionService.submit(templateId, version, fieldValues)`
+5. Backend creates submission record with:
+   - Submission ID and reference number
+   - Operator ID
+   - Template ID and version
+   - Field values (stored as JSON)
+   - Customer reference (if auto-filled)
+   - Submission status (initial state based on template workflows)
+   - Timestamp
+6. Component displays success message
+7. Component navigates back to dashboard
+8. Draft record is deleted or archived
+
+### Theme-Specific Implementations
+
+#### Classic Desk (`fill.component.ts`)
+
+**Features**:
+- Full template and draft support
+- Auto-save with 10-second interval
+- Offline sync support via `OfflineSyncService`
+- Version warning dialog for template updates
+- Feedback dialog for template ratings
+- Print dialog for PDF generation
+- Error summary component
+- Clone submission feature (populate from previous submission)
+- Deprecated template warning banner
+- Extended toolbar with print, save, feedback actions
+
+**Services Injected**:
+- `FormFillerService` — Template loading
+- `DraftService` — Draft save/load with auto-save intervals
+- `SubmissionService` — Form submission
+- `ValidationService` — Field validation rules
+- `FillerTafqeetService` — Number-to-words conversion
+- `ConditionEngineService` — Conditional visibility/required logic
+- `AutoFillService` — Customer profile auto-fill
+- `OfflineSyncService` — Offline submission queue
+- `HistoryService` — Cloning from previous submissions
+- `TranslateService` — i18n support
+
+**Data Binding**: All data fetched from real APIs; no mock data
+
+#### New Theme (`form-filler.component.ts`)
+
+**Features**:
+- Streamlined template and draft support
+- Auto-save on navigation away (ngOnDestroy)
+- No offline support (simplified for UI redesign phase)
+- Customer picker dialog with search
+- Completion progress bar
+- Side panel with section navigation
+- Inline validation with error messages
+- Real-time visibility/required condition evaluation
+
+**Services Injected**:
+- `FormFillerService` — Template loading
+- `DraftService` — Draft save/load
+- `SubmissionService` — Form submission
+- `ValidationService` — Field validation
+- `ConditionEngineService` — Conditional logic
+- `AutoFillService` — Customer auto-fill (deferred)
+- `FillerTafqeetService` — Tafqeet (deferred)
+- `LanguageService` — Language switching
+
+**Data Binding**: All data fetched from real APIs; no mock data
+
+### Field Type Support Matrix
+
+| Field Type | Classic | New Theme | Validation | Tafqeet | Auto-Fill |
+|------------|---------|-----------|-----------|---------|-----------|
+| text       | ✓       | ✓         | ✓         | ✗       | ✓         |
+| number     | ✓       | ✓         | ✓         | ✓       | ✓         |
+| date       | ✓       | ✓         | ✓         | ✗       | ✓         |
+| select     | ✓       | ✓         | ✓         | ✗       | ✓         |
+| checkbox   | ✓       | ✓         | ✓         | ✗       | ✗         |
+| textarea   | ✓       | ✓         | ✓         | ✗       | ✓         |
+| signature  | ✓       | ✓         | ✓         | ✗       | ✗         |
+
+### Data Flow Diagram
+
+```
+User Action
+    ↓
+Navigation to /desk/fill/{templateId}
+    ↓
+    ├─→ FormFillerService.getTemplate(templateId)
+    │   ↓
+    │   Backend Database
+    │   ↓
+    │   FillTemplate (real structure)
+    │
+    └─→ [Optional] DraftService.getDraft(draftId)
+        ↓
+        Backend Database
+        ↓
+        Draft (real saved values)
+    ↓
+Component.buildFormFromTemplate(template)
+    ↓
+Reactive FormGroup created with validators
+    ↓
+ConditionEngineService.initialize(elements, formGroup)
+    ↓
+Template renders with real sections, fields, values
+    ↓
+User Interaction
+    ├─→ Fills fields (formGroup.valueChanges → real user input)
+    ├─→ Validation applied (inline error messages)
+    ├─→ Conditions evaluated (fields show/hide based on values)
+    └─→ Tafqeet computed (if enabled for field)
+    ↓
+User Clicks Submit
+    ↓
+Validation Check
+    ├─→ Invalid → Show errors, prevent submission
+    └─→ Valid → Submit
+        ↓
+        SubmissionService.submit(templateId, version, fieldValues)
+        ↓
+        Backend Creates Submission Record
+        ↓
+        Success Response
+        ↓
+        Component shows success, navigates to dashboard
+```
+
 ## Assumptions
 
 - All required backend APIs already exist and are used by the classic desk. No new backend endpoints are needed.
@@ -174,3 +545,7 @@ As an operator, I can browse and search real customer profiles from the customer
 - The existing classic desk services can be directly imported into standalone components without modification.
 - The form filler in the new theme will support the same field types and validation rules as the classic theme filler.
 - Performance targets assume the same backend response times as the classic desk experiences.
+- All form data (template structure, field definitions, validation rules, options lists) is loaded from the backend at runtime—no hardcoded fallbacks or mock data.
+- Customer auto-fill mappings are determined by the backend API `CustomerService.getAutoPopulateData()` based on template configuration and customer profile data.
+- Tafqeet computation uses the existing `FillerTafqeetService` which relies on backend rules for Arabic number formatting.
+- Draft storage persists complete form state to allow resumption across sessions with template version awareness.
