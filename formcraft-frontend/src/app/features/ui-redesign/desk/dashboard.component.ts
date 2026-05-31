@@ -131,7 +131,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   fillNewForm(): void {
-    this.router.navigate(['/desk']);
+    this.router.navigate(['/ui/desk/templates']);
   }
 
   viewAllTransactions(): void {

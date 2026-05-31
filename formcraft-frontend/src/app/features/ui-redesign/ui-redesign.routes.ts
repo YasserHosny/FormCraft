@@ -41,6 +41,13 @@ export const UI_REDESIGN_ROUTES: Routes = [
           import('./desk/dashboard.component').then(m => m.DashboardComponent),
       },
       {
+        path: 'desk/templates',
+        canActivate: [RoleGuard],
+        data: { roles: ['admin', 'branch_manager', 'operator'] },
+        loadComponent: () =>
+          import('./desk/templates.component').then(m => m.TemplatesComponent),
+      },
+      {
         path: 'desk/fill/:templateId',
         canActivate: [RoleGuard],
         data: { roles: ['admin', 'branch_manager', 'operator'] },
