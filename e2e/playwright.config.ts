@@ -22,11 +22,19 @@ export default defineConfig({
   projects: [
     {
       name: 'classic',
-      use: { browserName: 'chromium' },
+      use: {
+        browserName: 'chromium',
+        executablePath: '/usr/bin/google-chrome',
+        launchArgs: ['--no-sandbox', '--disable-gpu'],
+      },
     },
     {
       name: 'new-theme',
-      use: { browserName: 'chromium' },
+      use: {
+        browserName: 'chromium',
+        executablePath: '/usr/bin/google-chrome',
+        launchArgs: ['--no-sandbox', '--disable-gpu'],
+      },
     },
   ],
 });

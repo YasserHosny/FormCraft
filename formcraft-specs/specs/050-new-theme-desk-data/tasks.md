@@ -150,19 +150,19 @@
 - [x] T030 [US5] Inject FormFillerService, ConditionEngineService, AutoFillService, FillerTafqeetService, ValidationService, SubmissionService, DraftService, CustomerService, and LanguageService into formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.ts constructor
 - [x] T031 [US5] In form-filler.component.ts ngOnInit, call FormFillerService.getTemplate(templateId) and store the FillTemplate response — extract pages and elements for rendering
 - [x] T032 [US5] In form-filler.component.ts, build an Angular Reactive FormGroup from the template elements — create FormControls for each element keyed by element.key, applying required validators from element.required and element.validation
-- [ ] T033 [US5] Remove all hardcoded `sections`, `sideSections`, `alerts`, `shortcuts`, `recentCustomers`, and `customerResults` arrays from form-filler.component.ts
-- [ ] T034 [US5] In form-filler.component.html, replace hardcoded sections with dynamic rendering — iterate over template pages and their elements, render appropriate field components based on element.type (text, number, date, select, checkbox, signature, etc.), display label_ar or label_en based on current language
-- [ ] T035 [US5] In form-filler.component.ts, initialize ConditionEngineService with the template elements and form group — subscribe to visibilityChanged$ and requiredChanged$ to dynamically show/hide fields and toggle required validators
-- [ ] T036 [US5] In form-filler.component.ts, wire tafqeet for numeric fields — identify elements with tafqeet formatting, subscribe to their FormControl valueChanges, call FillerTafqeetService.compute() and display the result
-- [ ] T037 [US5] In form-filler.component.ts, wire customer auto-fill — when a customer is selected, call CustomerService.getAutoPopulateData(customerId, templateId) then pass mappings to AutoFillService.executeAutoFill()
-- [ ] T038 [US5] In form-filler.component.ts, implement saveDraft() — call DraftService.saveDraft() or updateDraft() with current form values and templateId/version, store returned draftId for subsequent updates
-- [ ] T039 [US5] In form-filler.component.ts, implement submitForm() — validate all visible required fields, call SubmissionService.submit() with templateId, version, and field values, show success snackbar and navigate back to dashboard
-- [ ] T040 [US5] In form-filler.component.ts, implement auto-save on navigation — add a CanDeactivate guard or use ngOnDestroy to call saveDraft() when the operator navigates away with unsaved changes
-- [ ] T041 [US5] In form-filler.component.ts ngOnInit, check for draftId query parameter — if present, call DraftService.getDraft(draftId) and populate the form with saved field_values
-- [ ] T042 [US5] In form-filler.component.ts, after loading a draft via getDraft(), compare draft.template_version against the current published template version from getTemplate() — if mismatched, show a snackbar or dialog warning the operator that the template has been updated, offering to reload with the latest version or continue with the saved structure
-- [ ] T043 [US5] In form-filler.component.html, add validation error messages — display inline errors below each field when touched and invalid, show error summary panel listing all current validation errors
-- [ ] T044 [US5] In form-filler.component.html, update the side navigation to render real sections from template pages with completion counts based on filled/total fields per page
-- [ ] T045 [US5] Add loading state to form-filler.component.html — show skeleton while template structure loads, error state if template fetch fails
+- [x] T033 [US5] Remove all hardcoded `sections`, `sideSections`, `alerts`, `shortcuts`, `recentCustomers`, and `customerResults` arrays from form-filler.component.ts
+- [x] T034 [US5] In form-filler.component.html, replace hardcoded sections with dynamic rendering — iterate over template pages and their elements, render appropriate field components based on element.type (text, number, date, select, checkbox, signature, etc.), display label_ar or label_en based on current language
+- [x] T035 [US5] In form-filler.component.ts, initialize ConditionEngineService with the template elements and form group — subscribe to visibilityChanged$ and requiredChanged$ to dynamically show/hide fields and toggle required validators
+- [ ] T036 [US5] DEFERRED: In form-filler.component.ts, wire tafqeet for numeric fields — identify elements with tafqeet formatting, subscribe to their FormControl valueChanges, call FillerTafqeetService.compute() and display the result
+- [ ] T037 [US5] DEFERRED: In form-filler.component.ts, wire customer auto-fill — when a customer is selected, call CustomerService.getAutoPopulateData(customerId, templateId) then pass mappings to AutoFillService.executeAutoFill()
+- [x] T038 [US5] In form-filler.component.ts, implement saveDraft() — call DraftService.saveDraft() or updateDraft() with current form values and templateId/version, store returned draftId for subsequent updates
+- [x] T039 [US5] In form-filler.component.ts, implement submitForm() — validate all visible required fields, call SubmissionService.submit() with templateId, version, and field values, show success snackbar and navigate back to dashboard
+- [x] T040 [US5] In form-filler.component.ts, implement auto-save on navigation — add a CanDeactivate guard or use ngOnDestroy to call saveDraft() when the operator navigates away with unsaved changes
+- [x] T041 [US5] In form-filler.component.ts ngOnInit, check for draftId query parameter — if present, call DraftService.getDraft(draftId) and populate the form with saved field_values
+- [x] T042 [US5] In form-filler.component.ts, after loading a draft via getDraft(), compare draft.template_version against the current published template version from getTemplate() — if mismatched, show a snackbar or dialog warning the operator that the template has been updated, offering to reload with the latest version or continue with the saved structure
+- [x] T043 [US5] In form-filler.component.html, add validation error messages — display inline errors below each field when touched and invalid, show error summary panel listing all current validation errors
+- [x] T044 [US5] In form-filler.component.html, update the side navigation to render real sections from template pages with completion counts based on filled/total fields per page
+- [x] T045 [US5] Add loading state to form-filler.component.html — show skeleton while template structure loads, error state if template fetch fails
 
 **Checkpoint**: Form filler renders real template. Validation, conditions, tafqeet, auto-fill work. Draft save/resume works. Submit creates submission. Draft version mismatch detected.
 
@@ -201,8 +201,8 @@
 - [x] T054 [P] Verify all i18n — ensure no hardcoded Arabic strings remain in dashboard, form-filler, or customers components; add any missing translation keys to formcraft-frontend/src/assets/i18n/ar.json and en.json
 - [x] T055 [P] Verify RTL/LTR rendering — test all three components in both Arabic and English mode, fix any layout regressions
 - [x] T056 Remove any remaining mock-data references — grep for 'mock-data', 'CUSTOMERS', 'pinnedForms', 'ActivityItem', 'DraftItem' across the ui-redesign directory and remove dead code
-- [ ] T057 Run quickstart.md validation — follow all verification steps in formcraft-specs/specs/050-new-theme-desk-data/quickstart.md and confirm each passes
-- [ ] T058 Verify dashboard loads within 3 seconds — measure from navigation to full render with network throttling to "Fast 3G" to confirm SC-003
+- [x] T057 Run quickstart.md validation — follow all verification steps in formcraft-specs/specs/050-new-theme-desk-data/quickstart.md and confirm each passes
+- [x] T058 Verify dashboard loads within 3 seconds — measure from navigation to full render with network throttling to "Fast 3G" to confirm SC-003
 
 ---
 
