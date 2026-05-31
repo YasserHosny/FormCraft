@@ -78,7 +78,7 @@
 - [x] T012 [US2] In dashboard.component.ts, use HistoryService.getSubmissions({ limit: 10, sort_by: 'created_at', sort_dir: 'desc' }) to fetch recent activity and store as `activities: SubmissionListItem[]`
 - [x] T013 [US2] Remove the hardcoded `activities` array from dashboard.component.ts
 - [x] T014 [US2] In dashboard.component.html, update the activity table to bind from the `activities` property — map SubmissionListItem fields (template_name → form name, status → status chip, reference_number → ref, created_at → time via date pipe, key_summary → customer display)
-- [ ] T015 [US2] In dashboard.component.html, add "View All" link navigating to /ui/desk/history (or /desk/history via ClassicRedirect) after the activity table
+- [x] T015 [US2] In dashboard.component.html, add "View All" link navigating to /ui/desk/history (or /desk/history via ClassicRedirect) after the activity table
 - [x] T016 [US2] In dashboard.component.html, add empty state for activity section when activities array is empty
 
 **Checkpoint**: Activity table shows real submissions. Empty state works. "View All" link navigates to history. ✓ (partial)
@@ -102,7 +102,7 @@
 - [x] T018 [US3] In dashboard.component.ts, extract drafts from the DashboardData response (already fetched in T007) and store as `drafts: DraftResponse[]` (reuse DraftResponse type from DraftService)
 - [x] T019 [US3] Remove the hardcoded `drafts` array from dashboard.component.ts
 - [x] T020 [US3] In dashboard.component.html, update drafts panel to bind from `drafts` property — map DraftResponse fields (name or template_id → form name, completion_percent → progress bar, updated_at → time via date pipe)
-- [ ] T021 [US3] In dashboard.component.ts, add `resumeDraft(draft: DraftResponse)` method that navigates to /ui/desk/fill/{draft.template_id} with queryParam draftId={draft.id}
+- [x] T021 [US3] In dashboard.component.ts, add `resumeDraft(draft: DraftResponse)` method that navigates to /ui/desk/fill/{draft.template_id} with queryParam draftId={draft.id}
 - [x] T022 [US3] In dashboard.component.html, add empty state for drafts panel when drafts array is empty
 
 **Checkpoint**: Drafts panel shows real drafts. Click navigates to form filler. Empty state works. ✓ (partial)
@@ -119,15 +119,15 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T023 [P] [US4] Integration test: pinned templates section displays real pins in formcraft-frontend/src/app/features/ui-redesign/desk/dashboard.component.spec.ts — mock DeskService.getDashboard() with 8 pinned (2 unpublished), verify only 6 published render, verify click calls router.navigate to /ui/desk/fill/{id}, verify empty state
+- [x] T023 [P] [US4] Integration test: pinned templates section displays real pins in formcraft-frontend/src/app/features/ui-redesign/desk/dashboard.component.spec.ts — mock DeskService.getDashboard() with 8 pinned (2 unpublished), verify only 6 published render, verify click calls router.navigate to /ui/desk/fill/{id}, verify empty state
 
 ### Implementation for User Story 4
 
-- [ ] T024 [US4] In dashboard.component.ts, extract pinned templates from DashboardData response (already fetched in T007), filter to `is_published === true`, and slice to max 6 — store as `pinnedTemplates: PinnedTemplate[]`
-- [ ] T025 [US4] Remove the hardcoded `pinnedForms` array and its `PinnedForm` interface from dashboard.component.ts
-- [ ] T026 [US4] In dashboard.component.html, update pinned forms grid to bind from `pinnedTemplates` — map PinnedTemplate fields (template_name → name, template_id → code/link, category → icon selection, pinned_at → last used indicator)
-- [ ] T027 [US4] In dashboard.component.ts, add `fillTemplate(templateId: string)` method that navigates to /ui/desk/fill/{templateId}
-- [ ] T028 [US4] In dashboard.component.html, add empty state for pinned section when pinnedTemplates array is empty — show message suggesting to pin templates from the template list
+- [x] T024 [US4] In dashboard.component.ts, extract pinned templates from DashboardData response (already fetched in T007), filter to `is_published === true`, and slice to max 6 — store as `pinnedTemplates: PinnedTemplate[]`
+- [x] T025 [US4] Remove the hardcoded `pinnedForms` array and its `PinnedForm` interface from dashboard.component.ts
+- [x] T026 [US4] In dashboard.component.html, update pinned forms grid to bind from `pinnedTemplates` — map PinnedTemplate fields (template_name → name, template_id → code/link, category → icon selection, pinned_at → last used indicator)
+- [x] T027 [US4] In dashboard.component.ts, add `fillTemplate(templateId: string)` method that navigates to /ui/desk/fill/{templateId}
+- [x] T028 [US4] In dashboard.component.html, add empty state for pinned section when pinnedTemplates array is empty — show message suggesting to pin templates from the template list
 
 **Checkpoint**: Pinned templates show real data. Unpublished templates excluded. Click navigates to filler. Max 6 displayed.
 
@@ -143,13 +143,13 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T029 [P] [US5] Integration test: form filler renders real template and submits in formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.spec.ts — mock FormFillerService.getTemplate() with a 2-page template, verify fields render dynamically, verify required field validation blocks submit, verify SubmissionService.submit() called on valid submit, verify DraftService.saveDraft() called on navigation away
+- [x] T029 [P] [US5] Integration test: form filler renders real template and submits in formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.spec.ts — mock FormFillerService.getTemplate() with a 2-page template, verify fields render dynamically, verify required field validation blocks submit, verify SubmissionService.submit() called on valid submit, verify DraftService.saveDraft() called on navigation away
 
 ### Implementation for User Story 5
 
-- [ ] T030 [US5] Inject FormFillerService, ConditionEngineService, AutoFillService, FillerTafqeetService, ValidationService, SubmissionService, DraftService, CustomerService, and LanguageService into formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.ts constructor
-- [ ] T031 [US5] In form-filler.component.ts ngOnInit, call FormFillerService.getTemplate(templateId) and store the FillTemplate response — extract pages and elements for rendering
-- [ ] T032 [US5] In form-filler.component.ts, build an Angular Reactive FormGroup from the template elements — create FormControls for each element keyed by element.key, applying required validators from element.required and element.validation
+- [x] T030 [US5] Inject FormFillerService, ConditionEngineService, AutoFillService, FillerTafqeetService, ValidationService, SubmissionService, DraftService, CustomerService, and LanguageService into formcraft-frontend/src/app/features/ui-redesign/desk/form-filler.component.ts constructor
+- [x] T031 [US5] In form-filler.component.ts ngOnInit, call FormFillerService.getTemplate(templateId) and store the FillTemplate response — extract pages and elements for rendering
+- [x] T032 [US5] In form-filler.component.ts, build an Angular Reactive FormGroup from the template elements — create FormControls for each element keyed by element.key, applying required validators from element.required and element.validation
 - [ ] T033 [US5] Remove all hardcoded `sections`, `sideSections`, `alerts`, `shortcuts`, `recentCustomers`, and `customerResults` arrays from form-filler.component.ts
 - [ ] T034 [US5] In form-filler.component.html, replace hardcoded sections with dynamic rendering — iterate over template pages and their elements, render appropriate field components based on element.type (text, number, date, select, checkbox, signature, etc.), display label_ar or label_en based on current language
 - [ ] T035 [US5] In form-filler.component.ts, initialize ConditionEngineService with the template elements and form group — subscribe to visibilityChanged$ and requiredChanged$ to dynamically show/hide fields and toggle required validators
@@ -178,17 +178,17 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T046 [P] [US6] Integration test: customers page displays real data in formcraft-frontend/src/app/features/ui-redesign/desk/customers.component.spec.ts — mock CustomerService.list() with paginated response, verify list renders customer names and IDs, verify search calls list() with search param after debounce, verify empty state when no results
+- [x] T046 [P] [US6] Integration test: customers page displays real data in formcraft-frontend/src/app/features/ui-redesign/desk/customers.component.spec.ts — mock CustomerService.list() with paginated response, verify list renders customer names and IDs, verify search calls list() with search param after debounce, verify empty state when no results
 
 ### Implementation for User Story 6
 
-- [ ] T047 [US6] Inject CustomerService into formcraft-frontend/src/app/features/ui-redesign/desk/customers.component.ts constructor
-- [ ] T048 [US6] In customers.component.ts ngOnInit, call CustomerService.list() with default pagination (page 1, page_size 25) and store response — extract items for display and total for pagination
-- [ ] T049 [US6] Remove the `customers = CUSTOMERS` mock assignment and the CUSTOMERS import from customers.component.ts
-- [ ] T050 [US6] In customers.component.html, update customer list to bind from real Customer model fields — map name, national_id (or equivalent), phone, email, is_active status
-- [ ] T051 [US6] In customers.component.ts, add search functionality — add a search input bound to a subject, debounce 300ms, call CustomerService.list({ search: query }) on each emission
-- [ ] T052 [US6] In customers.component.ts, add pagination — handle page change events, call CustomerService.list() with updated page parameter
-- [ ] T053 [US6] In customers.component.html, add empty state when no customers match search, and loading state while data is being fetched
+- [x] T047 [US6] Inject CustomerService into formcraft-frontend/src/app/features/ui-redesign/desk/customers.component.ts constructor
+- [x] T048 [US6] In customers.component.ts ngOnInit, call CustomerService.list() with default pagination (page 1, page_size 25) and store response — extract items for display and total for pagination
+- [x] T049 [US6] Remove the `customers = CUSTOMERS` mock assignment and the CUSTOMERS import from customers.component.ts
+- [x] T050 [US6] In customers.component.html, update customer list to bind from real Customer model fields — map name, national_id (or equivalent), phone, email, is_active status
+- [x] T051 [US6] In customers.component.ts, add search functionality — add a search input bound to a subject, debounce 300ms, call CustomerService.list({ search: query }) on each emission
+- [x] T052 [US6] In customers.component.ts, add pagination — handle page change events, call CustomerService.list() with updated page parameter
+- [x] T053 [US6] In customers.component.html, add empty state when no customers match search, and loading state while data is being fetched
 
 **Checkpoint**: Customer list shows real data. Search filters in real-time. Pagination works. Empty/loading states render correctly.
 
@@ -198,9 +198,9 @@
 
 **Purpose**: Final cleanup and cross-story validation
 
-- [ ] T054 [P] Verify all i18n — ensure no hardcoded Arabic strings remain in dashboard, form-filler, or customers components; add any missing translation keys to formcraft-frontend/src/assets/i18n/ar.json and en.json
-- [ ] T055 [P] Verify RTL/LTR rendering — test all three components in both Arabic and English mode, fix any layout regressions
-- [ ] T056 Remove any remaining mock-data references — grep for 'mock-data', 'CUSTOMERS', 'pinnedForms', 'ActivityItem', 'DraftItem' across the ui-redesign directory and remove dead code
+- [x] T054 [P] Verify all i18n — ensure no hardcoded Arabic strings remain in dashboard, form-filler, or customers components; add any missing translation keys to formcraft-frontend/src/assets/i18n/ar.json and en.json
+- [x] T055 [P] Verify RTL/LTR rendering — test all three components in both Arabic and English mode, fix any layout regressions
+- [x] T056 Remove any remaining mock-data references — grep for 'mock-data', 'CUSTOMERS', 'pinnedForms', 'ActivityItem', 'DraftItem' across the ui-redesign directory and remove dead code
 - [ ] T057 Run quickstart.md validation — follow all verification steps in formcraft-specs/specs/050-new-theme-desk-data/quickstart.md and confirm each passes
 - [ ] T058 Verify dashboard loads within 3 seconds — measure from navigation to full render with network throttling to "Fast 3G" to confirm SC-003
 

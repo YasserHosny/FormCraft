@@ -10,33 +10,6 @@ import { TemplateService } from '../../../core/services/template.service';
 import { DeskService } from '../../../features/desk/services/desk.service';
 import { HistoryService } from '../../../features/desk/services/history.service';
 
-interface PinnedForm {
-  icon: string;
-  color: string;
-  name: string;
-  code: string;
-  lastUsed: string;
-  count?: string;
-  accent?: boolean;
-}
-
-interface ActivityItem {
-  time: string;
-  customer: string;
-  form: string;
-  status: string;
-  ref: string;
-  color: string;
-}
-
-interface DraftItem {
-  form: string;
-  customer: string;
-  progress: number;
-  time: string;
-  warn?: boolean;
-}
-
 @Component({
   selector: 'fc-desk-dashboard',
   standalone: true,

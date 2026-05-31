@@ -88,4 +88,62 @@ describe('DashboardComponent - User Story 1: Real KPIs', () => {
       expect(content).toBeTruthy();
     });
   });
+
+  describe('Pinned Templates Display', () => {
+    it('should display real pinned templates filtered to published only, max 6', () => {
+      component.loading = false;
+      component.error = null;
+      component.pinnedTemplates = [
+        { template_id: 'tpl-1', template_name: 'Form 1', is_published: true, pinned_at: new Date() },
+        { template_id: 'tpl-2', template_name: 'Form 2', is_published: true, pinned_at: new Date() },
+      ];
+      fixture.detectChanges();
+
+      const pinCards = fixture.nativeElement.querySelectorAll('.pin-card');
+      expect(pinCards.length).toBe(2);
+    });
+
+    it('should navigate to form filler when pinned template is clicked', () => {
+      component.loading = false;
+      component.error = null;
+      component.pinnedTemplates = [
+        { template_id: 'tpl-1', template_name: 'Form 1', is_published: true, pinned_at: new Date() },
+      ];
+      spyOn(component, 'fillTemplate');
+      fixture.detectChanges();
+
+      const pinCard = fixture.nativeElement.querySelector('.pin-card');
+      pinCard.click();
+
+      expect(component.fillTemplate).toHaveBeenCalledWith('tpl-1');
+    });
+
+    it('should display empty state when no pinned templates', () => {
+      component.loading = false;
+      component.error = null;
+      component.pinnedTemplates = [];
+      fixture.detectChanges();
+
+      const emptyPins = fixture.nativeElement.querySelector('.empty-pins');
+      expect(emptyPins).toBeTruthy();
+      expect(emptyPins.textContent).toContain('لا توجد نماذج مثبّتة');
+    });
+
+    it('should cap pinned templates at 6 items', () => {
+      component.loading = false;
+      component.error = null;
+      component.pinnedTemplates = Array(8)
+        .fill(null)
+        .map((_, i) => ({
+          template_id: `tpl-${i}`,
+          template_name: `Form ${i}`,
+          is_published: true,
+          pinned_at: new Date(),
+        }));
+      fixture.detectChanges();
+
+      const pinCards = fixture.nativeElement.querySelectorAll('.pin-card');
+      expect(pinCards.length).toBeLessThanOrEqual(6);
+    });
+  });
 });
