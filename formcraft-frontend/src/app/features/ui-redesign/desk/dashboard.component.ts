@@ -100,7 +100,7 @@ export class DashboardComponent implements OnInit {
   }
 
   fillNewForm(): void {
-    this.router.navigate(['/desk']);
+    this.router.navigate(['/ui/desk/templates']);
   }
 
   viewAllTransactions(): void {
