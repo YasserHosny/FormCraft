@@ -1,3 +1,5 @@
+@use '../../../../styles/responsive' as responsive;
+
 .history-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -94,7 +96,17 @@
   }
 }
 
-@media (max-width: 768px) {
+@include responsive.fc-tablet {
+  .history-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .history-table {
+    min-width: 760px;
+  }
+}
+
+@include responsive.fc-phone {
   .history-container {
     padding: 8px 12px;
   }
@@ -111,9 +123,32 @@
   }
 
   .history-table-wrapper {
-    th.mat-column-summary,
-    td.mat-column-summary {
-      display: none;
-    }
+    overflow: visible;
+  }
+
+  .history-table,
+  .history-table thead,
+  .history-table tbody,
+  .history-table tr,
+  .history-table th,
+  .history-table td {
+    display: block;
+  }
+
+  .history-table thead {
+    display: none;
+  }
+
+  .history-table tr {
+    margin-bottom: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    padding: 10px;
+    background: #fff;
+  }
+
+  .history-table td {
+    border: 0;
+    padding: 4px 0;
   }
 }

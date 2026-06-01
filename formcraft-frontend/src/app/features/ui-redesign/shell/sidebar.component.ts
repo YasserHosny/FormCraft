@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -68,6 +68,8 @@ const NAV_CONFIG: Record<string, SidebarGroup[]> = {
 })
 export class SidebarComponent {
   @Input() mode: 'studio' | 'desk' | 'admin' = 'studio';
+  @Input() open = false;
+  @Output() closed = new EventEmitter<void>();
 
   constructor(private languageService: LanguageService) {}
 
@@ -81,5 +83,16 @@ export class SidebarComponent {
 
   toggleLanguage(): void {
     this.languageService.toggleLanguage();
+  }
+
+  close(): void {
+    this.closed.emit();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.open) {
+      this.close();
+    }
   }
 }

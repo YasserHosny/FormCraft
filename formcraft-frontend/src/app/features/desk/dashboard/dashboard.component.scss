@@ -1,3 +1,5 @@
+@use '../../../../styles/responsive' as responsive;
+
 .dashboard-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -55,13 +57,13 @@
   direction: rtl;
 }
 
-@media (max-width: 959px) {
+@include responsive.fc-tablet {
   .dashboard-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 599px) {
+@include responsive.fc-phone {
   .dashboard-grid {
     grid-template-columns: 1fr;
   }

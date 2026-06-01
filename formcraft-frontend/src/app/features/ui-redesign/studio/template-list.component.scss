@@ -1,3 +1,5 @@
+@use '../../../../styles/responsive' as responsive;
+
 // Filter bar
 .filter-bar {
   padding: 14px 24px;
@@ -557,5 +559,38 @@
 
   .template-grid.list-view .template-card {
     grid-template-columns: 1fr;
+  }
+}
+
+@include responsive.fc-tablet {
+  .template-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@include responsive.fc-phone {
+  .filter-bar {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  .fc-search-box,
+  .filter-bar .fc-btn {
+    max-width: none;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .template-grid,
+  .template-grid.list-view {
+    grid-template-columns: 1fr;
+  }
+
+  .fc-fab {
+    inset-inline: 16px;
+    bottom: 16px;
+    justify-content: center;
   }
 }

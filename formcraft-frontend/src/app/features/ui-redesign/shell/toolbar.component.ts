@@ -1,6 +1,7 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -41,10 +42,12 @@ const ALL_TABS: ModeTab[] = [
 })
 export class ToolbarComponent implements OnInit, OnDestroy {
   @Input() activeMode: 'studio' | 'desk' | 'admin' = 'studio';
+  @Output() menuRequested = new EventEmitter<void>();
 
   private destroy$ = new Subject<void>();
   private currentUser: User | null = null;
 
+  isMobile = signal(false);
   tabs: ModeTab[] = [];
   unreadCount = 0;
   orgLogoUrl: string | null = null;
@@ -60,10 +63,17 @@ export class ToolbarComponent implements OnInit, OnDestroy {
     private orgAdminService: OrgAdminService,
     private myFeedbackService: MyFeedbackService,
     private realtimeService: FeedbackRealtimeService,
+    private breakpointObserver: BreakpointObserver,
   ) {}
 
   ngOnInit(): void {
     this.currentLang = this.languageService.getLanguage();
+
+    this.breakpointObserver.observe('(max-width: 599px)')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state) => {
+        this.isMobile.set(state.matches);
+      });
 
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
@@ -87,7 +97,7 @@ export class ToolbarComponent implements OnInit, OnDestroy {
   switchToClassic(): void {
     this.themePreference.setPreference('classic');
     const role = this.currentUser?.role || 'admin';
-    const target = this.themePreference.mapRouteToTheme(this.router.url, 'classic', role);
+    const target = this.themePreference.mapRouteToTheme(this.router.url, 'classic', role, this.isMobile());
     this.router.navigate([target]);
   }
 
