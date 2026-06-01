@@ -64,21 +64,25 @@
 .fc-mode-tab {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 14px;
+  gap: 6px;
+  padding: 0 11px;
   height: 36px;
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.78);
   text-decoration: none;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
   white-space: nowrap;
   min-width: 0;
+  // Reset button defaults (used for the More button)
+  background: transparent;
+  border: none;
+  font-family: inherit;
 
-  mat-icon { font-size: 18px; width: 18px; height: 18px; }
-  span { overflow: hidden; text-overflow: ellipsis; }
+  mat-icon { font-size: 18px; width: 18px; height: 18px; flex-shrink: 0; }
+  span { overflow: hidden; text-overflow: ellipsis; max-width: 96px; }
 
   &:hover {
     background: rgba(255, 255, 255, 0.10);
@@ -92,13 +96,18 @@
   }
 }
 
+// "More ···" overflow icon button — icon only, tighter padding
+.fc-more-tab {
+  padding: 0 8px;
+}
+
 .spacer { flex: 1; }
 
 .fc-toolbar-search-wrap {
-  margin: 0 8px;
-  max-width: 360px;
+  margin: 0 6px;
+  max-width: 280px;
   width: 100%;
-  flex: 0 1 360px;
+  flex: 0 1 280px;
   min-width: 0;
 }
 
