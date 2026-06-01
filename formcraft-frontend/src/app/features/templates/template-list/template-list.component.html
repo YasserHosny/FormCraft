@@ -1,10 +1,9 @@
-<mat-toolbar color="primary">
-  <span>{{ 'templates.title' | translate }}</span>
-  <span class="spacer"></span>
-  <button mat-raised-button (click)="createTemplate()">
+<div class="template-page-header">
+  <h1>{{ 'templates.title' | translate }}</h1>
+  <button mat-raised-button color="primary" (click)="createTemplate()">
     {{ 'templates.create' | translate }}
   </button>
-</mat-toolbar>
+</div>
 
 <div class="template-grid">
   <!--
