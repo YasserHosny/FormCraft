@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.api.deps import get_current_user
 from app.core.supabase import get_supabase_client
@@ -23,6 +23,8 @@ async def create_draft(
     current_user: Annotated[UserProfile, Depends(get_current_user)],
 ):
     """Create a new draft."""
+    if current_user.org_id is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User has no organization")
     client = get_supabase_client()
     service = DraftService(client)
     draft = await service.create_draft(
@@ -30,7 +32,7 @@ async def create_draft(
         template_version=body.template_version,
         field_values=body.field_values,
         operator_id=current_user.id,
-        org_id=current_user.id,
+        org_id=current_user.org_id,
         name=body.name,
         completion_percent=body.completion_percent,
     )
