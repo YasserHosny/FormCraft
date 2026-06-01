@@ -587,11 +587,38 @@
 
   mat-icon { font-size: 17px; width: 17px; height: 17px; }
 
-  &.primary { background: var(--fc-primary); color: #fff; &:hover { background: var(--fc-primary-dark); } }
+  &.primary { background: var(--fc-primary); color: #fff; &:hover { background: var(--fc-primary-dark); } &:disabled { opacity: 0.45; cursor: not-allowed; } }
   &.outline { border-color: var(--fc-border-strong); color: var(--fc-text-2); background: var(--fc-surface); &:hover { background: var(--fc-surface-2); } }
   &.ghost { color: var(--fc-text-2); &:hover { background: var(--fc-surface-3); } }
   &.sm { height: 28px; padding: 0 10px; font-size: 12px; }
-  &.ai-btn { color: var(--fc-accent-dark); }
+  &.ai-btn {
+    color: var(--fc-accent-dark);
+    position: relative;
+
+    &.active {
+      background: var(--fc-primary-50);
+      color: var(--fc-primary);
+    }
+  }
+  &.warn-btn { color: var(--fc-error, #C62828); &:hover { background: #FDECEA; } }
+}
+
+// Badge on the AI Detect button (pending count)
+.detect-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--fc-accent);
+  color: var(--fc-primary-deep);
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Noto Sans', sans-serif;
+  margin-inline-start: 2px;
+  line-height: 1;
 }
 
 .fc-icon-btn {
@@ -639,6 +666,282 @@
     line-height: 1.6;
   }
 }
+
+// ── AI Detection panels (props panel views) ───────────────────────────────
+
+.detect-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 10px 14px;
+  border-bottom: 1px solid var(--fc-border);
+  flex-shrink: 0;
+}
+
+.panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fc-text);
+}
+
+.panel-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--fc-primary);
+}
+
+.header-actions {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.detect-panel-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.detect-hint {
+  font-size: 12px;
+  color: var(--fc-text-3);
+  line-height: 1.55;
+  margin: 0;
+}
+
+// File drop zone
+.file-drop-zone {
+  border: 2px dashed var(--fc-border-strong);
+  border-radius: 8px;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: center;
+
+  mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    color: var(--fc-text-3);
+    transition: color 0.15s;
+  }
+
+  .drop-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fc-text-2);
+    word-break: break-all;
+  }
+
+  .drop-sub {
+    font-size: 11px;
+    color: var(--fc-text-3);
+  }
+
+  &:hover {
+    border-color: var(--fc-primary);
+    background: var(--fc-primary-50);
+
+    mat-icon { color: var(--fc-primary); }
+  }
+
+  &.has-file {
+    border-color: #4CAF50;
+    background: #F1F8E9;
+
+    mat-icon { color: #388E3C; }
+  }
+}
+
+.detect-action-row {
+  display: flex;
+  gap: 8px;
+
+  .fc-btn { flex: 1; justify-content: center; }
+}
+
+// Spinning loading indicator
+.detect-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0;
+  color: var(--fc-text-3);
+  font-size: 12px;
+}
+
+.spin-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  color: var(--fc-primary);
+  animation: detect-spin 1.2s linear infinite;
+}
+
+@keyframes detect-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+// Detected field rows
+.detect-field-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 12px;
+}
+
+.detect-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--fc-border);
+  border-radius: 6px;
+  background: var(--fc-surface-2);
+  transition: background 0.12s;
+
+  &:hover { background: var(--fc-surface-3); }
+}
+
+.field-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.field-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.field-type {
+  font-size: 10px;
+  color: var(--fc-primary);
+  background: var(--fc-primary-50);
+  padding: 1px 5px;
+  border-radius: 3px;
+  align-self: flex-start;
+  white-space: nowrap;
+}
+
+.field-conf {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Noto Sans', sans-serif;
+  flex-shrink: 0;
+}
+
+.detect-bulk-actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--fc-border);
+  flex-shrink: 0;
+  background: var(--fc-surface);
+
+  .fc-btn { flex: 1; justify-content: center; }
+}
+
+.detect-empty {
+  padding: 20px 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--fc-text-3);
+}
+
+// Replace-confirm warning box
+.replace-confirm-box {
+  border: 1px solid #ED6C02;
+  border-radius: 8px;
+  background: #FFF3E0;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.warn-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  color: #ED6C02;
+}
+
+.warn-text {
+  font-size: 12px;
+  color: var(--fc-text);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.warn-actions {
+  display: flex;
+  gap: 8px;
+
+  .fc-btn { flex: 1; justify-content: center; }
+}
+
+// Detection history list
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 1px solid var(--fc-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:hover { background: var(--fc-surface-3); }
+}
+
+.hist-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hist-date {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fc-text-2);
+}
+
+.hist-count {
+  font-size: 11px;
+  color: var(--fc-text-3);
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.hist-arrow {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--fc-text-3);
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────
 
 @include responsive.fc-phone {
   .mobile-unavailable {

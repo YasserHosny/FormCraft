@@ -1,11 +1,14 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, takeUntil } from 'rxjs';
 import { TemplateService } from '../../../core/services/template.service';
+import { FormDetectionService } from '../../../core/services/form-detection.service';
+import { DetectedField, DetectionResponse } from '../../designer/models/detected-field.model';
 
 interface PaletteGroup {
   label: string;
@@ -39,16 +42,28 @@ interface ObjectItem {
 @Component({
   selector: 'fc-designer',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatSnackBarModule],
+  imports: [CommonModule, MatIconModule, MatSnackBarModule, MatTooltipModule],
   templateUrl: './designer.component.html',
   styleUrl: './designer.component.scss',
 })
 export class DesignerComponent implements OnInit, OnDestroy {
+  @ViewChild('detectFileInput') detectFileInput!: ElementRef<HTMLInputElement>;
+
   activePropTab = 'props';
   templateId = '';
   templateName = 'طلب فتح حساب جاري للأفراد';
   templateCode = 'AC-001 · v4.2';
   isMobile = false;
+
+  // ── AI Detection state ─────────────────────────────────────────────────────
+  detectMode: 'import' | 'results' | 'history' | null = null;
+  importFile: File | null = null;
+  detectLoading = false;
+  detections: DetectedField[] = [];
+  detectionId = '';
+  detectionHistory: DetectionResponse[] = [];
+  pendingCount = 0;
+  showReplaceConfirm = false;
 
   private destroy$ = new Subject<void>();
 
@@ -57,6 +72,7 @@ export class DesignerComponent implements OnInit, OnDestroy {
     private router: Router,
     private snackBar: MatSnackBar,
     private templateService: TemplateService,
+    private detectionService: FormDetectionService,
     private breakpointObserver: BreakpointObserver,
   ) {}
 
@@ -69,12 +85,8 @@ export class DesignerComponent implements OnInit, OnDestroy {
 
     this.templateId = this.route.snapshot.paramMap.get('pageId') || '';
     if (this.templateId) {
-      this.templateService.get(this.templateId).subscribe({
-        next: (t: any) => {
-          this.templateName = t.name || this.templateName;
-          this.templateCode = `${t.id?.slice(0, 8) || 'AC-001'} · v${t.version || 1}`;
-        },
-      });
+      this.loadTemplate();
+      this.checkPendingCount();
     }
   }
 
@@ -82,6 +94,8 @@ export class DesignerComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  // ── Navigation / toolbar actions ──────────────────────────────────────────
 
   goBack(): void {
     this.router.navigate(['/ui/studio/templates']);
@@ -113,6 +127,168 @@ export class DesignerComponent implements OnInit, OnDestroy {
       this.snackBar.open('افتح نموذجاً حقيقياً للمعاينة', '', { duration: 3000 });
     }
   }
+
+  // ── AI Detection ──────────────────────────────────────────────────────────
+
+  /**
+   * Called on init — quietly fetches the pending detection count so the
+   * button badge can render without opening any panel.
+   */
+  checkPendingCount(): void {
+    this.detectionService.listDetections(this.templateId).subscribe({
+      next: (list) => {
+        this.pendingCount = list.reduce(
+          (sum, d) => sum + d.detected_fields.filter((f) => f.status === 'pending').length,
+          0,
+        );
+      },
+    });
+  }
+
+  /**
+   * Main entry point for the "AI Detect" toolbar button.
+   * - If already open → close (toggle).
+   * - If there are pending detections → ask before replacing.
+   * - Otherwise → open the import panel directly.
+   */
+  openDetect(): void {
+    if (this.detectMode !== null || this.showReplaceConfirm) {
+      this.closeDetect();
+      return;
+    }
+    if (this.pendingCount > 0) {
+      this.showReplaceConfirm = true;
+    } else {
+      this.detectMode = 'import';
+    }
+  }
+
+  /** User chose to run a fresh detection, discarding existing pending ones. */
+  confirmReplace(): void {
+    this.showReplaceConfirm = false;
+    this.detectMode = 'import';
+    this.importFile = null;
+  }
+
+  /** User chose to review the existing pending detections instead. */
+  viewExisting(): void {
+    this.showReplaceConfirm = false;
+    this.detectionService.listDetections(this.templateId).subscribe({
+      next: (list) => {
+        if (list.length > 0) {
+          const latest = list.sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          )[0];
+          this.detectionId = latest.id;
+          this.detections = latest.detected_fields.filter((f) => f.status === 'pending');
+          this.detectMode = 'results';
+        }
+      },
+    });
+  }
+
+  onFileSelected(event: Event): void {
+    const el = event.target as HTMLInputElement;
+    this.importFile = el.files?.[0] ?? null;
+  }
+
+  runDetection(): void {
+    if (!this.importFile || !this.templateId) return;
+    this.detectLoading = true;
+    this.detectionService.importForm(this.templateId, this.importFile).subscribe({
+      next: (res) => {
+        this.detectionId = res.id;
+        this.detections = res.detected_fields;
+        this.pendingCount = this.detections.filter((f) => f.status === 'pending').length;
+        this.detectMode = 'results';
+        this.detectLoading = false;
+      },
+      error: () => {
+        this.snackBar.open('فشل كشف الحقول بالذكاء الاصطناعي', '', { duration: 3000 });
+        this.detectLoading = false;
+      },
+    });
+  }
+
+  acceptAllDetections(): void {
+    if (!this.templateId || !this.detectionId) return;
+    const ids = this.detections.map((_, i) => i);
+    this.detectionService.acceptDetections(this.templateId, this.detectionId, ids).subscribe({
+      next: (res) => {
+        this.snackBar.open(`تم إضافة ${res.created_elements} حقل للنموذج`, '', { duration: 3000 });
+        this.detections = [];
+        this.pendingCount = 0;
+        this.detectMode = null;
+        this.loadTemplate();
+      },
+      error: () => {
+        this.snackBar.open('خطأ في قبول الحقول المكتشفة', '', { duration: 3000 });
+      },
+    });
+  }
+
+  rejectAllDetections(): void {
+    if (!this.detectionId) {
+      this.detectMode = null;
+      return;
+    }
+    this.detectionService.deleteDetection(this.detectionId).subscribe({
+      next: () => {
+        this.detections = [];
+        this.pendingCount = 0;
+        this.detectionId = '';
+        this.detectMode = null;
+      },
+    });
+  }
+
+  loadHistory(): void {
+    this.detectLoading = true;
+    this.detectionService.listDetections(this.templateId).subscribe({
+      next: (list) => {
+        this.detectionHistory = list.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
+        this.detectLoading = false;
+        this.detectMode = 'history';
+      },
+      error: () => {
+        this.detectLoading = false;
+      },
+    });
+  }
+
+  viewHistoric(det: DetectionResponse): void {
+    this.detectionId = det.id;
+    this.detections = det.detected_fields;
+    this.detectMode = 'results';
+  }
+
+  closeDetect(): void {
+    this.detectMode = null;
+    this.importFile = null;
+    this.showReplaceConfirm = false;
+  }
+
+  /** Returns a CSS color for the confidence value (green / orange / red). */
+  confidenceColor(conf: number): string {
+    if (conf >= 0.8) return 'var(--fc-success, #2E7D32)';
+    if (conf >= 0.6) return '#ED6C02';
+    return 'var(--fc-error, #C62828)';
+  }
+
+  // ── Private helpers ───────────────────────────────────────────────────────
+
+  private loadTemplate(): void {
+    this.templateService.get(this.templateId).subscribe({
+      next: (t: any) => {
+        this.templateName = t.name || this.templateName;
+        this.templateCode = `${t.id?.slice(0, 8) || 'AC-001'} · v${t.version || 1}`;
+      },
+    });
+  }
+
+  // ── Static palette / canvas data (prototype) ──────────────────────────────
 
   propTabs: PropTab[] = [
     { key: 'props', label: 'الخصائص' },
