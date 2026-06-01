@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, Query, Request, UploadFile, File, Form, 
 from fastapi.responses import StreamingResponse, JSONResponse
 
 from app.api.deps import get_current_user
-from app.core.audit import AuditLogger
 from app.core.supabase import get_supabase_client
 from app.models.user import UserProfile
 from app.schemas.submission import (
@@ -37,20 +36,6 @@ async def create_submission(
         operator_id=current_user.id,
         org_id=current_user.org_id,
         branch_id=current_user.branch_id,
-    )
-
-    audit = AuditLogger(client)
-    await audit.log_event(
-        user_id=str(current_user.id),
-        action="FORM_SUBMITTED",
-        resource_type="submission",
-        resource_id=str(submission.id),
-        metadata={
-            "template_id": str(body.template_id),
-            "template_version": body.template_version,
-            "reference_number": submission.reference_number,
-        },
-        ip_address=request.client.host if request.client else None,
     )
 
     return submission

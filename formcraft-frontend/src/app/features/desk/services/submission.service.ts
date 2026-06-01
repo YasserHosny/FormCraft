@@ -8,7 +8,6 @@ export interface SubmissionResponse {
   reference_number: string;
   template_id: string;
   template_version: number;
-  operator_id: string;
   created_at: string;
 }
 

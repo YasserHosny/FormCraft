@@ -1,46 +1,20 @@
-<!-- Sub-toolbar -->
 <div class="sub-toolbar">
   <button class="fc-icon-btn" (click)="goBack()"><mat-icon>arrow_forward</mat-icon></button>
   <div class="form-info">
     <div class="form-title">{{ templateName }}</div>
     <div class="form-meta">
       <span>{{ templateCode }}</span>
-      <span>·</span>
-      <span class="meta-time"><mat-icon>schedule</mat-icon>بدأت قبل ٢ دقيقة</span>
     </div>
   </div>
   <span class="grow"></span>
 
-  <!-- Customer pill -->
-  <div class="customer-pill" (click)="openCustomerPicker()">
-    <fc-avatar name="فاطمة القحطاني" size="sm" color="c2"></fc-avatar>
-    <div class="pill-info">
-      <span class="pill-name">فاطمة بنت عبدالله القحطاني</span>
-      <span class="pill-id fc-num">ID 2841-9035-1882</span>
-    </div>
-    <button class="fc-icon-btn sm"><mat-icon>close</mat-icon></button>
-  </div>
-
-  <button class="fc-btn outline" (click)="saveDraft()"><mat-icon>save</mat-icon>حفظ كمسودة</button>
-  <button class="fc-btn outline" (click)="printPdf()"><mat-icon>print</mat-icon>طباعة PDF</button>
-  <button class="fc-btn primary" (click)="submitForm()"><mat-icon>check</mat-icon>إرسال</button>
+  <button class="fc-btn outline" (click)="openCustomerPicker()"><mat-icon>person_search</mat-icon>{{ 'desk.customer_picker.select' | translate }}</button>
+  <button class="fc-btn outline" (click)="saveDraft()"><mat-icon>save</mat-icon>{{ 'desk.form_filler.save_draft' | translate }}</button>
+  <button class="fc-btn outline" (click)="printPdf()"><mat-icon>print</mat-icon>{{ 'desk.form_filler.print_pdf' | translate }}</button>
+  <button class="fc-btn primary" (click)="submitForm()" [disabled]="isReadOnly || submitting || formGroup.invalid"><mat-icon>check</mat-icon>{{ 'desk.form_filler.submit' | translate }}</button>
 </div>
 
-<!-- Progress bar -->
-<div class="progress-strip">
-  <span class="progress-label-text">إكمال النموذج:</span>
-  <div class="progress-track">
-    <div class="progress-value" style="width: 64%"></div>
-  </div>
-  <span class="progress-count fc-num">24 / 38</span>
-  <span class="auto-save"><mat-icon>cloud_done</mat-icon>محفوظ تلقائياً</span>
-  <span class="separator"></span>
-  <button class="fc-btn ghost sm"><mat-icon>keyboard</mat-icon>اختصارات</button>
-</div>
-
-<!-- Main layout -->
 <div class="filler-layout">
-  <!-- Loading state -->
   <div class="canvas-area" *ngIf="loading">
     <div class="paper">
       <div class="skeleton-loader">
@@ -50,232 +24,114 @@
           <div class="skeleton-line"></div>
           <div class="skeleton-line"></div>
         </div>
-        <div class="skeleton-section">
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line"></div>
-        </div>
       </div>
     </div>
   </div>
 
-  <!-- Error state -->
   <div class="canvas-area" *ngIf="error && !loading">
     <div class="paper">
       <div class="error-state">
         <mat-icon>error_outline</mat-icon>
-        <h3>حدث خطأ</h3>
+        <h3>{{ error }}</h3>
         <p>{{ error }}</p>
-        <button class="fc-btn primary" (click)="goBack()"><mat-icon>arrow_forward</mat-icon>رجوع</button>
+        <button class="fc-btn primary" (click)="ngOnInit()"><mat-icon>refresh</mat-icon>{{ retryLabel }}</button>
       </div>
     </div>
   </div>
 
-  <!-- Content -->
   <div class="canvas-area" *ngIf="!loading && !error">
-    <div class="paper">
-      <!-- Form header -->
-      <div class="paper-header">
-        <div class="bank-logo">EDB</div>
-        <div class="bank-info">
-          <div class="bank-name">مصرف الإمارات للتنمية</div>
-          <div class="bank-branch">فرع أبوظبي الرئيسي · ص.ب ١٢٢١، أبوظبي</div>
-          <div class="form-name">طلب فتح حساب جاري — للأفراد</div>
+    <div class="paper" [formGroup]="formGroup">
+      <div class="error-summary" *ngIf="isReadOnly">
+        <mat-icon>lock</mat-icon>
+        <span>{{ 'desk.form_filler.read_only_mode' | translate }}</span>
+      </div>
+
+      <div class="error-summary" *ngIf="submitError">
+        <mat-icon>error_outline</mat-icon>
+        <div>
+          <div>{{ submitError }}</div>
+          <button class="fc-btn outline sm" (click)="retrySubmit()">{{ 'desk.form_filler.retry' | translate }}</button>
         </div>
-        <div class="qr-placeholder"></div>
       </div>
 
-      <div class="paper-ref">
-        <span>رقم المرجع: <b class="fc-num">REF-2026-3842</b></span>
-        <span>التاريخ: <b class="fc-num">2026-05-25</b></span>
+      <div class="error-summary" *ngIf="submitted && formGroup.invalid">
+        <mat-icon>warning</mat-icon>
+        <div>
+          <div>{{ 'desk.form_filler.validation_error_summary' | translate }}</div>
+          <ul>
+            <li *ngFor="let invalid of getInvalidVisibleFields()">
+              <strong>{{ invalid.label }}:</strong> {{ invalid.message }}
+            </li>
+          </ul>
+        </div>
       </div>
 
-      <!-- Sections -->
       <ng-container *ngFor="let section of sections">
         <div class="section-head">
           <span class="section-num">{{ section.number }}</span>
           <span class="section-title">{{ section.title }}</span>
-          <span class="section-complete" *ngIf="section.complete"><mat-icon>check_circle</mat-icon>مكتمل</span>
         </div>
-        <div class="fields-grid" [style.grid-template-columns]="'repeat(' + section.columns + ', 1fr)'" [formGroup]="formGroup">
+
+        <div class="fields-grid" [style.grid-template-columns]="'repeat(' + section.columns + ', 1fr)'">
           <ng-container *ngFor="let f of section.fields">
-            <div class="form-field"
-                 *ngIf="visibleFields.size === 0 || visibleFields.has(f.key)"
-                 [style.grid-column]="f.span ? '1 / -1' : null">
-            <div class="field-header">
-              <span class="field-label">{{ f.label }}<span class="required" *ngIf="f.required"> *</span></span>
-              <mat-icon class="field-valid" *ngIf="formGroup.get(f.key)?.valid && formGroup.get(f.key)?.touched">check_circle</mat-icon>
-              <mat-icon class="field-error" *ngIf="formGroup.get(f.key)?.invalid && formGroup.get(f.key)?.touched">error</mat-icon>
-            </div>
-            <div [ngSwitch]="f.type">
-              <!-- Text input -->
-              <input *ngSwitchCase="'text'"
-                     type="text"
-                     class="field-input"
-                     [formControlName]="f.key"
-                     [placeholder]="f.placeholder"
-                     [class.filled]="formGroup.get(f.key)?.value"
-                     [class.error]="formGroup.get(f.key)?.invalid && formGroup.get(f.key)?.touched" />
-
-              <!-- Number input -->
-              <input *ngSwitchCase="'number'"
-                     type="number"
-                     class="field-input"
-                     [formControlName]="f.key"
-                     [placeholder]="f.placeholder"
-                     [class.filled]="formGroup.get(f.key)?.value"
-                     [class.error]="formGroup.get(f.key)?.invalid && formGroup.get(f.key)?.touched" />
-
-              <!-- Date input -->
-              <input *ngSwitchCase="'date'"
-                     type="date"
-                     class="field-input"
-                     [formControlName]="f.key"
-                     [class.filled]="formGroup.get(f.key)?.value"
-                     [class.error]="formGroup.get(f.key)?.invalid && formGroup.get(f.key)?.touched" />
-
-              <!-- Select dropdown -->
-              <select *ngSwitchCase="'select'"
-                      class="field-input"
-                      [formControlName]="f.key"
-                      [class.filled]="formGroup.get(f.key)?.value"
-                      [class.error]="formGroup.get(f.key)?.invalid && formGroup.get(f.key)?.touched">
-                <option value="">{{ f.placeholder }}</option>
-                <option *ngFor="let opt of f.options" [value]="opt.value">{{ opt.label }}</option>
-              </select>
-
-              <!-- Textarea for long text -->
-              <textarea *ngSwitchCase="'textarea'"
-                        class="field-input"
-                        [formControlName]="f.key"
-                        [placeholder]="f.placeholder"
-                        [class.filled]="formGroup.get(f.key)?.value"
-                        [class.error]="formGroup.get(f.key)?.invalid && formGroup.get(f.key)?.touched"></textarea>
-
-              <!-- Checkbox -->
-              <label *ngSwitchCase="'checkbox'" class="checkbox-wrapper">
-                <input type="checkbox"
-                       [formControlName]="f.key"
-                       [class.error]="formGroup.get(f.key)?.invalid && formGroup.get(f.key)?.touched" />
-                <span>{{ f.label }}</span>
-              </label>
-
-              <!-- Default text display for signature and other types -->
-              <div *ngSwitchDefault class="field-input" [class.filled]="formGroup.get(f.key)?.value">
-                <span class="field-value" [class.placeholder]="!formGroup.get(f.key)?.value">{{ formGroup.get(f.key)?.value || f.placeholder }}</span>
+            <div class="form-field" *ngIf="visibleKeys.size === 0 || visibleKeys.has(f.key)">
+              <div class="field-header">
+                <span class="field-label">
+                  {{ f.label }}
+                  <span class="required-indicator" *ngIf="f.required || requiredKeys.has(f.key)" aria-hidden="true">*</span>
+                </span>
               </div>
-            </div>
-            <span class="field-error-msg" *ngIf="formGroup.get(f.key)?.invalid && formGroup.get(f.key)?.touched">
-              {{ formGroup.get(f.key)?.getError('required') ? 'هذا الحقل مطلوب' : 'قيمة غير صحيحة' }}
-            </span>
+
+              <div [ngSwitch]="f.type">
+                <input *ngSwitchCase="'text'" class="field-input" type="text" [formControlName]="f.key" dir="auto" />
+
+                <input *ngSwitchCase="'number'" class="field-input" type="number" [formControlName]="f.key" />
+                <span class="tafqeet-text" *ngIf="f.element.tafqeet_enabled && tafqeetValues.get(f.key)" dir="rtl">{{ tafqeetValues.get(f.key) }}</span>
+
+                <input *ngSwitchCase="'date'" class="field-input" type="date" [formControlName]="f.key" />
+
+                <select *ngSwitchCase="'select'" class="field-input" [formControlName]="f.key">
+                  <option value=""></option>
+                  <option *ngFor="let opt of f.options" [value]="opt.value">{{ opt.label }}</option>
+                </select>
+
+                <label *ngSwitchCase="'checkbox'" class="checkbox-wrapper">
+                  <input type="checkbox" [formControlName]="f.key" />
+                  <span>{{ f.label }}</span>
+                </label>
+
+                <textarea *ngSwitchCase="'textarea'" class="field-input" [formControlName]="f.key" dir="auto"></textarea>
+
+                <div *ngSwitchCase="'signature'" class="signature-pad-wrapper">
+                  <fc-signature-pad
+                    [required]="requiredKeys.has(f.key) || f.required"
+                    [value]="formGroup.get(f.key)?.value || null"
+                    (valueChange)="onSignatureConfirmed(f.key, $event)">
+                  </fc-signature-pad>
+                  <button class="fc-btn ghost sm" type="button" (click)="onSignatureCleared(f.key)">{{ 'signature.clear' | translate }}</button>
+                </div>
+
+                <input *ngSwitchDefault class="field-input" type="text" [formControlName]="f.key" dir="auto" />
+              </div>
+
+              <span class="field-error-msg" *ngIf="formGroup.get(f.key)?.invalid && (formGroup.get(f.key)?.touched || submitted)">
+                {{ getErrorMessage(f.key) }}
+              </span>
             </div>
           </ng-container>
         </div>
       </ng-container>
-
-      <!-- Section 3: Declarations -->
-      <div class="section-head">
-        <span class="section-num">٣</span>
-        <span class="section-title">الإقرارات والتوقيع</span>
-      </div>
-      <div class="declarations-box">
-        <label class="declaration-item">
-          <div class="checkbox checked"><mat-icon>check</mat-icon></div>
-          <span>أُقرّ بصحة جميع البيانات الواردة أعلاه وأتحمّل المسؤولية القانونية عن صحتها.</span>
-        </label>
-        <label class="declaration-item">
-          <div class="checkbox checked"><mat-icon>check</mat-icon></div>
-          <span>أوافق على شروط وأحكام فتح الحساب الجاري للأفراد المعتمدة لدى المصرف.</span>
-        </label>
-        <label class="declaration-item">
-          <div class="checkbox"></div>
-          <span>أرغب في إصدار بطاقة الصراف الآلي مع الحساب الجديد.</span>
-        </label>
-      </div>
     </div>
   </div>
 
-  <!-- Right summary panel -->
   <aside class="side-panel">
     <div class="panel-section">
-      <div class="panel-label">أقسام النموذج</div>
-      <div class="nav-item" *ngFor="let s of sideSections" [class.active]="s.state === 'active'">
-        <span class="nav-num" [class.done]="s.state === 'done'" [class.active]="s.state === 'active'">
-          <mat-icon *ngIf="s.state === 'done'">check</mat-icon>
-          <ng-container *ngIf="s.state !== 'done'">{{ s.number }}</ng-container>
-        </span>
+      <div class="panel-label">{{ 'desk.form_sections' | translate }}</div>
+      <div class="nav-item" *ngFor="let s of sideSections">
+        <span class="nav-num">{{ s.number }}</span>
         <span class="nav-label">{{ s.label }}</span>
         <span class="nav-count fc-num">{{ s.count }}</span>
       </div>
     </div>
-
-    <div class="panel-section">
-      <div class="panel-label">تنبيهات</div>
-      <div class="alert-box error">
-        <mat-icon>error</mat-icon>
-        <div><b>المسمى الوظيفي</b> حقل مطلوب — لم يُملأ بعد.</div>
-      </div>
-      <div class="alert-box warn">
-        <mat-icon>warning</mat-icon>
-        <div>لم يوقّع العميل بعد. يمكن التوقيع رقمياً أو بعد الطباعة.</div>
-      </div>
-    </div>
-
   </aside>
-</div>
-
-<!-- Customer picker dialog -->
-<div class="dialog-overlay" *ngIf="showCustomerPicker" (click)="closeCustomerPicker()">
-  <div class="dialog-box" (click)="$event.stopPropagation()">
-    <div class="dialog-header">
-      <div class="dialog-icon"><mat-icon>person_search</mat-icon></div>
-      <div class="dialog-title-area">
-        <h3>اختيار عميل</h3>
-        <span>ابحث برقم الهوية أو الاسم — الحقول المطابقة ستُعبأ تلقائياً</span>
-      </div>
-      <button class="fc-icon-btn" (click)="closeCustomerPicker()"><mat-icon>close</mat-icon></button>
-    </div>
-
-    <div class="dialog-search">
-      <div class="search-input">
-        <mat-icon>search</mat-icon>
-        <input placeholder="اكتب رقم الهوية، الجوال، أو الاسم..." value="فاطمة" />
-        <kbd>↵</kbd>
-      </div>
-      <div class="recent-chips">
-        <span class="recent-label">الأخيرون:</span>
-        <span class="recent-chip" *ngFor="let name of recentCustomers">{{ name }}</span>
-      </div>
-    </div>
-
-    <div class="dialog-results">
-      <div class="results-count">٣ نتائج</div>
-      <div class="customer-row" *ngFor="let c of customerResults" [class.selected]="c.selected">
-        <div class="selection-bar" *ngIf="c.selected"></div>
-        <fc-avatar [name]="c.name" size="md" [color]="c.color"></fc-avatar>
-        <div class="customer-details">
-          <div class="customer-top">
-            <span class="customer-name">{{ c.name }}</span>
-            <fc-status-chip status="published"></fc-status-chip>
-          </div>
-          <span class="customer-en">{{ c.en }}</span>
-          <div class="customer-meta-row">
-            <span><mat-icon>badge</mat-icon><span class="fc-num">{{ c.id }}</span></span>
-            <span><mat-icon>phone</mat-icon><span class="fc-num">{{ c.phone }}</span></span>
-            <span><mat-icon>description</mat-icon>{{ c.forms }} نماذج</span>
-            <span class="last-visit">آخر زيارة: {{ c.last }}</span>
-          </div>
-        </div>
-        <button class="fc-btn primary sm" *ngIf="c.selected"><mat-icon>check</mat-icon>اختياره</button>
-        <button class="fc-btn outline sm" *ngIf="!c.selected">اختيار</button>
-      </div>
-    </div>
-
-    <div class="dialog-footer">
-      <button class="fc-btn outline" (click)="createNewCustomer()"><mat-icon>person_add</mat-icon>إنشاء عميل جديد</button>
-      <div class="footer-actions">
-        <button class="fc-btn ghost" (click)="closeCustomerPicker()">إلغاء</button>
-        <button class="fc-btn primary"><mat-icon>check</mat-icon>تأكيد الاختيار</button>
-      </div>
-    </div>
-  </div>
 </div>

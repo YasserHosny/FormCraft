@@ -6,6 +6,7 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
 import { StatusChipComponent } from '../shared/components/status-chip.component';
 import { AvatarComponent } from '../shared/components/avatar.component';
 import { KpiCardComponent } from '../shared/components/kpi-card.component';
+import { DraftListComponent } from '../../../features/desk/components/draft-list/draft-list.component';
 import { TemplateService } from '../../../core/services/template.service';
 import { DeskService } from '../../../features/desk/services/desk.service';
 import { HistoryService } from '../../../features/desk/services/history.service';
@@ -16,7 +17,7 @@ import { takeUntil } from 'rxjs/operators';
 @Component({
   selector: 'fc-desk-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, PageHeaderComponent, StatusChipComponent, AvatarComponent, KpiCardComponent],
+  imports: [CommonModule, RouterModule, MatIconModule, PageHeaderComponent, StatusChipComponent, AvatarComponent, KpiCardComponent, DraftListComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })

@@ -117,28 +117,11 @@
       <div class="card-header">
         <div class="card-header-info">
           <h3>مسوّدات لإكمالها</h3>
-          <span class="card-sub">٦ مسوّدات محفوظة تلقائياً</span>
+          <span class="card-sub">{{ drafts.length }} مسودة</span>
         </div>
         <button class="fc-btn ghost sm">عرض الكل</button>
       </div>
-      <div class="drafts-list">
-        <div class="draft-item" *ngFor="let d of drafts; let last = last" [class.no-border]="last" (click)="resumeDraft(d)" style="cursor: pointer;">
-          <div class="draft-header">
-            <span class="draft-form">{{ d.name || 'Draft' }}</span>
-            <span class="draft-time">{{ d.updated_at | date:'short' }}</span>
-          </div>
-          <div class="draft-customer">{{ d.template_id?.slice(0, 12) }}</div>
-          <div class="draft-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="d.completion_percent"></div>
-            </div>
-            <span class="progress-label fc-num">{{ d.completion_percent }}%</span>
-          </div>
-        </div>
-        <div *ngIf="drafts.length === 0" class="empty-list">
-          <p>لا توجد مسوّدات محفوظة</p>
-        </div>
-      </div>
+      <fc-draft-list [useNewThemeRoute]="true"></fc-draft-list>
     </div>
   </div>
   </div>

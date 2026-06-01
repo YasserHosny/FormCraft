@@ -57,6 +57,10 @@ export class DraftService {
     return this.http.get<DraftResponse>(`${this.apiUrl}/${draftId}`);
   }
 
+  listDrafts(): Observable<DraftResponse[]> {
+    return this.http.get<DraftResponse[]>(this.apiUrl);
+  }
+
   deleteDraft(draftId: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${draftId}`);
   }

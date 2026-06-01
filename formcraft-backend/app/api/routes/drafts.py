@@ -66,6 +66,16 @@ async def get_draft(
     return await service.get_draft(draft_id=draft_id, operator_id=current_user.id)
 
 
+@router.get("", response_model=list[DraftResponse])
+async def list_drafts(
+    current_user: Annotated[UserProfile, Depends(get_current_user)],
+):
+    """List drafts for the authenticated user."""
+    client = get_supabase_client()
+    service = DraftService(client)
+    return await service.list_drafts(operator_id=current_user.id)
+
+
 @router.delete("/{draft_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_draft(
     draft_id: UUID,

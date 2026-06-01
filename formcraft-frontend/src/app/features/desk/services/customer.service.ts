@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import {
   Customer,
@@ -9,6 +10,10 @@ import {
   CustomerSearchParams,
   CustomerUpdate,
 } from '../customers/customer.models';
+
+export interface AutoFillMappingResponse {
+  mappings: any[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class CustomerService {
@@ -57,6 +62,10 @@ export class CustomerService {
     return this.list({ search: query, page, page_size: pageSize });
   }
 
+  searchCustomers(query: string): Observable<Customer[]> {
+    return this.search(query).pipe(map((response) => response.items || []));
+  }
+
   getRecent(limit: number = 5): Observable<Customer[]> {
     return this.http.get<Customer[]>(`${this.baseUrl}/recent`, {
       params: new HttpParams().set('limit', limit.toString()),
@@ -68,6 +77,10 @@ export class CustomerService {
       `${this.baseUrl}/${customerId}/auto-populate`,
       { params: new HttpParams().set('template_id', templateId) }
     );
+  }
+
+  getAutoFillData(customerId: string, templateId: string): Observable<AutoFillMappingResponse> {
+    return this.getAutoPopulateData(customerId, templateId);
   }
 
   getFieldMappings(templateId: string): Observable<any[]> {

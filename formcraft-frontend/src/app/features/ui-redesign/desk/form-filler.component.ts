@@ -1,49 +1,62 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+
 import { AvatarComponent } from '../shared/components/avatar.component';
 import { StatusChipComponent } from '../shared/components/status-chip.component';
 import { FormFillerService, FillTemplate, TemplateElement } from '../../../features/desk/services/form-filler.service';
 import { ConditionEngineService, ConditionalElement } from '../../../features/desk/services/condition-engine.service';
 import { AutoFillService } from '../../../features/desk/services/auto-fill.service';
-import { FillerTafqeetService } from '../../../features/desk/services/filler-tafqeet.service';
+import { FillerTafqeetService, TafqeetSourceMapping } from '../../../features/desk/services/filler-tafqeet.service';
 import { ValidationService } from '../../../features/desk/services/validation.service';
 import { SubmissionService } from '../../../features/desk/services/submission.service';
 import { DraftService } from '../../../features/desk/services/draft.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
+import { AuthService } from '../../../core/auth/auth.service';
+import { CustomerService } from '../../../features/desk/services/customer.service';
+import { VersionWarningComponent } from '../../../features/desk/components/version-warning/version-warning.component';
+import { SignaturePadComponent } from '../../../features/desk/components/signature-pad/signature-pad.component';
+import { Customer } from '../../../features/desk/customers/customer.models';
+import { CustomerPickerDialogComponent } from '../../../features/desk/components/customer-picker/customer-picker-dialog.component';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'fc-form-filler',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatSnackBarModule, AvatarComponent, StatusChipComponent, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatSnackBarModule, TranslateModule, AvatarComponent, StatusChipComponent, SignaturePadComponent],
   templateUrl: './form-filler.component.html',
   styleUrl: './form-filler.component.scss',
 })
 export class FormFillerComponent implements OnInit, OnDestroy {
-  showCustomerPicker = false;
   templateId = '';
-  templateName = 'طلب فتح حساب جاري للأفراد';
-  templateCode = 'AC-001 · v4.2';
+  templateName = '';
+  templateCode = '';
+  retryLabel = 'Retry';
+
   loading = true;
   error: string | null = null;
+  submitError: string | null = null;
+  submitted = false;
+  submitting = false;
+  isReadOnly = false;
 
   template: FillTemplate | null = null;
   formGroup: FormGroup;
   draftId: string | null = null;
-  currentLanguage = 'ar';
+  currentLanguage: 'ar' | 'en' = 'ar';
 
-  sections: any[] = [];
-  sideSections: any[] = [];
-  recentCustomers: string[] = [];
-  customerResults: any[] = [];
-  visibleFields = new Set<string>();
-  requiredFields = new Set<string>();
-  hasUnsavedChanges = false;
+  sections: Array<{ number: string; title: string; complete: boolean; fields: Array<{ key: string; type: string; label: string; placeholder: string; required: boolean; validation: any; options: Array<{value: string; label: string}>; element: TemplateElement }>; columns: number }> = [];
+  sideSections: Array<{ number: string; label: string; state: string; count: string }> = [];
+
+  visibleKeys = new Set<string>();
+  requiredKeys = new Set<string>();
+  tafqeetValues = new Map<string, string>();
 
   private destroy$ = new Subject<void>();
 
@@ -51,6 +64,7 @@ export class FormFillerComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private snackBar: MatSnackBar,
+    private dialog: MatDialog,
     private formFillerService: FormFillerService,
     private conditionEngineService: ConditionEngineService,
     private autoFillService: AutoFillService,
@@ -58,7 +72,10 @@ export class FormFillerComponent implements OnInit, OnDestroy {
     private validationService: ValidationService,
     private submissionService: SubmissionService,
     private draftService: DraftService,
+    private customerService: CustomerService,
+    private authService: AuthService,
     private languageService: LanguageService,
+    private translate: TranslateService,
     private fb: FormBuilder,
   ) {
     this.formGroup = this.fb.group({});
@@ -67,91 +84,117 @@ export class FormFillerComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.templateId = this.route.snapshot.paramMap.get('templateId') || '';
     this.draftId = this.route.snapshot.queryParamMap.get('draftId');
-    const lang = this.languageService.getLanguage();
-    this.currentLanguage = lang === 'ar' ? 'ar' : 'en';
+    this.currentLanguage = this.languageService.getLanguage() === 'ar' ? 'ar' : 'en';
+    this.retryLabel = this.translate.instant('desk.retry');
+    this.isReadOnly = this.authService.getCurrentUser()?.role === 'designer';
 
-    if (this.templateId) {
-      this.loading = true;
-      this.formFillerService.getTemplate(this.templateId).subscribe({
-        next: (template: FillTemplate) => {
-          this.template = template;
-          this.templateName = template.name;
-          this.templateCode = `v${template.version}`;
+    this.conditionEngineService.visibilityChanged$.pipe(takeUntil(this.destroy$)).subscribe((keys) => {
+      this.visibleKeys = keys;
+    });
 
-          this.buildFormFromTemplate(template);
+    this.conditionEngineService.requiredChanged$.pipe(takeUntil(this.destroy$)).subscribe((keys) => {
+      this.requiredKeys = keys;
+      this.updateRequiredValidators();
+    });
 
-          if (this.draftId) {
-            this.loadDraft(this.draftId);
-          } else {
-            this.loading = false;
-          }
-
-          this.error = null;
-        },
-        error: (err) => {
-          console.error('Failed to load template:', err);
-          this.loading = false;
-          this.error = 'Failed to load template';
-        },
-      });
-    } else {
+    if (!this.templateId) {
       this.loading = false;
-      this.error = 'No template ID provided';
+      this.error = this.translate.instant('desk.template_load_error');
+      return;
     }
+
+    this.loadTemplate();
   }
 
   ngOnDestroy(): void {
-    if (this.hasUnsavedChanges && this.templateId) {
-      this.saveDraft();
+    if (this.formGroup.dirty && !this.submitted && this.templateId) {
+      localStorage.setItem(`fc_draft_${this.templateId}`, JSON.stringify(this.formGroup.value));
     }
+    this.conditionEngineService.destroy();
     this.destroy$.next();
     this.destroy$.complete();
   }
 
+  private loadTemplate(): void {
+    this.loading = true;
+    this.formFillerService.getTemplate(this.templateId).subscribe({
+      next: (template) => {
+        this.template = template;
+        this.templateName = template.name;
+        this.templateCode = `v${template.version}`;
+
+        this.buildFormFromTemplate(template);
+        this.flushLocalDraftIfExists();
+
+        if (this.draftId) {
+          this.loadDraft(this.draftId);
+        } else {
+          this.loading = false;
+        }
+        this.error = null;
+      },
+      error: () => {
+        this.loading = false;
+        this.error = this.translate.instant('desk.template_load_error');
+      },
+    });
+  }
+
+  private flushLocalDraftIfExists(): void {
+    const key = `fc_draft_${this.templateId}`;
+    const raw = localStorage.getItem(key);
+    if (!raw || !this.template) return;
+
+    try {
+      const fieldValues = JSON.parse(raw) as Record<string, any>;
+      this.draftService.saveDraft(this.templateId, this.template.version, fieldValues).subscribe({
+        next: (draft) => {
+          this.draftId = draft.id;
+          localStorage.removeItem(key);
+        },
+      });
+    } catch {
+      localStorage.removeItem(key);
+    }
+  }
+
   private buildFormFromTemplate(template: FillTemplate): void {
-    const controls: Record<string, any> = {};
+    const controls: Record<string, FormControl> = {};
 
     this.sections = [];
     this.sideSections = [];
 
     template.pages.forEach((page, pageIndex) => {
-      const sectionNumber = String(pageIndex + 1);
+      const pageTitle = this.translate.instant('desk.page_number', { n: pageIndex + 1 });
 
       page.elements.forEach((element: TemplateElement) => {
-        const validators = [];
-
-        if (element.required) {
-          validators.push(Validators.required);
-        }
-
-        if (element.validation) {
-          const customValidators = this.validationService.getValidatorFn(element);
-          validators.push(...customValidators);
-        }
-
-        controls[element.key] = ['', validators];
+        const validatorFns = this.validationService.getValidatorFn(element, template.country, this.currentLanguage);
+        controls[element.key] = new FormControl('', validatorFns);
       });
 
       this.sections.push({
-        number: sectionNumber,
-        title: `صفحة ${sectionNumber}`,
+        number: String(pageIndex + 1),
+        title: pageTitle,
         complete: false,
         fields: page.elements.map((el: TemplateElement) => ({
           key: el.key,
           type: el.type,
           label: this.currentLanguage === 'ar' ? el.label_ar : el.label_en,
           placeholder: '',
-          required: el.required,
+          required: !!el.required,
           validation: el.validation,
-          options: (el as any).options || [],
+          options: (el.options || []).map((opt) => ({
+            value: opt.value,
+            label: this.currentLanguage === 'ar' ? opt.label_ar : opt.label_en,
+          })),
           element: el,
         })),
         columns: 2,
       });
 
       this.sideSections.push({
-        number: sectionNumber,
-        label: `صفحة ${sectionNumber}`,
+        number: String(pageIndex + 1),
+        label: pageTitle,
         state: pageIndex === 0 ? 'active' : 'pending',
         count: `0/${page.elements.length}`,
       });
@@ -159,66 +202,96 @@ export class FormFillerComponent implements OnInit, OnDestroy {
 
     this.formGroup = this.fb.group(controls);
 
-    const conditionalElements: ConditionalElement[] = [];
-    const allElements = template.pages.flatMap(p => p.elements);
-    allElements.forEach(el => {
-      conditionalElements.push({
-        key: el.key,
-        required: el.required,
-        visible_when: (el as any).visible_when,
-        required_when: (el as any).required_when,
-      });
-    });
+    const flatElements = template.pages.flatMap((p) => p.elements);
+    const conditionalElements: ConditionalElement[] = flatElements.map((el) => ({
+      key: el.key,
+      required: el.required,
+      visible_when: el.visible_when || null,
+      required_when: el.required_when || null,
+    }));
 
     this.conditionEngineService.initialize(conditionalElements, this.formGroup);
 
-    this.conditionEngineService.visibilityChanged$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(visibleKeys => {
-        this.visibleFields = visibleKeys;
-      });
+    this.formGroup.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.submitError = null;
+    });
 
-    this.conditionEngineService.requiredChanged$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(requiredKeys => {
-        this.requiredFields = requiredKeys;
-        requiredKeys.forEach(key => {
-          const control = this.formGroup.get(key);
-          if (control) {
-            const validators = control.validator ? [control.validator] : [];
-            validators.push(Validators.required);
-            control.setValidators(validators);
-            control.updateValueAndValidity({ emitEvent: false });
+    for (const element of flatElements) {
+      if (!element.tafqeet_enabled) continue;
+      const control = this.formGroup.get(element.key);
+      if (!control) continue;
+
+      control.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
+        if (value === null || value === undefined || value === '') {
+          this.tafqeetValues.delete(element.key);
+          return;
+        }
+
+        const amount = Number(value);
+        if (Number.isNaN(amount)) {
+          this.tafqeetValues.delete(element.key);
+          return;
+        }
+
+        const formatting: TafqeetSourceMapping['formatting'] = {
+          currency_code: 'SAR',
+          language: 'ar',
+          show_currency: true,
+          prefix: 'none',
+          suffix: 'la_ghair',
+        };
+
+        this.tafqeetService.compute(amount, formatting).subscribe((result) => {
+          if (result) {
+            this.tafqeetValues.set(element.key, result);
+          } else {
+            this.tafqeetValues.delete(element.key);
           }
         });
       });
+    }
+  }
 
-    this.formGroup.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.hasUnsavedChanges = true;
-      });
+  private updateRequiredValidators(): void {
+    if (!this.template) return;
+
+    const allElements = this.template.pages.flatMap((p) => p.elements);
+    for (const element of allElements) {
+      const control = this.formGroup.get(element.key);
+      if (!control) continue;
+
+      const baseValidators = this.validationService.getValidatorFn(element, this.template.country, this.currentLanguage)
+        .filter((fn) => fn !== Validators.required);
+
+      if (this.requiredKeys.has(element.key) || element.required) {
+        baseValidators.unshift(Validators.required);
+      }
+
+      control.setValidators(baseValidators);
+      control.updateValueAndValidity({ emitEvent: false });
+    }
   }
 
   private loadDraft(draftId: string): void {
     this.draftService.getDraft(draftId).subscribe({
-      next: (draft: any) => {
+      next: (draft) => {
         if (draft.field_values) {
           this.formGroup.patchValue(draft.field_values);
         }
 
-        if (this.template && draft.template_version && draft.template_version !== this.template.version) {
-          this.snackBar.open(
-            `تحذير: تم تحديث النموذج منذ حفظ هذه المسودة. الإصدار المحفوظ: v${draft.template_version}، الإصدار الحالي: v${this.template.version}`,
-            'تحديث',
-            { duration: 7000 }
-          );
+        if (this.template && draft.template_version !== this.template.version) {
+          this.dialog.open(VersionWarningComponent, {
+            data: {
+              oldVersion: draft.template_version,
+              newVersion: this.template.version,
+            },
+          });
+          this.snackBar.open(this.translate.instant('desk.form_filler.draft_version_mismatch'), '', { duration: 4000 });
         }
 
         this.loading = false;
       },
-      error: (err) => {
-        console.error('Failed to load draft:', err);
+      error: () => {
         this.loading = false;
       },
     });
@@ -229,89 +302,128 @@ export class FormFillerComponent implements OnInit, OnDestroy {
   }
 
   saveDraft(): void {
-    if (!this.templateId) {
-      return;
-    }
-
-    const templateVersion = this.template?.version || 1;
+    if (!this.templateId || !this.template) return;
 
     if (this.draftId) {
       this.draftService.updateDraft(this.draftId, this.formGroup.value).subscribe({
         next: () => {
-          this.hasUnsavedChanges = false;
-          this.snackBar.open('تم حفظ المسودة بنجاح', '', { duration: 3000 });
+          this.formGroup.markAsPristine();
+          this.snackBar.open(this.translate.instant('desk.form_filler.draft_saved'), '', { duration: 3000 });
         },
-        error: (err) => {
-          console.error('Failed to save draft:', err);
-          this.snackBar.open('فشل حفظ المسودة', '', { duration: 3000 });
-        },
-      });
-    } else {
-      this.draftService.saveDraft(this.templateId, templateVersion, this.formGroup.value).subscribe({
-        next: (response: any) => {
-          this.draftId = response.id;
-          this.hasUnsavedChanges = false;
-          this.snackBar.open('تم حفظ المسودة بنجاح', '', { duration: 3000 });
-        },
-        error: (err) => {
-          console.error('Failed to save draft:', err);
-          this.snackBar.open('فشل حفظ المسودة', '', { duration: 3000 });
+        error: () => {
+          this.snackBar.open(this.translate.instant('desk.form_filler.draft_save_failed'), '', { duration: 3000 });
         },
       });
-    }
-  }
-
-  submitForm(): void {
-    if (!this.templateId || !this.formGroup.valid) {
-      this.snackBar.open('يرجى ملء جميع الحقول المطلوبة', '', { duration: 3000 });
       return;
     }
 
-    const templateVersion = this.template?.version || 1;
-
-    this.submissionService.submit(this.templateId, templateVersion, this.formGroup.value).subscribe({
-      next: (response: any) => {
-        this.snackBar.open('تم إرسال النموذج بنجاح', '', { duration: 3000 });
-        setTimeout(() => {
-          this.router.navigate(['/ui/desk']);
-        }, 2000);
+    this.draftService.saveDraft(this.templateId, this.template.version, this.formGroup.value).subscribe({
+      next: (response) => {
+        this.draftId = response.id;
+        this.formGroup.markAsPristine();
+        this.snackBar.open(this.translate.instant('desk.form_filler.draft_saved'), '', { duration: 3000 });
       },
-      error: (err) => {
-        console.error('Failed to submit form:', err);
-        this.snackBar.open('فشل إرسال النموذج', '', { duration: 3000 });
+      error: () => {
+        this.snackBar.open(this.translate.instant('desk.form_filler.draft_save_failed'), '', { duration: 3000 });
       },
     });
+  }
+
+  submitForm(): void {
+    this.submitted = true;
+    this.submitError = null;
+
+    if (this.isReadOnly || !this.templateId || !this.template) {
+      return;
+    }
+
+    if (!this.formGroup.valid) {
+      this.snackBar.open(this.translate.instant('desk.form_filler.submit_blocked'), '', { duration: 3000 });
+      return;
+    }
+
+    this.submitting = true;
+
+    const payload = Object.fromEntries(
+      Object.entries(this.formGroup.value).filter(([key]) => this.visibleKeys.size === 0 || this.visibleKeys.has(key)),
+    );
+
+    this.submissionService.submit(this.templateId, this.template.version, payload).subscribe({
+      next: (response) => {
+        this.submitting = false;
+        this.submitted = true;
+        this.formGroup.markAsPristine();
+        this.router.navigate(['/ui/desk/submission-confirmed'], {
+          state: {
+            referenceNumber: response.reference_number,
+            templateName: this.template?.name || '',
+            submittedAt: new Date().toISOString(),
+          },
+        });
+      },
+      error: () => {
+        this.submitting = false;
+        this.submitError = this.translate.instant('desk.form_filler.submit_failed');
+      },
+    });
+  }
+
+  retrySubmit(): void {
+    this.submitForm();
   }
 
   printPdf(): void {
     if (this.templateId) {
       this.router.navigate(['/desk/fill', this.templateId], { queryParams: { print: true } });
-    } else {
-      this.snackBar.open('افتح النموذج من مكتب النماذج للطباعة', '', { duration: 3000 });
     }
   }
 
   openCustomerPicker(): void {
-    this.showCustomerPicker = true;
+    const dialogRef = this.dialog.open(CustomerPickerDialogComponent, { width: '560px' });
+    dialogRef.afterClosed().subscribe((customer: Customer | undefined) => {
+      if (!customer || !this.templateId) return;
+
+      this.customerService.getAutoPopulateData(customer.id, this.templateId).subscribe({
+        next: (response) => {
+          const visible = this.visibleKeys.size === 0
+            ? new Set(Object.keys(this.formGroup.controls))
+            : this.visibleKeys;
+          this.autoFillService.executeAutoFill(response.mappings || [], customer as unknown as Record<string, any>, this.formGroup, visible);
+        },
+      });
+    });
   }
 
-  closeCustomerPicker(): void {
-    this.showCustomerPicker = false;
+  onSignatureConfirmed(key: string, base64Value: string | null): void {
+    this.formGroup.get(key)?.setValue(base64Value);
   }
 
-  createNewCustomer(): void {
-    this.closeCustomerPicker();
-    this.router.navigate(['/desk/customers/new']);
+  onSignatureCleared(key: string): void {
+    this.formGroup.get(key)?.setValue(null);
   }
 
-  private calculateCompletion(): number {
-    const totalFields = Object.keys(this.formGroup.controls).length;
-    if (totalFields === 0) return 0;
+  getErrorMessage(fieldKey: string): string {
+    const control = this.formGroup.get(fieldKey);
+    if (!control?.errors) {
+      return '';
+    }
+    if (control.hasError('required')) {
+      return this.translate.instant('desk.form_filler.field_required');
+    }
+    return this.translate.instant('desk.form_filler.field_invalid');
+  }
 
-    const filledFields = Object.keys(this.formGroup.controls).filter(
-      (key) => this.formGroup.get(key)?.value
-    ).length;
-
-    return Math.round((filledFields / totalFields) * 100);
+  getInvalidVisibleFields(): Array<{ label: string; message: string }> {
+    const items: Array<{ label: string; message: string }> = [];
+    for (const section of this.sections) {
+      for (const field of section.fields) {
+        const control = this.formGroup.get(field.key);
+        const isVisible = this.visibleKeys.size === 0 || this.visibleKeys.has(field.key);
+        if (isVisible && control?.invalid) {
+          items.push({ label: field.label, message: this.getErrorMessage(field.key) });
+        }
+      }
+    }
+    return items;
   }
 }

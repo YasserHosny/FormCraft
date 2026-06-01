@@ -35,6 +35,13 @@ import { CommonModule } from '@angular/common';
         <mat-icon>feedback</mat-icon>
       </button>
 
+      <button mat-icon-button
+              class="toolbar-btn"
+              (click)="customerPicker.emit()"
+              [matTooltip]="'desk.customer_picker.select' | translate">
+        <mat-icon>person_search</mat-icon>
+      </button>
+
       <span class="toolbar-spacer"></span>
 
       <button mat-stroked-button
@@ -56,7 +63,7 @@ import { CommonModule } from '@angular/common';
       <button mat-raised-button
               class="toolbar-btn print-btn"
               (click)="print.emit()"
-              [disabled]="!formValid || submitting">
+              [disabled]="isReadOnly || !formValid || submitting">
         <mat-spinner *ngIf="submitting" diameter="16" class="btn-spinner"></mat-spinner>
         <mat-icon *ngIf="!submitting">print</mat-icon>
         {{ 'filler.print' | translate }}
@@ -65,7 +72,7 @@ import { CommonModule } from '@angular/common';
       <button mat-raised-button
               class="toolbar-btn print-next-btn"
               (click)="printNext.emit()"
-              [disabled]="!formValid || submitting">
+              [disabled]="isReadOnly || !formValid || submitting">
         <mat-spinner *ngIf="submitting" diameter="16" class="btn-spinner"></mat-spinner>
         <mat-icon *ngIf="!submitting">playlist_add</mat-icon>
         {{ 'filler.print_next' | translate }}
@@ -145,6 +152,7 @@ export class FormToolbarComponent {
   @Input() isDirty = false;
   @Input() submitting = false;
   @Input() savingDraft = false;
+  @Input() isReadOnly = false;
 
   @Output() print = new EventEmitter<void>();
   @Output() printNext = new EventEmitter<void>();
@@ -152,4 +160,5 @@ export class FormToolbarComponent {
   @Output() clearAll = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
   @Output() feedback = new EventEmitter<void>();
+  @Output() customerPicker = new EventEmitter<void>();
 }

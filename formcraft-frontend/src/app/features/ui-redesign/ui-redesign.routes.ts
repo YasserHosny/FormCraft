@@ -50,9 +50,16 @@ export const UI_REDESIGN_ROUTES: Routes = [
       {
         path: 'desk/fill/:templateId',
         canActivate: [RoleGuard],
-        data: { roles: ['admin', 'branch_manager', 'operator'] },
+        data: { roles: ['admin', 'branch_manager', 'operator', 'designer'] },
         loadComponent: () =>
           import('./desk/form-filler.component').then(m => m.FormFillerComponent),
+      },
+      {
+        path: 'desk/submission-confirmed',
+        canActivate: [RoleGuard],
+        data: { roles: ['admin', 'branch_manager', 'operator', 'designer'] },
+        loadComponent: () =>
+          import('./desk/submission-confirmed.component').then(m => m.SubmissionConfirmedComponent),
       },
       {
         path: 'desk/customers',

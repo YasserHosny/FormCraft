@@ -1,0 +1,37 @@
+.submission-confirmed {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.confirmed-card {
+  width: min(560px, 100%);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.confirmed-icon {
+  color: #2e7d32;
+}
+
+.confirmed-icon mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+}
+
+.meta-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.label {
+  color: #666;
+}
+
+.reference {
+  font-size: 1.2rem;
+}
