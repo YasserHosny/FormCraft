@@ -18,7 +18,8 @@
   <nav class="fc-mode-tabs">
     <a *ngFor="let tab of tabs"
        class="fc-mode-tab"
-       [class.active]="activeMode === tab.key"
+       routerLinkActive="active"
+       [routerLinkActiveOptions]="{ exact: false }"
        [routerLink]="tab.route"
        [matTooltip]="tab.labelKey | translate"
        matTooltipPosition="below">
