@@ -1,3 +1,5 @@
+@use '../../../../styles/responsive' as responsive;
+
 .fill-container {
   max-width: 800px;
   margin: 0 auto;
@@ -96,13 +98,32 @@
   direction: rtl;
 }
 
-@media (max-width: 599px) {
+@include responsive.fc-phone {
   .fill-container {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    padding: 8px 12px;
+    padding: 8px 12px calc(var(--fc-action-bar-h, 56px) + 16px);
     overflow-x: hidden;
+  }
+
+  .fill-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .fill-page {
+    margin-bottom: 16px;
+  }
+
+  fc-form-toolbar {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    display: block;
+    margin-inline: -12px;
+    box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.12);
   }
 
   .offline-actions {
@@ -113,5 +134,18 @@
     button {
       width: 100%;
     }
+  }
+}
+
+@include responsive.fc-tablet {
+  .fill-container {
+    max-width: 100%;
+    padding-inline: 20px;
+  }
+
+  .fill-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
   }
 }

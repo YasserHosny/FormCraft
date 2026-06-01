@@ -1,4 +1,6 @@
-<aside class="fc-sidebar">
+<div class="fc-sidebar-backdrop" [class.open]="open" (click)="close()"></div>
+
+<aside class="fc-sidebar" [class.open]="open">
   <ng-container *ngFor="let group of groups">
     <div class="group-label" *ngIf="group.label">{{ group.label }}</div>
     <a *ngFor="let item of group.items"
@@ -8,7 +10,8 @@
        routerLinkActive="active"
        [routerLinkActiveOptions]="{ exact: true }"
        [matTooltip]="!item.route ? 'قريباً' : ''"
-       (click)="!item.route && $event.preventDefault()">
+       [title]="item.label"
+       (click)="!item.route ? $event.preventDefault() : close()">
       <mat-icon>{{ item.icon }}</mat-icon>
       <span>{{ item.label }}</span>
     </a>
@@ -16,7 +19,7 @@
 
   <div class="sidebar-spacer"></div>
 
-  <button class="sidebar-footer" type="button" (click)="toggleLanguage()">
+  <button class="sidebar-footer" type="button" (click)="toggleLanguage(); close()">
     <mat-icon>language</mat-icon>
     <span class="lang-label">{{ currentLang === 'ar' ? 'اللغة: العربية' : 'Language: English' }}</span>
     <span class="lang-alt">{{ currentLang === 'ar' ? 'EN' : 'عربي' }}</span>

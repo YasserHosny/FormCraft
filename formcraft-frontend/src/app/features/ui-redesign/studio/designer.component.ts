@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Subject, takeUntil } from 'rxjs';
 import { TemplateService } from '../../../core/services/template.service';
 
 interface PaletteGroup {
@@ -41,20 +43,30 @@ interface ObjectItem {
   templateUrl: './designer.component.html',
   styleUrl: './designer.component.scss',
 })
-export class DesignerComponent implements OnInit {
+export class DesignerComponent implements OnInit, OnDestroy {
   activePropTab = 'props';
   templateId = '';
   templateName = 'طلب فتح حساب جاري للأفراد';
   templateCode = 'AC-001 · v4.2';
+  isMobile = false;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private snackBar: MatSnackBar,
     private templateService: TemplateService,
+    private breakpointObserver: BreakpointObserver,
   ) {}
 
   ngOnInit(): void {
+    this.breakpointObserver.observe('(max-width: 599px)')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state) => {
+        this.isMobile = state.matches;
+      });
+
     this.templateId = this.route.snapshot.paramMap.get('pageId') || '';
     if (this.templateId) {
       this.templateService.get(this.templateId).subscribe({
@@ -64,6 +76,11 @@ export class DesignerComponent implements OnInit {
         },
       });
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   goBack(): void {

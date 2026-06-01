@@ -1,3 +1,14 @@
+<div class="mobile-unavailable" *ngIf="isMobile; else designerSurface">
+  <mat-icon>desktop_windows</mat-icon>
+  <h2>هذا الجزء يتطلب شاشة مكتبية</h2>
+  <p>مصمم النماذج يحتاج مساحة عمل واسعة للسحب والإفلات. يمكنك إدارة القوالب من قائمة النماذج على الهاتف.</p>
+  <button class="fc-btn primary" (click)="goBack()">
+    <mat-icon>view_list</mat-icon>
+    العودة إلى القوالب
+  </button>
+</div>
+
+<ng-template #designerSurface>
 <!-- Designer sub-toolbar -->
 <div class="designer-toolbar">
   <button class="fc-icon-btn" (click)="goBack()"><mat-icon>arrow_forward</mat-icon></button>
@@ -219,3 +230,4 @@
     </div>
   </aside>
 </div>
+</ng-template>

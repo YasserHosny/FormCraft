@@ -264,6 +264,8 @@ export class FormFillerComponent implements OnInit, OnDestroy {
   submitForm(): void {
     if (!this.templateId || !this.formGroup.valid) {
       this.snackBar.open('يرجى ملء جميع الحقول المطلوبة', '', { duration: 3000 });
+      this.formGroup.markAllAsTouched();
+      this.scrollFirstInvalidFieldIntoView();
       return;
     }
 
@@ -302,6 +304,18 @@ export class FormFillerComponent implements OnInit, OnDestroy {
   createNewCustomer(): void {
     this.closeCustomerPicker();
     this.router.navigate(['/desk/customers/new']);
+  }
+
+  private scrollFirstInvalidFieldIntoView(): void {
+    setTimeout(() => {
+      const firstInvalidKey = Object.keys(this.formGroup.controls).find((key) => this.formGroup.get(key)?.invalid);
+      if (!firstInvalidKey) return;
+
+      const target = document.querySelector(
+        `[formcontrolname="${firstInvalidKey}"], [name="${firstInvalidKey}"], .form-field`,
+      );
+      target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
   }
 
   private calculateCompletion(): number {

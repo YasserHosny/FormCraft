@@ -1,3 +1,5 @@
+@use '../../../../styles/responsive' as responsive;
+
 .fc-toolbar {
   height: var(--fc-toolbar-h);
   background: var(--fc-primary);
@@ -9,6 +11,10 @@
   position: relative;
   z-index: 50;
   min-width: 0;
+}
+
+.fc-menu-btn {
+  display: none;
 }
 
 .org-logo {
@@ -69,8 +75,10 @@
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
   white-space: nowrap;
+  min-width: 0;
 
   mat-icon { font-size: 18px; width: 18px; height: 18px; }
+  span { overflow: hidden; text-overflow: ellipsis; }
 
   &:hover {
     background: rgba(255, 255, 255, 0.10);
@@ -210,14 +218,78 @@
   }
 }
 
-@media (max-width: 960px) {
+@include responsive.fc-tablet {
+  .fc-menu-btn {
+    display: grid;
+  }
+
+  .fc-mode-tab span,
+  .fc-toolbar-search-wrap {
+    display: none;
+  }
+
+  .fc-mode-tab {
+    padding-inline: 10px;
+  }
+}
+
+@include responsive.fc-phone {
+  .fc-toolbar {
+    height: 48px;
+    padding-inline: 6px;
+    gap: 2px;
+  }
+
+  .fc-menu-btn {
+    display: grid;
+  }
+
+  .brand-name,
+  .brand-sep,
+  .fc-toolbar-search-wrap,
   .fc-mode-tab span,
   .fc-theme-switch span,
   .fc-user-chip .user-info {
     display: none;
   }
 
+  .brand-logo {
+    width: 26px;
+    height: 26px;
+    margin-inline-end: 4px;
+  }
+
+  .org-logo {
+    max-width: 44px;
+    margin-inline-end: 4px;
+  }
+
+  .fc-mode-tabs {
+    flex: 0 1 auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .fc-mode-tab {
+    width: 34px;
+    padding: 0;
+    justify-content: center;
+  }
+
   .fc-user-chip {
     padding: 4px;
+    margin-inline-start: 2px;
+  }
+
+  .fc-theme-switch,
+  .fc-toolbar-btn {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    justify-content: center;
   }
 }
