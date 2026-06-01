@@ -82,14 +82,9 @@ export function getDefaultRouteForRole(role: string): string {
         <fc-global-search-bar class="global-search-bar"></fc-global-search-bar>
       </ng-container>
 
-      <a
-        mat-button
-        class="theme-switch-link"
-        *ngIf="user"
-        (click)="switchToNewTheme()"
-      >
-        <mat-icon>compare_arrows</mat-icon>
-        {{ 'nav.new_theme' | translate }}
+      <a class="spark-badge" *ngIf="user" (click)="switchToNewTheme()">
+        <mat-icon>auto_awesome</mat-icon>
+        <span>{{ 'nav.new_theme' | translate }}</span>
       </a>
 
       <span class="spacer"></span>
@@ -147,10 +142,10 @@ export function getDefaultRouteForRole(role: string): string {
         <mat-icon class="mode-tab-icon">{{ tab.icon }}</mat-icon>
         <span class="mode-tab-label">{{ tab.labelKey | translate }}</span>
       </a>
-      <button mat-button class="drawer-theme-switch" *ngIf="user" (click)="switchToNewTheme(); showMobileMenu = false">
-        <mat-icon>compare_arrows</mat-icon>
-        {{ 'nav.new_theme' | translate }}
-      </button>
+      <a class="spark-badge drawer-spark" *ngIf="user" (click)="switchToNewTheme(); showMobileMenu = false">
+        <mat-icon>auto_awesome</mat-icon>
+        <span>{{ 'nav.new_theme' | translate }}</span>
+      </a>
     </aside>
 
     <div class="shell-content">
@@ -221,13 +216,54 @@ export function getDefaultRouteForRole(role: string): string {
       max-width: 400px;
       width: 100%;
     }
-    .theme-switch-link {
-      color: rgba(255, 255, 255, 0.88);
+    .spark-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 30px;
+      padding: 0 12px 0 9px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: #fff;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
       white-space: nowrap;
-      min-width: 0;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.5);
+      animation: spark-pulse 3s ease-in-out infinite;
+      transition: transform 0.15s, box-shadow 0.15s;
     }
-    .theme-switch-link mat-icon {
-      margin-inline-end: 4px;
+    .spark-badge:hover {
+      transform: translateY(-1px) scale(1.03);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.55);
+      animation: none;
+    }
+    .spark-badge mat-icon {
+      font-size: 15px;
+      width: 15px;
+      height: 15px;
+      animation: spark-spin 4s linear infinite;
+    }
+    @keyframes spark-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.45); }
+      50%       { box-shadow: 0 0 0 5px rgba(139, 92, 246, 0); }
+    }
+    @keyframes spark-spin {
+      0%   { transform: rotate(0deg)   scale(1); }
+      25%  { transform: rotate(15deg)  scale(1.15); }
+      50%  { transform: rotate(0deg)   scale(1); }
+      75%  { transform: rotate(-15deg) scale(1.15); }
+      100% { transform: rotate(0deg)   scale(1); }
+    }
+    .drawer-spark {
+      min-height: 44px;
+      border-radius: 8px;
+      height: 44px;
+      width: calc(100% - 0px);
+      justify-content: flex-start;
+      padding: 0 16px;
     }
     .shell-content {
       height: calc(100vh - 64px);
@@ -322,10 +358,6 @@ export function getDefaultRouteForRole(role: string): string {
       .drawer-mode-tab.active {
         background: rgba(63, 81, 181, 0.12);
         color: #26358c;
-      }
-      .drawer-theme-switch {
-        justify-content: flex-start;
-        min-height: 44px;
       }
       .shell-content {
         height: calc(100vh - 48px);
