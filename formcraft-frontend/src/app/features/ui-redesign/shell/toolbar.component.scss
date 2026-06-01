@@ -102,29 +102,36 @@
   min-width: 0;
 }
 
-.fc-theme-switch {
-  height: 32px;
-  padding: 0 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.88);
+.fc-classic-badge {
+  height: 28px;
+  padding: 0 11px 0 9px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.80);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
+  gap: 5px;
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    opacity: 0.75;
+    transition: opacity 0.15s;
+  }
 
   &:hover {
     background: rgba(255, 255, 255, 0.12);
     color: #fff;
-  }
+    border-color: rgba(255, 255, 255, 0.38);
 
-  mat-icon {
-    font-size: 17px;
-    width: 17px;
-    height: 17px;
+    mat-icon { opacity: 1; }
   }
 }
 
@@ -248,7 +255,7 @@
   .brand-sep,
   .fc-toolbar-search-wrap,
   .fc-mode-tab span,
-  .fc-theme-switch span,
+  .fc-classic-badge span,
   .fc-user-chip .user-info {
     display: none;
   }
@@ -285,7 +292,7 @@
     margin-inline-start: 2px;
   }
 
-  .fc-theme-switch,
+  .fc-classic-badge,
   .fc-toolbar-btn {
     width: 34px;
     height: 34px;

@@ -31,10 +31,10 @@
   <!-- Global Search (real component) -->
   <fc-global-search-bar class="fc-toolbar-search-wrap"></fc-global-search-bar>
 
-  <!-- Theme Switch -->
-  <a class="fc-theme-switch" (click)="switchToClassic()">
-    <mat-icon>compare_arrows</mat-icon>
-    <span [title]="'nav.classic_theme' | translate">{{ 'nav.classic_theme' | translate }}</span>
+  <!-- Theme Switch — Classic badge -->
+  <a class="fc-classic-badge" (click)="switchToClassic()" [title]="'nav.classic_theme' | translate">
+    <mat-icon>history</mat-icon>
+    <span>{{ 'nav.classic_theme' | translate }}</span>
   </a>
 
   <!-- Help -->
@@ -44,7 +44,7 @@
   </button>
   <mat-menu #helpMenu="matMenu">
     <button mat-menu-item (click)="switchToClassic()">
-      <mat-icon>compare_arrows</mat-icon>
+      <mat-icon>history</mat-icon>
       {{ 'nav.open_classic' | translate }}
     </button>
     <button mat-menu-item disabled>
@@ -88,7 +88,7 @@
     </button>
     <mat-divider></mat-divider>
     <button mat-menu-item (click)="switchToClassic()">
-      <mat-icon>compare_arrows</mat-icon>
+      <mat-icon>history</mat-icon>
       {{ 'nav.classic_theme' | translate }}
     </button>
     <button mat-menu-item (click)="logout()">
