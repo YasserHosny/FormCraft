@@ -86,4 +86,9 @@ export class TemplateListComponent implements OnInit {
       },
     });
   }
+
+  /** Navigates to the designer for the given template — called from card click. */
+  openDesigner(template: any): void {
+    this.router.navigate(['/designer', template.id]);
+  }
 }
