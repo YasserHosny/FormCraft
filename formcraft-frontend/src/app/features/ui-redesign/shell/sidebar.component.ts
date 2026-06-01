@@ -70,6 +70,7 @@ const NAV_CONFIG: Record<string, SidebarGroup[]> = {
 export class SidebarComponent {
   @Input() mode: 'studio' | 'desk' | 'admin' = 'studio';
   @Input() open = false;
+  @Input() collapsed = false;
   @Output() closed = new EventEmitter<void>();
 
   constructor(private languageService: LanguageService) {}

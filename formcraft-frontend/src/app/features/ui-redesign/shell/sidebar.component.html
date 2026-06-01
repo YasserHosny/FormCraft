@@ -1,6 +1,6 @@
 <div class="fc-sidebar-backdrop" [class.open]="open" (click)="close()"></div>
 
-<aside class="fc-sidebar" [class.open]="open">
+<aside class="fc-sidebar" [class.open]="open" [class.collapsed]="collapsed">
   <ng-container *ngFor="let group of groups">
     <div class="group-label">{{ group.labelKey | translate }}</div>
     <a *ngFor="let item of group.items"
@@ -9,7 +9,7 @@
        [routerLink]="item.route || null"
        routerLinkActive="active"
        [routerLinkActiveOptions]="{ exact: true }"
-       [matTooltip]="!item.route ? ('sidebar.coming_soon' | translate) : ''"
+       [matTooltip]="!item.route ? ('sidebar.coming_soon' | translate) : (collapsed ? (item.labelKey | translate) : '')"
        [title]="item.labelKey | translate"
        (click)="!item.route ? $event.preventDefault() : close()">
       <mat-icon>{{ item.icon }}</mat-icon>

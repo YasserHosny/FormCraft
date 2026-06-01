@@ -10,6 +10,26 @@
   gap: 2px;
   overflow-y: auto;
   height: 100%;
+  transition: width 0.18s ease, padding 0.18s ease;
+
+  &.collapsed {
+    width: 56px;
+    padding-inline: 8px;
+
+    .group-label,
+    .fc-side-link span,
+    .fc-side-link .count,
+    .sidebar-footer .lang-label,
+    .sidebar-footer .lang-alt {
+      display: none;
+    }
+
+    .fc-side-link,
+    .sidebar-footer {
+      justify-content: center;
+      padding-inline: 0;
+    }
+  }
 }
 
 .fc-sidebar-backdrop {
