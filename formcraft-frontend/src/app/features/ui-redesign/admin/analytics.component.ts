@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { TranslateModule } from '@ngx-translate/core';
 import { catchError, forkJoin, of, Subject, takeUntil } from 'rxjs';
 import {
   DashboardFilter,
@@ -50,7 +51,7 @@ const PALETTE = [
 @Component({
   selector: 'fc-analytics',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatMenuModule, PageHeaderComponent, KpiCardComponent, AvatarComponent],
+  imports: [CommonModule, MatIconModule, MatMenuModule, TranslateModule, PageHeaderComponent, KpiCardComponent, AvatarComponent],
   templateUrl: './analytics.component.html',
   styleUrl: './analytics.component.scss',
 })
@@ -214,7 +215,7 @@ export class AnalyticsComponent implements OnInit {
     return n.toLocaleString('ar-EG');
   }
 
-  formatMsToTime(ms: number | null): string {
+  formatMsToTime(ms: number | null | undefined): string {
     if (ms == null) return '–';
     const totalSeconds = Math.round(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
