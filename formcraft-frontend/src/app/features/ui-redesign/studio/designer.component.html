@@ -37,7 +37,14 @@
 
   <span class="separator"></span>
 
-  <button class="fc-btn ghost ai-btn"><mat-icon>auto_awesome</mat-icon>اقتراحات AI</button>
+  <button class="fc-btn ghost ai-btn"
+          [class.active]="detectMode !== null || showReplaceConfirm"
+          (click)="openDetect()"
+          matTooltip="كشف الحقول بالذكاء الاصطناعي">
+    <mat-icon>auto_awesome</mat-icon>
+    كشف AI
+    <span class="detect-badge" *ngIf="pendingCount > 0">{{ pendingCount }}</span>
+  </button>
   <button class="fc-btn ghost" (click)="preview()"><mat-icon>visibility</mat-icon>معاينة</button>
   <button class="fc-btn ghost"><mat-icon>history</mat-icon>الإصدارات</button>
   <button class="fc-btn outline" (click)="saveDraft()"><mat-icon>save</mat-icon>حفظ كمسودة</button>
@@ -131,6 +138,180 @@
 
   <!-- Right properties panel -->
   <aside class="props-panel">
+
+    <!-- Hidden file input for AI detection -->
+    <input #detectFileInput type="file" accept="image/*" style="display:none"
+           (change)="onFileSelected($event)" />
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         AI DETECT MODE — shown instead of normal props when active
+    ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Replace-confirm: existing pending detections found -->
+    <ng-container *ngIf="showReplaceConfirm">
+      <div class="detect-panel-header">
+        <span class="panel-heading">
+          <mat-icon class="panel-icon">auto_awesome</mat-icon>
+          كشف AI
+        </span>
+        <button class="fc-icon-btn sm" (click)="closeDetect()"><mat-icon>close</mat-icon></button>
+      </div>
+      <div class="detect-panel-body">
+        <div class="replace-confirm-box">
+          <mat-icon class="warn-icon">warning_amber</mat-icon>
+          <p class="warn-text">
+            يوجد <strong>{{ pendingCount }}</strong> حقل مكتشف بانتظار المراجعة.
+            هل تريد استبدالها بعملية كشف جديدة أم مراجعة النتائج الحالية؟
+          </p>
+          <div class="warn-actions">
+            <button class="fc-btn primary sm" (click)="confirmReplace()">
+              <mat-icon>refresh</mat-icon>
+              كشف جديد
+            </button>
+            <button class="fc-btn outline sm" (click)="viewExisting()">
+              <mat-icon>list_alt</mat-icon>
+              عرض الحالي
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Import panel: file upload -->
+    <ng-container *ngIf="detectMode === 'import'">
+      <div class="detect-panel-header">
+        <span class="panel-heading">
+          <mat-icon class="panel-icon">auto_awesome</mat-icon>
+          كشف الحقول بـ AI
+        </span>
+        <div class="header-actions">
+          <button class="fc-icon-btn sm" (click)="loadHistory()" matTooltip="سجل الكشف السابق">
+            <mat-icon>history</mat-icon>
+          </button>
+          <button class="fc-icon-btn sm" (click)="closeDetect()" matTooltip="إغلاق">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="detect-panel-body">
+        <p class="detect-hint">
+          ارفع صورة من الشيك أو النموذج الورقي وسيحلله الذكاء الاصطناعي
+          ويقترح الحقول المناسبة بمواضعها.
+        </p>
+        <div class="file-drop-zone"
+             [class.has-file]="importFile"
+             (click)="detectFileInput.click()">
+          <mat-icon>{{ importFile ? 'check_circle' : 'cloud_upload' }}</mat-icon>
+          <span class="drop-title">
+            {{ importFile ? importFile.name : 'اختر صورة أو اسحبها هنا' }}
+          </span>
+          <span class="drop-sub">JPG أو PNG</span>
+        </div>
+        <ng-container *ngIf="!detectLoading">
+          <div class="detect-action-row">
+            <button class="fc-btn primary" [disabled]="!importFile" (click)="runDetection()">
+              <mat-icon>auto_fix_high</mat-icon>
+              تشغيل الكشف
+            </button>
+            <button class="fc-btn outline" (click)="closeDetect()">إلغاء</button>
+          </div>
+        </ng-container>
+        <div class="detect-loading" *ngIf="detectLoading">
+          <mat-icon class="spin-icon">autorenew</mat-icon>
+          <span>جارٍ تحليل الصورة بالذكاء الاصطناعي…</span>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Results panel: detected fields list -->
+    <ng-container *ngIf="detectMode === 'results'">
+      <div class="detect-panel-header">
+        <span class="panel-heading">
+          <mat-icon class="panel-icon">checklist</mat-icon>
+          {{ detections.length }} حقل مكتشف
+        </span>
+        <div class="header-actions">
+          <button class="fc-icon-btn sm"
+                  (click)="detectMode = 'import'; importFile = null"
+                  matTooltip="كشف جديد">
+            <mat-icon>refresh</mat-icon>
+          </button>
+          <button class="fc-icon-btn sm" (click)="loadHistory()" matTooltip="السجل السابق">
+            <mat-icon>history</mat-icon>
+          </button>
+          <button class="fc-icon-btn sm" (click)="closeDetect()" matTooltip="إغلاق">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="detect-field-list">
+        <div class="detect-field-row" *ngFor="let field of detections">
+          <div class="field-info-col">
+            <span class="field-text">{{ field.text || '(بدون نص)' }}</span>
+            <span class="field-type">{{ field.type_override || field.suggested_type }}</span>
+          </div>
+          <span class="field-conf" [style.color]="confidenceColor(field.confidence)">
+            {{ (field.confidence * 100).toFixed(0) }}%
+          </span>
+        </div>
+        <div class="detect-empty" *ngIf="detections.length === 0">
+          لا توجد حقول مكتشفة في هذه الجلسة
+        </div>
+      </div>
+      <div class="detect-bulk-actions">
+        <button class="fc-btn primary sm" (click)="acceptAllDetections()">
+          <mat-icon>check_circle</mat-icon>
+          قبول الكل
+        </button>
+        <button class="fc-btn outline sm warn-btn" (click)="rejectAllDetections()">
+          <mat-icon>delete_outline</mat-icon>
+          رفض
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- History panel: list of past detection runs -->
+    <ng-container *ngIf="detectMode === 'history'">
+      <div class="detect-panel-header">
+        <span class="panel-heading">
+          <mat-icon class="panel-icon">history</mat-icon>
+          سجل الكشف
+        </span>
+        <div class="header-actions">
+          <button class="fc-icon-btn sm"
+                  (click)="detectMode = 'import'; importFile = null"
+                  matTooltip="كشف جديد">
+            <mat-icon>add</mat-icon>
+          </button>
+          <button class="fc-icon-btn sm" (click)="closeDetect()" matTooltip="إغلاق">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="detect-panel-body">
+        <div class="detect-loading" *ngIf="detectLoading">
+          <mat-icon class="spin-icon">autorenew</mat-icon>
+          <span>جارٍ تحميل السجل…</span>
+        </div>
+        <div class="detect-empty" *ngIf="!detectLoading && detectionHistory.length === 0">
+          لا يوجد سجل كشف سابق لهذا النموذج
+        </div>
+        <div class="history-item"
+             *ngFor="let h of detectionHistory"
+             (click)="viewHistoric(h)">
+          <div class="hist-info">
+            <span class="hist-date">{{ h.created_at | date:'d MMM, HH:mm' }}</span>
+            <span class="hist-count">{{ h.detected_fields.length }} حقل</span>
+          </div>
+          <mat-icon class="hist-arrow">chevron_left</mat-icon>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         NORMAL PROPS MODE
+    ════════════════════════════════════════════════════════════════════ -->
+    <ng-container *ngIf="detectMode === null && !showReplaceConfirm">
     <div class="prop-tabs">
       <div class="prop-tab"
            *ngFor="let tab of propTabs"
@@ -228,6 +409,8 @@
         </div>
       </div>
     </div>
+    </ng-container><!-- /normal props mode -->
+
   </aside>
 </div>
 </ng-template>
