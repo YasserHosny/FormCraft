@@ -15,7 +15,7 @@ import { DraftResponse, DraftService } from '../../services/draft.service';
     </div>
     <div class="draft-list" *ngIf="drafts.length > 0">
       <button type="button" class="draft-row" *ngFor="let draft of drafts" (click)="openDraft(draft)">
-        <span class="draft-name">{{ draft.name || draft.template_name || ('desk.draft_untitled' | translate) }}</span>
+        <span class="draft-name">{{ draft.name || ('desk.draft_untitled' | translate) }}</span>
         <span class="draft-percent">{{ draft.completion_percent || 0 }}%</span>
       </button>
     </div>

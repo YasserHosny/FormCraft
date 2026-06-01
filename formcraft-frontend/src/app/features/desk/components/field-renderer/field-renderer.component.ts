@@ -251,7 +251,7 @@ export class FieldRendererComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.element?.type === 'number' && this.element?.tafqeet_enabled) {
-      const formatting = {
+      const formatting: import('../../services/filler-tafqeet.service').TafqeetSourceMapping['formatting'] = {
         currency_code: this.element?.formatting?.currency_code || 'SAR',
         language: this.element?.formatting?.language || 'ar',
         show_currency: this.element?.formatting?.show_currency !== false,
