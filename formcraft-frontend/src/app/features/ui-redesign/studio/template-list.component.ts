@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,6 +7,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
 import { StatusChipComponent } from '../shared/components/status-chip.component';
 import { AvatarComponent } from '../shared/components/avatar.component';
@@ -19,7 +21,7 @@ interface RedesignTemplate {
   code: string;
   status: string;
   version: string;
-  dept: string;
+  dept: string;       // stores i18n key, displayed with | translate
   updated: string;
   by: string;
   color: string;
@@ -43,11 +45,15 @@ interface TemplateRow {
 @Component({
   selector: 'fc-template-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, MatMenuModule, MatTooltipModule, MatDialogModule, MatSnackBarModule, PageHeaderComponent, StatusChipComponent, AvatarComponent],
+  imports: [
+    CommonModule, FormsModule, MatIconModule, MatMenuModule, MatTooltipModule,
+    MatDialogModule, MatSnackBarModule, TranslateModule,
+    PageHeaderComponent, StatusChipComponent, AvatarComponent,
+  ],
   templateUrl: './template-list.component.html',
   styleUrl: './template-list.component.scss',
 })
-export class TemplateListComponent implements OnInit {
+export class TemplateListComponent implements OnInit, OnDestroy {
   templates: RedesignTemplate[] = [];
   activeTab = 'all';
   search = '';
@@ -57,41 +63,57 @@ export class TemplateListComponent implements OnInit {
   error = '';
 
   statusTabs = [
-    { key: 'all', label: 'الكل', count: 0 },
-    { key: 'published', label: 'منشور', count: 0 },
-    { key: 'in-review', label: 'قيد المراجعة', count: 0 },
-    { key: 'approved', label: 'معتمد', count: 0 },
-    { key: 'draft', label: 'مسوّدة', count: 0 },
-    { key: 'archived', label: 'مؤرشف', count: 0 },
+    { key: 'all',       labelKey: 'templates.tab_all',                      count: 0 },
+    { key: 'published', labelKey: 'templates.statuses.published',            count: 0 },
+    { key: 'in-review', labelKey: 'templates.statuses.submitted_for_review', count: 0 },
+    { key: 'approved',  labelKey: 'templates.statuses.approved',             count: 0 },
+    { key: 'draft',     labelKey: 'templates.statuses.draft',                count: 0 },
+    { key: 'archived',  labelKey: 'templates.statuses.archived',             count: 0 },
   ];
 
   categories = [
-    { key: 'all', label: 'جميع الإدارات' },
-    { key: 'accounts', label: 'الحسابات' },
-    { key: 'compliance', label: 'الالتزام' },
-    { key: 'finance', label: 'التمويل' },
-    { key: 'general', label: 'عام' },
+    { key: 'all',        labelKey: 'templates.dept_all' },
+    { key: 'accounts',   labelKey: 'templates.dept_accounts' },
+    { key: 'compliance', labelKey: 'templates.dept_compliance' },
+    { key: 'finance',    labelKey: 'templates.dept_finance' },
+    { key: 'general',    labelKey: 'templates.dept_general' },
   ];
+
+  private rawTemplates: TemplateRow[] = [];
+  private destroy$ = new Subject<void>();
 
   constructor(
     private templateService: TemplateService,
     private router: Router,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit(): void {
     this.loadTemplates();
+
+    // Re-map computed string fields when language switches
+    this.translate.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.remapTemplates());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get filteredTemplates() {
     const normalizedSearch = this.search.trim().toLowerCase();
     return this.templates.filter((template) => {
       const matchesTab = this.activeTab === 'all' || template.status === this.activeTab;
-      const matchesCategory = this.category === 'all' || template.dept === this.categoryLabel(this.category);
+      const matchesCategory = this.category === 'all' || template.dept === this.categoryKey(this.category);
       const matchesSearch =
         !normalizedSearch ||
-        `${template.name} ${template.code} ${template.dept}`.toLowerCase().includes(normalizedSearch);
+        `${template.name} ${template.code} ${this.translate.instant(template.dept)}`
+          .toLowerCase()
+          .includes(normalizedSearch);
       return matchesTab && matchesCategory && matchesSearch;
     });
   }
@@ -99,7 +121,11 @@ export class TemplateListComponent implements OnInit {
   get headerSubtitle(): string {
     const published = this.statusTabs.find((tab) => tab.key === 'published')?.count ?? 0;
     const review = this.statusTabs.find((tab) => tab.key === 'in-review')?.count ?? 0;
-    return `إدارة قوالب النماذج المؤسسية وإصداراتها · ${this.templates.length} قالباً · ${published} منشوراً · ${review} قيد المراجعة`;
+    return this.translate.instant('templates.subtitle', {
+      total: this.templates.length,
+      published,
+      review,
+    });
   }
 
   loadTemplates(): void {
@@ -107,12 +133,12 @@ export class TemplateListComponent implements OnInit {
     this.error = '';
     this.templateService.list({ limit: 100 }).subscribe({
       next: (response) => {
-        this.templates = (response.data as TemplateRow[]).map((row, index) => this.mapTemplate(row, index));
-        this.updateStatusCounts();
+        this.rawTemplates = response.data as TemplateRow[];
+        this.remapTemplates();
         this.loading = false;
       },
       error: () => {
-        this.error = 'تعذر تحميل النماذج من قاعدة البيانات.';
+        this.error = this.translate.instant('templates.load_error');
         this.loading = false;
       },
     });
@@ -150,7 +176,7 @@ export class TemplateListComponent implements OnInit {
     });
     dialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
-        this.snackBar.open('تم استنساخ النموذج بنجاح', '', { duration: 3000 });
+        this.snackBar.open(this.translate.instant('templates.clone_success'), '', { duration: 3000 });
         this.loadTemplates();
       }
     });
@@ -158,14 +184,14 @@ export class TemplateListComponent implements OnInit {
 
   deleteTemplate(event: Event, template: RedesignTemplate): void {
     event.stopPropagation();
-    if (!confirm(`هل أنت متأكد من حذف "${template.name}"؟`)) return;
+    if (!confirm(this.translate.instant('templates.delete_confirm', { name: template.name }))) return;
     this.templateService.delete(template.id).subscribe({
       next: () => {
-        this.snackBar.open('تم حذف النموذج', '', { duration: 3000 });
+        this.snackBar.open(this.translate.instant('templates.delete_success'), '', { duration: 3000 });
         this.loadTemplates();
       },
       error: () => {
-        this.snackBar.open('فشل حذف النموذج', '', { duration: 3000 });
+        this.snackBar.open(this.translate.instant('templates.delete_error'), '', { duration: 3000 });
       },
     });
   }
@@ -174,11 +200,11 @@ export class TemplateListComponent implements OnInit {
     event.stopPropagation();
     this.templateService.publish(template.id).subscribe({
       next: () => {
-        this.snackBar.open('تم نشر النموذج بنجاح', '', { duration: 3000 });
+        this.snackBar.open(this.translate.instant('templates.publish_success'), '', { duration: 3000 });
         this.loadTemplates();
       },
       error: () => {
-        this.snackBar.open('فشل نشر النموذج', '', { duration: 3000 });
+        this.snackBar.open(this.translate.instant('templates.publish_error'), '', { duration: 3000 });
       },
     });
   }
@@ -187,11 +213,15 @@ export class TemplateListComponent implements OnInit {
     event.stopPropagation();
     this.templateService.createNewVersion(template.id).subscribe({
       next: (newTemplate: any) => {
-        this.snackBar.open(`تم إنشاء الإصدار ${newTemplate.version}`, '', { duration: 3000 });
+        this.snackBar.open(
+          this.translate.instant('templates.new_version_success', { version: newTemplate.version }),
+          '',
+          { duration: 3000 },
+        );
         this.router.navigate(['/ui/studio/designer', newTemplate.id]);
       },
       error: () => {
-        this.snackBar.open('فشل إنشاء إصدار جديد', '', { duration: 3000 });
+        this.snackBar.open(this.translate.instant('templates.new_version_error'), '', { duration: 3000 });
       },
     });
   }
@@ -201,7 +231,15 @@ export class TemplateListComponent implements OnInit {
   }
 
   formatSubmissions(n: number): string {
-    return n.toLocaleString('ar-EG');
+    const locale = this.translate.currentLang === 'ar' ? 'ar-EG' : 'en-US';
+    return n.toLocaleString(locale);
+  }
+
+  // ── Private helpers ─────────────────────────────────────────────────────────
+
+  private remapTemplates(): void {
+    this.templates = this.rawTemplates.map((row, index) => this.mapTemplate(row, index));
+    this.updateStatusCounts();
   }
 
   private mapTemplate(row: TemplateRow, index: number): RedesignTemplate {
@@ -210,13 +248,13 @@ export class TemplateListComponent implements OnInit {
     const category = row.category || 'general';
     return {
       id: row.id || '',
-      name: row.name || 'نموذج بدون اسم',
+      name: row.name || this.translate.instant('templates.untitled'),
       code: this.codeFrom(row, index),
       status: this.mapStatus(row.status),
       version: `v${row.version || 1}`,
-      dept: this.categoryLabel(category),
+      dept: this.categoryKey(category),   // i18n key — displayed via | translate
       updated: this.relativeDate(row.updated_at || row.created_at),
-      by: 'النظام',
+      by: this.translate.instant('templates.system'),
       color: `c${(index % 6) + 1}`,
       submissions: 0,
       pages,
@@ -238,14 +276,15 @@ export class TemplateListComponent implements OnInit {
     return status;
   }
 
-  private categoryLabel(category: string): string {
-    const labels: Record<string, string> = {
-      accounts: 'الحسابات',
-      compliance: 'الالتزام',
-      finance: 'التمويل',
-      general: 'عام',
+  /** Returns the i18n key for a category slug. */
+  private categoryKey(category: string): string {
+    const keys: Record<string, string> = {
+      accounts:   'templates.dept_accounts',
+      compliance: 'templates.dept_compliance',
+      finance:    'templates.dept_finance',
+      general:    'templates.dept_general',
     };
-    return labels[category] || category;
+    return keys[category] || category;
   }
 
   private codeFrom(row: TemplateRow, index: number): string {
@@ -254,14 +293,19 @@ export class TemplateListComponent implements OnInit {
   }
 
   private relativeDate(value?: string): string {
-    if (!value) return 'غير معروف';
+    if (!value) return this.translate.instant('templates.unknown_date');
     const timestamp = new Date(value).getTime();
-    if (Number.isNaN(timestamp)) return 'غير معروف';
+    if (Number.isNaN(timestamp)) return this.translate.instant('templates.unknown_date');
+    const locale = this.translate.currentLang === 'ar' ? 'ar-EG' : 'en-US';
     const minutes = Math.max(1, Math.floor((Date.now() - timestamp) / 60000));
-    if (minutes < 60) return `قبل ${minutes.toLocaleString('ar-EG')} دقيقة`;
+    if (minutes < 60) {
+      return this.translate.instant('templates.time_minutes_ago', { n: minutes.toLocaleString(locale) });
+    }
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `قبل ${hours.toLocaleString('ar-EG')} ساعة`;
+    if (hours < 24) {
+      return this.translate.instant('templates.time_hours_ago', { n: hours.toLocaleString(locale) });
+    }
     const days = Math.floor(hours / 24);
-    return `قبل ${days.toLocaleString('ar-EG')} يوم`;
+    return this.translate.instant('templates.time_days_ago', { n: days.toLocaleString(locale) });
   }
 }
