@@ -21,7 +21,9 @@
     "role_designer": "Designer",
     "role_operator": "Operator",
     "role_viewer": "Viewer",
-    "role_branch_manager": "Branch Manager"
+    "role_branch_manager": "Branch Manager",
+    "bridge_body": "This feature is not yet available in the Spark theme. Click below to open it in Classic mode.",
+    "bridge_open_classic": "Open in Classic Mode"
   },
   "common": {
     "save": "Save",
