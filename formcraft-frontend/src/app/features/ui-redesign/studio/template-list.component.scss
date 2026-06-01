@@ -242,11 +242,18 @@
 
 .card-preview {
   height: 132px;
-  background: linear-gradient(180deg, #FAFAFC 0%, #F0F1F5 100%);
+  background: #F8F9FB;
   border-bottom: 1px solid var(--fc-border);
-  padding: 14px;
+  padding: 0;
   position: relative;
   overflow: hidden;
+}
+
+.preview-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0; // card overflow:hidden provides rounding
 }
 
 .paper-mock {

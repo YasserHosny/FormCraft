@@ -62,21 +62,49 @@
 <div class="template-grid" [class.list-view]="viewMode === 'list'" *ngIf="!loading && !error && filteredTemplates.length > 0">
   <button class="template-card" type="button" *ngFor="let t of filteredTemplates" (click)="openTemplate(t)">
     <div class="card-preview">
-      <div class="paper-mock">
-        <div class="line title-line"></div>
-        <div class="line short-line"></div>
-        <div class="spacer"></div>
-        <div class="field-row two-col">
-          <div class="field-mock"></div>
-          <div class="field-mock"></div>
-        </div>
-        <div class="field-mock"></div>
-        <div class="field-row three-col">
-          <div class="field-mock"></div>
-          <div class="field-mock"></div>
-          <div class="field-mock"></div>
-        </div>
-      </div>
+      <!--
+        SVG mini-canvas — renders actual element positions (x_mm / y_mm / width_mm / height_mm)
+        from the first page in a 210 × 130 mm viewBox (natural A4 coordinates, top portion).
+        Falls back to a generic paper skeleton when the template has no positional data.
+      -->
+      <svg class="preview-svg"
+           viewBox="0 0 210 130"
+           xmlns="http://www.w3.org/2000/svg"
+           preserveAspectRatio="xMidYMid meet"
+           aria-hidden="true">
+        <!-- Page background -->
+        <rect width="210" height="130" fill="#F8F9FB" rx="3"/>
+        <!-- Left margin guide -->
+        <line x1="18" y1="0" x2="18" y2="130" stroke="#E4E7F0" stroke-width="0.4"/>
+
+        <!-- Real layout: element rects from pages[0].elements -->
+        <ng-container *ngIf="t.previewElements.length > 0; else genericPaper">
+          <rect *ngFor="let el of t.previewElements"
+                [attr.x]="el.x_mm"
+                [attr.y]="el.y_mm"
+                [attr.width]="el.width_mm"
+                [attr.height]="el.height_mm"
+                [attr.fill]="elementFill(el.type)"
+                rx="1.5"
+                opacity="0.82"/>
+        </ng-container>
+
+        <!-- Generic paper skeleton (no element data available) -->
+        <ng-template #genericPaper>
+          <rect x="20" y="11" width="120" height="6"   fill="#C7D2FE" rx="1.5"/>
+          <rect x="20" y="21" width="80"  height="3.5" fill="#E0E3EF" rx="1"/>
+          <rect x="20" y="31" width="168" height="9"   fill="#DDE1F0" rx="1.5" opacity="0.65"/>
+          <rect x="20" y="45" width="80"  height="9"   fill="#DDE1F0" rx="1.5" opacity="0.65"/>
+          <rect x="108" y="45" width="80" height="9"   fill="#DDE1F0" rx="1.5" opacity="0.65"/>
+          <rect x="20" y="59" width="168" height="9"   fill="#DDE1F0" rx="1.5" opacity="0.65"/>
+          <rect x="20" y="73" width="168" height="9"   fill="#DDE1F0" rx="1.5" opacity="0.65"/>
+          <rect x="20" y="87" width="50"  height="9"   fill="#DDE1F0" rx="1.5" opacity="0.65"/>
+          <rect x="78" y="87" width="50"  height="9"   fill="#DDE1F0" rx="1.5" opacity="0.65"/>
+          <rect x="136" y="87" width="52" height="9"   fill="#DDE1F0" rx="1.5" opacity="0.65"/>
+          <rect x="20" y="101" width="168" height="9"  fill="#DDE1F0" rx="1.5" opacity="0.65"/>
+        </ng-template>
+      </svg>
+
       <div class="preview-status">
         <fc-status-chip [status]="t.status"></fc-status-chip>
       </div>
