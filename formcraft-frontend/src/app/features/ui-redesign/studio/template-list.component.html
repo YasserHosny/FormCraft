@@ -1,8 +1,14 @@
-<fc-page-header title="النماذج" [subtitle]="headerSubtitle">
+<fc-page-header [title]="'templates.list_title' | translate" [subtitle]="headerSubtitle">
   <div actions>
-    <button class="fc-btn outline" type="button" (click)="exportTemplates()"><mat-icon>file_download</mat-icon>تصدير</button>
-    <button class="fc-btn outline" type="button" (click)="importPdf()"><mat-icon>upload_file</mat-icon>استيراد PDF</button>
-    <button class="fc-btn primary" type="button" (click)="createTemplate()"><mat-icon>add</mat-icon>إنشاء نموذج جديد</button>
+    <button class="fc-btn outline" type="button" (click)="exportTemplates()">
+      <mat-icon>file_download</mat-icon>{{ 'templates.btn_export' | translate }}
+    </button>
+    <button class="fc-btn outline" type="button" (click)="importPdf()">
+      <mat-icon>upload_file</mat-icon>{{ 'templates.btn_import_pdf' | translate }}
+    </button>
+    <button class="fc-btn primary" type="button" (click)="createTemplate()">
+      <mat-icon>add</mat-icon>{{ 'templates.btn_create' | translate }}
+    </button>
   </div>
 </fc-page-header>
 
@@ -12,21 +18,21 @@
     <mat-icon>search</mat-icon>
     <input
       [(ngModel)]="search"
-      placeholder="ابحث في النماذج بالاسم أو الرمز أو الإدارة..."
-      aria-label="البحث في النماذج"
+      [placeholder]="'templates.search_placeholder' | translate"
+      [attr.aria-label]="'templates.search_placeholder' | translate"
     />
   </div>
   <label class="fc-filter-pill">
-    <span class="label-key">الحالة:</span>
-    <select [(ngModel)]="activeTab" aria-label="تصفية حسب الحالة">
-      <option *ngFor="let tab of statusTabs" [value]="tab.key">{{ tab.label }}</option>
+    <span class="label-key">{{ 'templates.status_label' | translate }}</span>
+    <select [(ngModel)]="activeTab" [attr.aria-label]="'templates.status_label' | translate">
+      <option *ngFor="let tab of statusTabs" [value]="tab.key">{{ tab.labelKey | translate }}</option>
     </select>
     <mat-icon>expand_more</mat-icon>
   </label>
   <label class="fc-filter-pill">
-    <span class="label-key">الإدارة:</span>
-    <select [(ngModel)]="category" aria-label="تصفية حسب الإدارة">
-      <option *ngFor="let c of categories" [value]="c.key">{{ c.label }}</option>
+    <span class="label-key">{{ 'templates.dept_label' | translate }}</span>
+    <select [(ngModel)]="category" [attr.aria-label]="'templates.dept_label' | translate">
+      <option *ngFor="let c of categories" [value]="c.key">{{ c.labelKey | translate }}</option>
     </select>
     <mat-icon>expand_more</mat-icon>
   </label>
@@ -43,14 +49,14 @@
        class="status-tab"
        [class.active]="activeTab === tab.key"
        (click)="activeTab = tab.key">
-    {{ tab.label }}
+    {{ tab.labelKey | translate }}
     <span class="tab-count" [class.active]="activeTab === tab.key">{{ tab.count }}</span>
   </div>
 </div>
 
-<div class="state-panel" *ngIf="loading">جاري تحميل النماذج...</div>
+<div class="state-panel" *ngIf="loading">{{ 'templates.loading' | translate }}</div>
 <div class="state-panel error" *ngIf="!loading && error">{{ error }}</div>
-<div class="state-panel" *ngIf="!loading && !error && filteredTemplates.length === 0">لا توجد نماذج مطابقة.</div>
+<div class="state-panel" *ngIf="!loading && !error && filteredTemplates.length === 0">{{ 'templates.empty' | translate }}</div>
 
 <!-- Template grid -->
 <div class="template-grid" [class.list-view]="viewMode === 'list'" *ngIf="!loading && !error && filteredTemplates.length > 0">
@@ -74,12 +80,15 @@
       <div class="preview-status">
         <fc-status-chip [status]="t.status"></fc-status-chip>
       </div>
-      <div class="preview-meta">{{ t.code }} · {{ t.pages }} {{ t.pages > 1 ? 'صفحات' : 'صفحة' }}</div>
+      <div class="preview-meta">
+        {{ t.code }} · {{ t.pages }}
+        {{ t.pages > 1 ? ('templates.page_plural' | translate) : ('templates.page_singular' | translate) }}
+      </div>
     </div>
     <div class="card-body">
       <div class="card-title">{{ t.name }}</div>
       <div class="card-meta">
-        <span>{{ t.dept }}</span>
+        <span>{{ t.dept | translate }}</span>
         <span>·</span>
         <span class="fc-num">{{ t.version }}</span>
       </div>
@@ -95,25 +104,33 @@
         </span>
       </div>
       <div class="card-actions" (click)="onCardAction($event)">
-        <button class="fc-card-btn" type="button" (click)="openTemplate(t)" matTooltip="فتح المصمم">
+        <button class="fc-card-btn" type="button" (click)="openTemplate(t)"
+                [matTooltip]="'templates.open_designer' | translate">
           <mat-icon>brush</mat-icon>
         </button>
-        <button class="fc-card-btn" type="button" (click)="cloneTemplate($event, t)" matTooltip="استنساخ">
+        <button class="fc-card-btn" type="button" (click)="cloneTemplate($event, t)"
+                [matTooltip]="'templates.tooltip_clone' | translate">
           <mat-icon>content_copy</mat-icon>
         </button>
-        <button class="fc-card-btn accent" type="button" *ngIf="t.status === 'draft'" (click)="publishTemplate($event, t)" matTooltip="نشر">
+        <button class="fc-card-btn accent" type="button" *ngIf="t.status === 'draft'"
+                (click)="publishTemplate($event, t)"
+                [matTooltip]="'templates.tooltip_publish' | translate">
           <mat-icon>publish</mat-icon>
         </button>
-        <button class="fc-card-btn primary" type="button" *ngIf="t.status === 'published'" (click)="createNewVersion($event, t)" matTooltip="إصدار جديد">
+        <button class="fc-card-btn primary" type="button" *ngIf="t.status === 'published'"
+                (click)="createNewVersion($event, t)"
+                [matTooltip]="'templates.tooltip_new_version' | translate">
           <mat-icon>add_circle_outline</mat-icon>
         </button>
-        <button class="fc-card-btn" type="button" [matMenuTriggerFor]="cardMenu" (click)="onCardAction($event)" matTooltip="المزيد">
+        <button class="fc-card-btn" type="button" [matMenuTriggerFor]="cardMenu"
+                (click)="onCardAction($event)"
+                [matTooltip]="'templates.tooltip_more' | translate">
           <mat-icon>more_vert</mat-icon>
         </button>
         <mat-menu #cardMenu="matMenu">
           <button mat-menu-item (click)="deleteTemplate($event, t)">
             <mat-icon color="warn">delete</mat-icon>
-            حذف النموذج
+            {{ 'templates.delete_action' | translate }}
           </button>
         </mat-menu>
       </div>
@@ -124,5 +141,5 @@
 <!-- FAB -->
 <button class="fc-fab" type="button" (click)="createTemplate()">
   <mat-icon>add</mat-icon>
-  نموذج جديد
+  {{ 'templates.btn_fab' | translate }}
 </button>
