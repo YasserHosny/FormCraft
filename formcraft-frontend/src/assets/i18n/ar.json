@@ -21,7 +21,9 @@
     "role_designer": "مصمم",
     "role_operator": "مشغل",
     "role_viewer": "مشاهد",
-    "role_branch_manager": "مدير فرع"
+    "role_branch_manager": "مدير فرع",
+    "bridge_body": "هذه الميزة غير متاحة بعد في واجهة Spark. انقر أدناه لفتحها في الوضع الكلاسيكي.",
+    "bridge_open_classic": "فتح في الوضع الكلاسيكي"
   },
   "common": {
     "save": "حفظ",

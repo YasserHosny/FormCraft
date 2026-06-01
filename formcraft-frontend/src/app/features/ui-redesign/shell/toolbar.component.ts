@@ -22,16 +22,18 @@ interface ModeTab {
   labelKey: string;
   route: string;
   roles: string[];
+  /** When true, tab is only shown to users with is_platform_admin === true */
+  requiresPlatformAdmin?: boolean;
 }
 
 const ALL_TABS: ModeTab[] = [
-  { key: 'studio',       icon: 'brush',              labelKey: 'nav.studio',       route: '/ui/studio/templates',    roles: ['admin', 'designer'] },
-  { key: 'desk',         icon: 'assignment',          labelKey: 'nav.desk',         route: '/ui/desk',                roles: ['admin', 'branch_manager', 'operator'] },
-  { key: 'admin',        icon: 'admin_panel_settings',labelKey: 'nav.admin',        route: '/ui/admin/analytics',     roles: ['admin'] },
-  { key: 'adminExport',  icon: 'file_download',       labelKey: 'nav.adminExport',  route: '/ui/admin/export',        roles: ['admin'] },
-  { key: 'portal',       icon: 'public',              labelKey: 'nav.portal',       route: '/ui/admin/portal',        roles: ['admin'] },
-  { key: 'integrations', icon: 'hub',                 labelKey: 'nav.integrations', route: '/ui/admin/integrations',  roles: ['admin'] },
-  { key: 'platform',     icon: 'cloud',               labelKey: 'nav.platform',     route: '/ui/admin/platform',      roles: ['admin'] },
+  { key: 'studio',       icon: 'brush',               labelKey: 'nav.studio',       route: '/ui/studio/templates',   roles: ['admin', 'designer'] },
+  { key: 'desk',         icon: 'assignment',           labelKey: 'nav.desk',         route: '/ui/desk',               roles: ['admin', 'branch_manager', 'operator'] },
+  { key: 'admin',        icon: 'admin_panel_settings', labelKey: 'nav.admin',        route: '/ui/admin/analytics',    roles: ['admin'] },
+  { key: 'adminExport',  icon: 'file_download',        labelKey: 'nav.adminExport',  route: '/ui/admin/export',       roles: ['admin'] },
+  { key: 'portal',       icon: 'public',               labelKey: 'nav.portal',       route: '/ui/admin/portal',       roles: ['admin'] },
+  { key: 'integrations', icon: 'hub',                  labelKey: 'nav.integrations', route: '/ui/admin/integrations', roles: ['admin'] },
+  { key: 'platform',     icon: 'cloud',                labelKey: 'nav.platform',     route: '/ui/admin/platform',     roles: ['admin'], requiresPlatformAdmin: true },
 ];
 
 @Component({
@@ -83,7 +85,11 @@ export class ToolbarComponent implements OnInit, OnDestroy {
         this.currentUser = user;
         this.userRole = user.role;
         this.user = this.toToolbarUser(user);
-        this.tabs = ALL_TABS.filter((tab) => tab.roles.includes(user.role));
+        this.tabs = ALL_TABS.filter((tab) => {
+          if (!tab.roles.includes(user.role)) return false;
+          if (tab.requiresPlatformAdmin && !user.is_platform_admin) return false;
+          return true;
+        });
         this.initNotifications(user);
         this.loadOrgLogo();
       });

@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { RoleGuard } from '../../core/auth/role.guard';
 import { LayoutComponent } from './shell/layout.component';
 import { ClassicRedirectComponent } from './shared/classic-redirect.component';
+import { SparkFeatureBridgeComponent } from './shared/spark-feature-bridge.component';
 import { HistoryComponent } from './desk/history.component';
 
 export const UI_REDESIGN_ROUTES: Routes = [
@@ -127,37 +128,37 @@ export const UI_REDESIGN_ROUTES: Routes = [
         component: ClassicRedirectComponent,
       },
 
-      // Admin Console sub-pages (no Spark page yet — redirect to classic)
+      // Toolbar top-level nav tabs — bridge pages (stay in Spark layout, offer Classic switch)
       {
         path: 'admin/export',
         canActivate: [RoleGuard],
-        data: { roles: ['admin'], classicRoute: '/admin/export' },
-        component: ClassicRedirectComponent,
+        data: { roles: ['admin'], featureName: 'nav.adminExport', featureIcon: 'file_download', classicRoute: '/admin/export' },
+        component: SparkFeatureBridgeComponent,
       },
       {
         path: 'admin/portal',
         canActivate: [RoleGuard],
-        data: { roles: ['admin'], classicRoute: '/admin/portal' },
-        component: ClassicRedirectComponent,
+        data: { roles: ['admin'], featureName: 'nav.portal', featureIcon: 'public', classicRoute: '/admin/portal' },
+        component: SparkFeatureBridgeComponent,
       },
       {
         path: 'admin/integrations',
         canActivate: [RoleGuard],
-        data: { roles: ['admin'], classicRoute: '/admin/integrations' },
-        component: ClassicRedirectComponent,
+        data: { roles: ['admin'], featureName: 'nav.integrations', featureIcon: 'hub', classicRoute: '/admin/integrations' },
+        component: SparkFeatureBridgeComponent,
       },
       {
         path: 'admin/platform',
         canActivate: [RoleGuard],
-        data: { roles: ['admin'], classicRoute: '/platform' },
-        component: ClassicRedirectComponent,
+        data: { roles: ['admin'], featureName: 'nav.platform', featureIcon: 'cloud', classicRoute: '/platform' },
+        component: SparkFeatureBridgeComponent,
       },
 
       // My Feedback (non-admin users)
       {
         path: 'my-feedback',
-        data: { classicRoute: '/my-feedback' },
-        component: ClassicRedirectComponent,
+        data: { featureName: 'nav.my_feedback', featureIcon: 'feedback', classicRoute: '/my-feedback' },
+        component: SparkFeatureBridgeComponent,
       },
 
       // Profile
