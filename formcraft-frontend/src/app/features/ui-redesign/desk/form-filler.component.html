@@ -6,36 +6,44 @@
     <div class="form-meta">
       <span>{{ templateCode }}</span>
       <span>·</span>
-      <span class="meta-time"><mat-icon>schedule</mat-icon>بدأت قبل ٢ دقيقة</span>
+      <span class="meta-time"><mat-icon>schedule</mat-icon></span>
     </div>
   </div>
   <span class="grow"></span>
 
   <!-- Customer pill -->
-  <div class="customer-pill" (click)="openCustomerPicker()">
-    <fc-avatar name="فاطمة القحطاني" size="sm" color="c2"></fc-avatar>
+  <div class="customer-pill" *ngIf="selectedCustomer" (click)="openCustomerPicker()">
+    <fc-avatar [name]="selectedCustomer.name" size="sm" color="c2"></fc-avatar>
     <div class="pill-info">
-      <span class="pill-name">فاطمة بنت عبدالله القحطاني</span>
-      <span class="pill-id fc-num">ID 2841-9035-1882</span>
+      <span class="pill-name">{{ selectedCustomer.name }}</span>
+      <span class="pill-id fc-num">{{ selectedCustomer.id }}</span>
     </div>
-    <button class="fc-icon-btn sm"><mat-icon>close</mat-icon></button>
+    <button class="fc-icon-btn sm" (click)="selectedCustomer = null; $event.stopPropagation()"><mat-icon>close</mat-icon></button>
   </div>
 
-  <button class="fc-btn outline" (click)="saveDraft()"><mat-icon>save</mat-icon>حفظ كمسودة</button>
-  <button class="fc-btn outline" (click)="printPdf()"><mat-icon>print</mat-icon>طباعة PDF</button>
-  <button class="fc-btn primary" (click)="submitForm()"><mat-icon>check</mat-icon>إرسال</button>
+  <button class="fc-btn outline" (click)="saveDraft()"><mat-icon>save</mat-icon>{{ 'DESK.FILL.SAVE_AS_DRAFT' | translate }}</button>
+  <button class="fc-btn outline" (click)="printPdf()"><mat-icon>print</mat-icon>{{ 'DESK.FILL.PRINT_PDF' | translate }}</button>
+  <button class="fc-btn primary" (click)="submitForm()"><mat-icon>check</mat-icon>{{ 'DESK.FILL.SUBMIT' | translate }}</button>
 </div>
 
 <!-- Progress bar -->
 <div class="progress-strip">
-  <span class="progress-label-text">إكمال النموذج:</span>
+  <span class="progress-label-text">{{ 'DESK.FILL.FORM_COMPLETION' | translate }}</span>
   <div class="progress-track">
-    <div class="progress-value" style="width: 64%"></div>
+    <div class="progress-value" [style.width.%]="calculateCompletion()"></div>
   </div>
-  <span class="progress-count fc-num">24 / 38</span>
-  <span class="auto-save"><mat-icon>cloud_done</mat-icon>محفوظ تلقائياً</span>
+  <span class="progress-count fc-num">{{ calculateCompletion() }}%</span>
+  <span class="auto-save"><mat-icon>cloud_done</mat-icon>{{ 'DESK.FILL.AUTO_SAVED' | translate }}</span>
   <span class="separator"></span>
-  <button class="fc-btn ghost sm"><mat-icon>keyboard</mat-icon>اختصارات</button>
+  <button class="fc-btn ghost sm"><mat-icon>keyboard</mat-icon>{{ 'DESK.FILL.SHORTCUTS' | translate }}</button>
+</div>
+
+<div class="retry-banner" *ngIf="showRetryBanner">
+  <mat-icon>error</mat-icon>
+  <span>{{ submissionError }}</span>
+  <span class="grow"></span>
+  <button class="fc-btn outline sm" (click)="retrySubmit()">{{ 'DESK.FILL.RETRY' | translate }}</button>
+  <button class="fc-btn primary sm" (click)="saveDraft(); dismissBanner()">{{ 'DESK.FILL.SAVE_AS_DRAFT' | translate }}</button>
 </div>
 
 <!-- Main layout -->
@@ -63,9 +71,9 @@
     <div class="paper">
       <div class="error-state">
         <mat-icon>error_outline</mat-icon>
-        <h3>حدث خطأ</h3>
+        <h3>{{ 'DESK.FILL.ERROR_TITLE' | translate }}</h3>
         <p>{{ error }}</p>
-        <button class="fc-btn primary" (click)="goBack()"><mat-icon>arrow_forward</mat-icon>رجوع</button>
+        <button class="fc-btn primary" (click)="goBack()"><mat-icon>arrow_forward</mat-icon>{{ 'common.back' | translate }}</button>
       </div>
     </div>
   </div>
@@ -74,19 +82,12 @@
   <div class="canvas-area" *ngIf="!loading && !error">
     <div class="paper">
       <!-- Form header -->
-      <div class="paper-header">
-        <div class="bank-logo">EDB</div>
+      <div class="paper-header" *ngIf="template">
+        <div class="bank-logo"></div>
         <div class="bank-info">
-          <div class="bank-name">مصرف الإمارات للتنمية</div>
-          <div class="bank-branch">فرع أبوظبي الرئيسي · ص.ب ١٢٢١، أبوظبي</div>
-          <div class="form-name">طلب فتح حساب جاري — للأفراد</div>
+          <div class="form-name">{{ templateName }}</div>
         </div>
         <div class="qr-placeholder"></div>
-      </div>
-
-      <div class="paper-ref">
-        <span>رقم المرجع: <b class="fc-num">REF-2026-3842</b></span>
-        <span>التاريخ: <b class="fc-num">2026-05-25</b></span>
       </div>
 
       <!-- Sections -->
@@ -94,7 +95,7 @@
         <div class="section-head">
           <span class="section-num">{{ section.number }}</span>
           <span class="section-title">{{ section.title }}</span>
-          <span class="section-complete" *ngIf="section.complete"><mat-icon>check_circle</mat-icon>مكتمل</span>
+          <span class="section-complete" *ngIf="section.complete"><mat-icon>check_circle</mat-icon>{{ 'DESK.FILL.SECTION_COMPLETE' | translate }}</span>
         </div>
         <div class="fields-grid" [style.grid-template-columns]="'repeat(' + section.columns + ', 1fr)'" [formGroup]="formGroup">
           <ng-container *ngFor="let f of section.fields">
@@ -111,6 +112,7 @@
               <input *ngSwitchCase="'text'"
                      type="text"
                      class="field-input"
+                     dir="auto"
                      [formControlName]="f.key"
                      [placeholder]="f.placeholder"
                      [class.filled]="formGroup.get(f.key)?.value"
@@ -120,6 +122,7 @@
               <input *ngSwitchCase="'number'"
                      type="number"
                      class="field-input"
+                     dir="auto"
                      [formControlName]="f.key"
                      [placeholder]="f.placeholder"
                      [class.filled]="formGroup.get(f.key)?.value"
@@ -129,6 +132,7 @@
               <input *ngSwitchCase="'date'"
                      type="date"
                      class="field-input"
+                     dir="auto"
                      [formControlName]="f.key"
                      [class.filled]="formGroup.get(f.key)?.value"
                      [class.error]="formGroup.get(f.key)?.invalid && formGroup.get(f.key)?.touched" />
@@ -136,6 +140,7 @@
               <!-- Select dropdown -->
               <select *ngSwitchCase="'select'"
                       class="field-input"
+                      dir="auto"
                       [formControlName]="f.key"
                       [class.filled]="formGroup.get(f.key)?.value"
                       [class.error]="formGroup.get(f.key)?.invalid && formGroup.get(f.key)?.touched">
@@ -146,6 +151,7 @@
               <!-- Textarea for long text -->
               <textarea *ngSwitchCase="'textarea'"
                         class="field-input"
+                        dir="auto"
                         [formControlName]="f.key"
                         [placeholder]="f.placeholder"
                         [class.filled]="formGroup.get(f.key)?.value"
@@ -156,7 +162,7 @@
                 <input type="checkbox"
                        [formControlName]="f.key"
                        [class.error]="formGroup.get(f.key)?.invalid && formGroup.get(f.key)?.touched" />
-                <span>{{ f.label }}</span>
+                <span dir="auto">{{ f.label }}</span>
               </label>
 
               <!-- Default text display for signature and other types -->
@@ -165,39 +171,22 @@
               </div>
             </div>
             <span class="field-error-msg" *ngIf="formGroup.get(f.key)?.invalid && formGroup.get(f.key)?.touched">
-              {{ formGroup.get(f.key)?.getError('required') ? 'هذا الحقل مطلوب' : 'قيمة غير صحيحة' }}
+              {{ (formGroup.get(f.key)?.getError('required') ? 'DESK.FILL.FIELD_REQUIRED' : 'DESK.FILL.FIELD_INVALID') | translate }}
             </span>
+            <span class="tafqeet-text" *ngIf="f.tafqeet_enabled && tafqeetValues[f.key]">{{ tafqeetValues[f.key] }}</span>
             </div>
           </ng-container>
         </div>
       </ng-container>
 
-      <!-- Section 3: Declarations -->
-      <div class="section-head">
-        <span class="section-num">٣</span>
-        <span class="section-title">الإقرارات والتوقيع</span>
-      </div>
-      <div class="declarations-box">
-        <label class="declaration-item">
-          <div class="checkbox checked"><mat-icon>check</mat-icon></div>
-          <span>أُقرّ بصحة جميع البيانات الواردة أعلاه وأتحمّل المسؤولية القانونية عن صحتها.</span>
-        </label>
-        <label class="declaration-item">
-          <div class="checkbox checked"><mat-icon>check</mat-icon></div>
-          <span>أوافق على شروط وأحكام فتح الحساب الجاري للأفراد المعتمدة لدى المصرف.</span>
-        </label>
-        <label class="declaration-item">
-          <div class="checkbox"></div>
-          <span>أرغب في إصدار بطاقة الصراف الآلي مع الحساب الجديد.</span>
-        </label>
-      </div>
+
     </div>
   </div>
 
   <!-- Right summary panel -->
   <aside class="side-panel">
     <div class="panel-section">
-      <div class="panel-label">أقسام النموذج</div>
+      <div class="panel-label">{{ 'DESK.FILL.FORM_SECTIONS' | translate }}</div>
       <div class="nav-item" *ngFor="let s of sideSections" [class.active]="s.state === 'active'">
         <span class="nav-num" [class.done]="s.state === 'done'" [class.active]="s.state === 'active'">
           <mat-icon *ngIf="s.state === 'done'">check</mat-icon>
@@ -209,15 +198,19 @@
     </div>
 
     <div class="panel-section">
-      <div class="panel-label">تنبيهات</div>
-      <div class="alert-box error">
-        <mat-icon>error</mat-icon>
-        <div><b>المسمى الوظيفي</b> حقل مطلوب — لم يُملأ بعد.</div>
+      <div class="panel-label">{{ 'DESK.FILL.ALERTS' | translate }}</div>
+      <div class="error-summary" *ngIf="hasSubmitted">
+        <div class="summary-title">{{ 'DESK.FILL.ERROR_SUMMARY' | translate }}</div>
+        <ng-container *ngFor="let section of sections">
+          <ng-container *ngFor="let f of section.fields">
+            <div class="alert-box error" *ngIf="visibleFields.has(f.key) && formGroup.get(f.key)?.invalid">
+              <mat-icon>error</mat-icon>
+              <div><b>{{ f.label }}</b> {{ (formGroup.get(f.key)?.getError('required') ? 'DESK.FILL.FIELD_REQUIRED' : 'DESK.FILL.FIELD_INVALID') | translate }}</div>
+            </div>
+          </ng-container>
+        </ng-container>
       </div>
-      <div class="alert-box warn">
-        <mat-icon>warning</mat-icon>
-        <div>لم يوقّع العميل بعد. يمكن التوقيع رقمياً أو بعد الطباعة.</div>
-      </div>
+
     </div>
 
   </aside>
@@ -229,8 +222,8 @@
     <div class="dialog-header">
       <div class="dialog-icon"><mat-icon>person_search</mat-icon></div>
       <div class="dialog-title-area">
-        <h3>اختيار عميل</h3>
-        <span>ابحث برقم الهوية أو الاسم — الحقول المطابقة ستُعبأ تلقائياً</span>
+        <h3>{{ 'DESK.FILL.SELECT_CUSTOMER' | translate }}</h3>
+        <span>{{ 'DESK.FILL.CUSTOMER_SEARCH_HINT' | translate }}</span>
       </div>
       <button class="fc-icon-btn" (click)="closeCustomerPicker()"><mat-icon>close</mat-icon></button>
     </div>
@@ -238,17 +231,18 @@
     <div class="dialog-search">
       <div class="search-input">
         <mat-icon>search</mat-icon>
-        <input placeholder="اكتب رقم الهوية، الجوال، أو الاسم..." value="فاطمة" />
+        <input [placeholder]="'DESK.FILL.CUSTOMER_SEARCH_PLACEHOLDER' | translate" dir="auto" (input)="searchCustomers($any($event.target).value)" />
         <kbd>↵</kbd>
       </div>
       <div class="recent-chips">
-        <span class="recent-label">الأخيرون:</span>
+        <span class="recent-label">{{ 'DESK.FILL.RECENT' | translate }}</span>
         <span class="recent-chip" *ngFor="let name of recentCustomers">{{ name }}</span>
       </div>
     </div>
 
     <div class="dialog-results">
-      <div class="results-count">٣ نتائج</div>
+      <div class="results-count">{{ 'DESK.FILL.RESULTS_COUNT' | translate: { count: customerResults.length } }}</div>
+      <div class="empty-state" *ngIf="customerResults.length === 0">{{ 'DESK.FILL.NO_CUSTOMERS' | translate }}</div>
       <div class="customer-row" *ngFor="let c of customerResults" [class.selected]="c.selected">
         <div class="selection-bar" *ngIf="c.selected"></div>
         <fc-avatar [name]="c.name" size="md" [color]="c.color"></fc-avatar>
@@ -261,20 +255,20 @@
           <div class="customer-meta-row">
             <span><mat-icon>badge</mat-icon><span class="fc-num">{{ c.id }}</span></span>
             <span><mat-icon>phone</mat-icon><span class="fc-num">{{ c.phone }}</span></span>
-            <span><mat-icon>description</mat-icon>{{ c.forms }} نماذج</span>
-            <span class="last-visit">آخر زيارة: {{ c.last }}</span>
+            <span><mat-icon>description</mat-icon>{{ 'DESK.FILL.FORMS_COUNT' | translate: { count: c.forms } }}</span>
+            <span class="last-visit">{{ 'DESK.FILL.LAST_VISIT' | translate: { date: c.last } }}</span>
           </div>
         </div>
-        <button class="fc-btn primary sm" *ngIf="c.selected"><mat-icon>check</mat-icon>اختياره</button>
-        <button class="fc-btn outline sm" *ngIf="!c.selected">اختيار</button>
+        <button class="fc-btn primary sm" *ngIf="c.selected" (click)="selectCustomer(c.id, c)"><mat-icon>check</mat-icon>{{ 'DESK.FILL.SELECT_HIM' | translate }}</button>
+        <button class="fc-btn outline sm" *ngIf="!c.selected" (click)="selectCustomer(c.id, c)">{{ 'DESK.FILL.SELECT' | translate }}</button>
       </div>
     </div>
 
     <div class="dialog-footer">
-      <button class="fc-btn outline" (click)="createNewCustomer()"><mat-icon>person_add</mat-icon>إنشاء عميل جديد</button>
+      <button class="fc-btn outline" (click)="createNewCustomer()"><mat-icon>person_add</mat-icon>{{ 'DESK.FILL.CREATE_NEW_CUSTOMER' | translate }}</button>
       <div class="footer-actions">
-        <button class="fc-btn ghost" (click)="closeCustomerPicker()">إلغاء</button>
-        <button class="fc-btn primary"><mat-icon>check</mat-icon>تأكيد الاختيار</button>
+        <button class="fc-btn ghost" (click)="closeCustomerPicker()">{{ 'common.cancel' | translate }}</button>
+        <button class="fc-btn primary" (click)="closeCustomerPicker()"><mat-icon>check</mat-icon>{{ 'DESK.FILL.CONFIRM_SELECTION' | translate }}</button>
       </div>
     </div>
   </div>
