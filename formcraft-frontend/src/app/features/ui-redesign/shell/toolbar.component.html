@@ -14,9 +14,9 @@
   <span class="brand-name">FormCraft</span>
   <span class="brand-sep"></span>
 
-  <!-- Mode Tabs — 3 primary always visible; the rest in a "More" overflow menu -->
+  <!-- Mode Tabs -->
   <nav class="fc-mode-tabs">
-    <a *ngFor="let tab of primaryTabs"
+    <a *ngFor="let tab of tabs"
        class="fc-mode-tab"
        [class.active]="activeMode === tab.key"
        [routerLink]="tab.route"
@@ -25,26 +25,6 @@
       <mat-icon>{{ tab.icon }}</mat-icon>
       <span>{{ tab.labelKey | translate }}</span>
     </a>
-
-    <!-- "More" overflow button — only appears when user has >3 visible tabs -->
-    <button *ngIf="moreTabs.length"
-            class="fc-mode-tab fc-more-tab"
-            [class.active]="moreTabActive"
-            [matMenuTriggerFor]="moreTabsMenu"
-            type="button"
-            [matTooltip]="'nav.more' | translate"
-            matTooltipPosition="below">
-      <mat-icon>more_horiz</mat-icon>
-    </button>
-    <mat-menu #moreTabsMenu="matMenu" class="fc-more-menu">
-      <a *ngFor="let tab of moreTabs"
-         mat-menu-item
-         [routerLink]="tab.route"
-         style="color:inherit;text-decoration:none;">
-        <mat-icon>{{ tab.icon }}</mat-icon>
-        {{ tab.labelKey | translate }}
-      </a>
-    </mat-menu>
   </nav>
 
   <span class="spacer"></span>

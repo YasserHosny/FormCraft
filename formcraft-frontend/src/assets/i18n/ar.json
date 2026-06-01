@@ -21,8 +21,7 @@
     "role_designer": "مصمم",
     "role_operator": "مشغل",
     "role_viewer": "مشاهد",
-    "role_branch_manager": "مدير فرع",
-    "more": "المزيد"
+    "role_branch_manager": "مدير فرع"
   },
   "common": {
     "save": "حفظ",

@@ -61,11 +61,11 @@ export function getDefaultRouteForRole(role: string): string {
       <img *ngIf="orgLogoUrl" [src]="orgLogoUrl" alt="Org logo" class="org-nav-logo" />
       <span class="app-title" (click)="navigateHome()">FormCraft</span>
 
-      <!-- F15: Mode-switching tabs — 3 primary always visible; the rest in "More ▾" -->
+      <!-- F15: Mode-switching tabs -->
       <ng-container *ngIf="user">
         <nav class="mode-tabs">
           <a
-            *ngFor="let tab of primaryTabs"
+            *ngFor="let tab of visibleTabs"
             class="mode-tab"
             [class.active]="activeMode === tab.key"
             [routerLink]="tab.route"
@@ -75,24 +75,6 @@ export function getDefaultRouteForRole(role: string): string {
             <mat-icon class="mode-tab-icon">{{ tab.icon }}</mat-icon>
             <span class="mode-tab-label">{{ tab.labelKey | translate }}</span>
           </a>
-          <!-- Overflow menu for secondary admin tabs -->
-          <button *ngIf="moreTabs.length"
-                  class="mode-tab more-tab"
-                  [class.active]="moreTabActive"
-                  [matMenuTriggerFor]="moreTabsMenu"
-                  type="button">
-            <mat-icon class="mode-tab-icon">more_horiz</mat-icon>
-            <span class="mode-tab-label">{{ 'nav.more' | translate }}</span>
-          </button>
-          <mat-menu #moreTabsMenu="matMenu">
-            <a *ngFor="let tab of moreTabs"
-               mat-menu-item
-               [routerLink]="tab.route"
-               style="color:inherit;text-decoration:none;">
-              <mat-icon>{{ tab.icon }}</mat-icon>
-              {{ tab.labelKey | translate }}
-            </a>
-          </mat-menu>
         </nav>
       </ng-container>
 
@@ -231,17 +213,10 @@ export function getDefaultRouteForRole(role: string): string {
       flex: 1 1 auto;
     }
     .global-search-bar {
-      margin: 0 8px;
-      max-width: 280px;
+      margin: 0 16px;
+      max-width: 400px;
       width: 100%;
-      flex: 0 1 280px;
-    }
-    // Reset <button> so it looks identical to the <a> mode-tab
-    .more-tab {
-      background: transparent;
-      border: none;
-      font-family: inherit;
-      font-size: 14px;
+      flex: 0 1 400px;
     }
     .spark-badge {
       display: inline-flex;
@@ -408,21 +383,6 @@ export class AppShellComponent implements OnInit, OnDestroy {
   isMobile = false;
   isTablet = false;
   showMobileMenu = false;
-
-  /** Studio, Desk and Admin Console always appear in the bar; rest go into "More ▾". */
-  private readonly PRIMARY_TAB_KEYS = ['studio', 'desk', 'admin'];
-
-  get primaryTabs(): ModeTab[] {
-    return this.visibleTabs.filter((t) => this.PRIMARY_TAB_KEYS.includes(t.key));
-  }
-
-  get moreTabs(): ModeTab[] {
-    return this.visibleTabs.filter((t) => !this.PRIMARY_TAB_KEYS.includes(t.key));
-  }
-
-  get moreTabActive(): boolean {
-    return this.moreTabs.some((t) => t.key === this.activeMode);
-  }
 
   private destroy$ = new Subject<void>();
 

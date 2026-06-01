@@ -48,9 +48,6 @@ export class ToolbarComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private currentUser: User | null = null;
 
-  /** Studio, Desk and Admin are always in the top bar; the rest overflow into "More". */
-  private readonly PRIMARY_TAB_KEYS = ['studio', 'desk', 'admin'];
-
   isMobile = signal(false);
   tabs: ModeTab[] = [];
   unreadCount = 0;
@@ -96,18 +93,6 @@ export class ToolbarComponent implements OnInit, OnDestroy {
     this.realtimeService.destroy();
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  get primaryTabs(): ModeTab[] {
-    return this.tabs.filter((t) => this.PRIMARY_TAB_KEYS.includes(t.key));
-  }
-
-  get moreTabs(): ModeTab[] {
-    return this.tabs.filter((t) => !this.PRIMARY_TAB_KEYS.includes(t.key));
-  }
-
-  get moreTabActive(): boolean {
-    return this.moreTabs.some((t) => t.key === this.activeMode);
   }
 
   switchToClassic(): void {
