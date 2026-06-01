@@ -71,21 +71,23 @@
   },
   "integrations": {
     "title": "التكاملات",
-    "credentials": "اعتمادات واجهة البرمجة",
-    "createCredential": "إنشاء اعتماد",
-    "revokeCredential": "إلغاء الاعتماد",
-    "rotateCredential": "تدوير الاعتماد",
-    "secretShownOnce": "يظهر السر مرة واحدة فقط.",
-    "scopes": "النطاقات",
-    "webhooks": "خطافات الويب",
-    "createWebhook": "إنشاء خطاف ويب",
-    "targetUrl": "رابط الهدف",
-    "signingSecret": "سر التوقيع",
-    "eventType": "نوع الحدث",
-    "testDelivery": "اختبار الإرسال",
-    "deliveryLogs": "سجلات الإرسال",
-    "payloadPreview": "معاينة الحمولة",
-    "responseSummary": "ملخص الاستجابة"
+    "credentials": {
+      "title": "بيانات اعتماد API",
+      "create": "إنشاء بيانات اعتماد",
+      "rotate": "تدوير",
+      "revoke": "إلغاء",
+      "secretShownOnce": "السر يُعرض مرة واحدة فقط. انسخه الآن.",
+      "scopes": "النطاقات"
+    },
+    "webhooks": {
+      "title": "اشتراكات Webhook",
+      "create": "إنشاء Webhook",
+      "url": "الرابط",
+      "events": "الأحداث",
+      "signingSecret": "سر التوقيع",
+      "testDelivery": "اختبار التوصيل",
+      "deliveries": "سجل التوصيل"
+    }
   },
   "marketplace": {
     "title": "سوق القوالب",
@@ -135,10 +137,7 @@
     "role": "الدور"
   },
   "roles": {
-    "admin": "مدير",
-    "designer": "مصمم",
-    "operator": "مشغل",
-    "viewer": "مشاهد"
+    "branch_manager": "مدير الفرع"
   },
   "templates": {
     "title": "القوالب",
@@ -600,36 +599,53 @@
     }
   },
   "signature": {
-    "title": "توقيع",
-    "draw": "رسم التوقيع",
-    "clear": "مسح",
-    "confirm": "تأكيد",
-    "required": "التوقيع مطلوب",
-    "placeholder": "وقّع هنا",
-    "penColor": "لون القلم"
+    "WORKFLOW_CONFIG": "سير عمل التوقيع",
+    "WORKFLOW_NAME": "اسم سير العمل",
+    "ORDERED_SIGNING": "التوقيع المتسلسل",
+    "EXPIRATION_DAYS": "الانتهاء (بالأيام)",
+    "DECLINE_POLICY": "سياسة الرفض",
+    "POLICY_STOP": "إيقاف سير العمل",
+    "POLICY_CONTINUE": "المتابعة للتالي",
+    "POLICY_ROUTE_ADMIN": "التوجيه للإدارة",
+    "REQUIRE_ALL": "اشتراط جميع الموقعين",
+    "REQUEST_LIST": "طلبات التوقيع",
+    "REQUEST_DETAIL": "تفاصيل الطلب",
+    "STATUS": "الحالة",
+    "EXPIRES_AT": "تاريخ الانتهاء",
+    "RECIPIENTS": "المستلمون",
+    "EVENTS": "الأحداث",
+    "RESEND": "إعادة الإرسال",
+    "CANCEL": "إلغاء",
+    "SIGNER_NAME": "اسم الموقع",
+    "SEND_OTP": "إرسال رمز التحقق",
+    "OTP_CODE": "رمز التحقق",
+    "VERIFY": "تحقق",
+    "PASSWORD": "كلمة المرور",
+    "AUTHENTICATE": "مصادقة",
+    "SIGN": "توقيع",
+    "DECLINE": "رفض",
+    "EVIDENCE": "الدليل",
+    "DOCUMENT_HASH": "تجزئة المستند",
+    "INTEGRITY": "السلامة",
+    "VERIFY_INTEGRITY": "التحقق من السلامة",
+    "SIGNERS": "الموقعون"
   },
   "table": {
-    "title": "جدول",
-    "addColumn": "إضافة عمود",
-    "removeColumn": "حذف عمود",
-    "addRow": "إضافة صف",
-    "removeRow": "حذف صف",
-    "headerAr": "رأس العمود (عربي)",
-    "headerEn": "رأس العمود (إنجليزي)",
-    "columnKey": "مفتاح العمود",
-    "columnType": "نوع العمود",
-    "columnWidth": "العرض (مم)",
-    "autoSum": "جمع تلقائي",
-    "showHeader": "إظهار الرأس",
-    "showBorders": "إظهار الحدود",
-    "showFooter": "إظهار التذييل",
-    "minRows": "الحد الأدنى للصفوف",
-    "maxRows": "الحد الأقصى للصفوف",
-    "noColumns": "أضف عموداً واحداً على الأقل",
-    "duplicateKey": "مفاتيح الأعمدة يجب أن تكون فريدة",
-    "invalidColumnType": "نوع العمود غير صالح",
-    "requiredRows": "مطلوب {{min}} صفوف كحد أدنى",
-    "cellInvalid": "قيمة غير صالحة"
+    "title": "إعدادات الجدول",
+    "show_total_row": "إظهار صف المجموع",
+    "default_rows": "عدد الصفوف الافتراضي",
+    "columns": "الأعمدة",
+    "column_key": "المفتاح",
+    "column_label_en": "التسمية (EN)",
+    "column_label_ar": "التسمية (AR)",
+    "column_type": "النوع",
+    "type_text": "نص",
+    "type_number": "رقم",
+    "type_date": "تاريخ",
+    "sum": "مجموع",
+    "add_column": "إضافة عمود",
+    "add_row": "إضافة صف",
+    "validation_error": "يرجى ملء جميع الخلايا المطلوبة"
   },
   "conditions": {
     "title": "الشروط",
@@ -797,36 +813,6 @@
     "search_placeholder": "اكتب للبحث...",
     "no_results": "لم يتم العثور على نتائج"
   },
-  "signature": {
-    "title": "إعدادات التوقيع",
-    "pen_color": "لون القلم",
-    "pen_width": "سمك القلم",
-    "black": "أسود",
-    "blue": "أزرق",
-    "red": "أحمر",
-    "require_timestamp": "إظهار الطابع الزمني",
-    "require_label": "إظهار التسمية",
-    "clear": "مسح التوقيع",
-    "undo": "تراجع",
-    "validation_error": "التوقيع مطلوب"
-  },
-  "table": {
-    "title": "إعدادات الجدول",
-    "show_total_row": "إظهار صف المجموع",
-    "default_rows": "عدد الصفوف الافتراضي",
-    "columns": "الأعمدة",
-    "column_key": "المفتاح",
-    "column_label_en": "التسمية (EN)",
-    "column_label_ar": "التسمية (AR)",
-    "column_type": "النوع",
-    "type_text": "نص",
-    "type_number": "رقم",
-    "type_date": "تاريخ",
-    "sum": "مجموع",
-    "add_column": "إضافة عمود",
-    "add_row": "إضافة صف",
-    "validation_error": "يرجى ملء جميع الخلايا المطلوبة"
-  },
   "org": {
     "title": "إعدادات المؤسسة",
     "name_ar": "الاسم بالعربية",
@@ -914,9 +900,6 @@
     "activate": "تنشيط",
     "last_login": "آخر تسجيل دخول",
     "never_logged_in": "لم يسجل الدخول بعد"
-  },
-  "roles": {
-    "branch_manager": "مدير الفرع"
   },
   "platform": {
     "title": "إدارة المنصة",
@@ -1067,26 +1050,6 @@
     "expiredCode": "انتهت صلاحية الرمز.",
     "minutes": "دقيقة"
   },
-  "integrations": {
-    "title": "التكاملات",
-    "credentials": {
-      "title": "بيانات اعتماد API",
-      "create": "إنشاء بيانات اعتماد",
-      "rotate": "تدوير",
-      "revoke": "إلغاء",
-      "secretShownOnce": "السر يُعرض مرة واحدة فقط. انسخه الآن.",
-      "scopes": "النطاقات"
-    },
-    "webhooks": {
-      "title": "اشتراكات Webhook",
-      "create": "إنشاء Webhook",
-      "url": "الرابط",
-      "events": "الأحداث",
-      "signingSecret": "سر التوقيع",
-      "testDelivery": "اختبار التوصيل",
-      "deliveries": "سجل التوصيل"
-    }
-  },
   "templateWizard": {
     "title": "نموذج جديد",
     "stepBasicInfo": "المعلومات الأساسية",
@@ -1199,7 +1162,6 @@
     "SUBSCRIPTION_INFO": "تفاصيل الاشتراك والحدود موضحة هنا.",
     "USERS_READ_ONLY": "نظرة عامة على المستخدمين للقراءة فقط.",
     "STORAGE_USAGE": "استخدام التخزين",
-    "TOTAL_SUBMISSIONS": "إجمالي التقديمات",
     "CONTEXT_LABEL": "السياق",
     "CONTEXT_PLATFORM": "المنصة",
     "CONTEXT_ORG": "المؤسسة"
@@ -1315,36 +1277,41 @@
       "CONFIRM_SELECTION": "تأكيد الاختيار"
     }
   },
-  "signature": {
-    "WORKFLOW_CONFIG": "سير عمل التوقيع",
-    "WORKFLOW_NAME": "اسم سير العمل",
-    "ORDERED_SIGNING": "التوقيع المتسلسل",
-    "EXPIRATION_DAYS": "الانتهاء (بالأيام)",
-    "DECLINE_POLICY": "سياسة الرفض",
-    "POLICY_STOP": "إيقاف سير العمل",
-    "POLICY_CONTINUE": "المتابعة للتالي",
-    "POLICY_ROUTE_ADMIN": "التوجيه للإدارة",
-    "REQUIRE_ALL": "اشتراط جميع الموقعين",
-    "REQUEST_LIST": "طلبات التوقيع",
-    "REQUEST_DETAIL": "تفاصيل الطلب",
-    "STATUS": "الحالة",
-    "EXPIRES_AT": "تاريخ الانتهاء",
-    "RECIPIENTS": "المستلمون",
-    "EVENTS": "الأحداث",
-    "RESEND": "إعادة الإرسال",
-    "CANCEL": "إلغاء",
-    "SIGNER_NAME": "اسم الموقع",
-    "SEND_OTP": "إرسال رمز التحقق",
-    "OTP_CODE": "رمز التحقق",
-    "VERIFY": "تحقق",
-    "PASSWORD": "كلمة المرور",
-    "AUTHENTICATE": "مصادقة",
-    "SIGN": "توقيع",
-    "DECLINE": "رفض",
-    "EVIDENCE": "الدليل",
-    "DOCUMENT_HASH": "تجزئة المستند",
-    "INTEGRITY": "السلامة",
-    "VERIFY_INTEGRITY": "التحقق من السلامة",
-    "SIGNERS": "الموقعون"
+  "sidebar": {
+    "studio": {
+      "group_design": "استوديو التصميم",
+      "group_ai": "الذكاء الاصطناعي",
+      "templates": "النماذج",
+      "version_history": "سجل الإصدارات",
+      "starter_templates": "القوالب الجاهزة",
+      "reusable_components": "مكوّنات قابلة للاستخدام",
+      "ai_suggestions": "اقتراحات الحقول",
+      "ai_quality": "فحص جودة النموذج"
+    },
+    "desk": {
+      "group_desk": "مكتب النماذج",
+      "group_customers": "العملاء",
+      "home": "الرئيسية",
+      "fill_new": "تعبئة نموذج جديد",
+      "inbound": "الواردات",
+      "drafts": "المسوّدات",
+      "history": "سجل المعاملات",
+      "customers": "دليل العملاء",
+      "add_customer": "إضافة عميل",
+      "merge_duplicates": "دمج التكرارات"
+    },
+    "admin": {
+      "group_admin": "لوحة الإدارة",
+      "group_org": "المؤسسة",
+      "analytics": "التحليلات والتقارير",
+      "review_queue": "قائمة المراجعة",
+      "activity_log": "سجل النشاط",
+      "users": "المستخدمون",
+      "departments": "الإدارات والفروع",
+      "org_settings": "إعدادات المؤسسة",
+      "ref_data": "البيانات المرجعية",
+      "printer_profiles": "ملفات تعريف الطابعات"
+    },
+    "coming_soon": "قريباً"
   }
 }
