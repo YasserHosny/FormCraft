@@ -62,7 +62,7 @@ export class CustomersComponent implements OnInit {
   }
 
   addCustomer(): void {
-    this.router.navigate(['/desk/customers/new']);
+    this.router.navigate(['/ui/desk/customers/new']);
   }
 
   viewCustomer(customerId: string): void {

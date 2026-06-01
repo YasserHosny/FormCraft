@@ -71,6 +71,17 @@ export const UI_REDESIGN_ROUTES: Routes = [
           import('./desk/customers.component').then(m => m.CustomersComponent),
       },
       {
+        path: 'desk/customers/new',
+        canActivate: [RoleGuard],
+        data: {
+          roles: ['admin', 'branch_manager', 'operator'],
+          featureName: 'customers.add_customer',
+          featureIcon: 'person_add',
+          classicRoute: '/desk/customers/new',
+        },
+        component: SparkFeatureBridgeComponent,
+      },
+      {
         path: 'desk/customers/:id',
         canActivate: [RoleGuard],
         data: { roles: ['admin', 'branch_manager', 'operator'], classicRoute: '/desk/customers/:id' },

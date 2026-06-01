@@ -49,6 +49,7 @@ describe('FormCraft feature validation automation', () => {
       expect(paths).toContain('desk');
       expect(paths).toContain('desk/fill/:templateId');
       expect(paths).toContain('desk/customers');
+      expect(paths).toContain('desk/customers/new');
       expect(paths).toContain('desk/customers/:id');
       expect(paths).toContain('desk/history');
       expect(paths).toContain('desk/queue');
@@ -424,7 +425,9 @@ describe('FormCraft feature validation automation', () => {
       const customerService = jasmine.createSpyObj('CustomerService', {
         list: of({ items: [{ id: 'cust-1', name: 'Customer' }], total: 1 }),
       });
-      const component = new CustomersComponent(router, customerService);
+      const translate = jasmine.createSpyObj('TranslateService', ['instant']);
+      translate.instant.and.callFake((key: string) => key);
+      const component = new CustomersComponent(router, customerService, translate);
 
       component.ngOnInit();
       component.addCustomer();
@@ -432,7 +435,7 @@ describe('FormCraft feature validation automation', () => {
       component.fillFormForCustomer();
 
       expect(component.customers.length).toBeGreaterThan(0);
-      expect(router.navigate).toHaveBeenCalledWith(['/desk/customers/new']);
+      expect(router.navigate).toHaveBeenCalledWith(['/ui/desk/customers/new']);
       expect(router.navigate).toHaveBeenCalledWith(['/desk/customers', 'cust-1']);
       expect(router.navigate).toHaveBeenCalledWith(['/desk']);
     });

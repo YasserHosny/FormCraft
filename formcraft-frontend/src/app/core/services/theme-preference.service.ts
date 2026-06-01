@@ -85,6 +85,16 @@ const ROUTE_MAPPINGS: RouteMapping[] = [
     fallbackNew: '/ui/desk/customers',
   },
   {
+    classicPattern: /^\/desk\/customers\/new$/,
+    newPattern: /^\/ui\/desk\/customers\/new$/,
+    classicTemplate: '/desk/customers/new',
+    newTemplate: '/ui/desk/customers/new',
+    params: [],
+    productionReady: false,
+    fallbackClassic: '/desk/customers/new',
+    fallbackNew: '/ui/desk/customers/new',
+  },
+  {
     classicPattern: /^\/desk\/customers\/([^/?]+)/,
     newPattern: /^\/ui\/desk\/customers\/([^/?]+)/,
     classicTemplate: '/desk/customers/:id',
