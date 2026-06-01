@@ -35,7 +35,7 @@ const NAV_CONFIG: Record<string, SidebarGroup[]> = {
       { icon: 'home',            labelKey: 'sidebar.desk.home',      route: '/ui/desk' },
       { icon: 'edit_document',   labelKey: 'sidebar.desk.fill_new',  route: '/ui/desk/templates' },
       { icon: 'inbox',           labelKey: 'sidebar.desk.inbound',   route: '' },
-      { icon: 'pending_actions', labelKey: 'sidebar.desk.drafts',    route: '/ui/desk' },
+      { icon: 'pending_actions', labelKey: 'sidebar.desk.drafts',    route: '' },
       { icon: 'history',         labelKey: 'sidebar.desk.history',   route: '/ui/desk/history' },
     ]},
     { labelKey: 'sidebar.desk.group_customers', items: [
