@@ -454,7 +454,41 @@
     "notification_updated": "{{name}} was updated from v{{oldVersion}} to v{{version}}",
     "notification_dismiss": "Dismiss",
     "deprecatedWarning": "A newer version is available",
-    "archivedError": "This template is no longer available"
+    "archivedError": "This template is no longer available",
+    "page_number": "Page {{n}}",
+    "template_load_error": "Failed to load template",
+    "template_deprecated": "A newer version of this template is available",
+    "retry": "Retry",
+    "form_filler": {
+      "validation_error_summary": "Please fix invalid fields before submitting",
+      "field_required": "This field is required",
+      "field_invalid": "Invalid value",
+      "submit_blocked": "Submission blocked by validation errors",
+      "draft_saved": "Draft saved successfully",
+      "draft_save_failed": "Failed to save draft",
+      "draft_version_mismatch": "Draft version differs from current template version",
+      "submit_success": "Form submitted successfully",
+      "submit_failed": "Submission failed. Please try again.",
+      "retry": "Retry",
+      "read_only_mode": "Read-only mode: designers can review but cannot submit forms.",
+      "save_draft": "Save Draft",
+      "print_pdf": "Print PDF",
+      "submit": "Submit"
+    },
+    "form_sections": "Form Sections",
+    "my_drafts": "My Drafts",
+    "customer_picker": {
+      "title": "Select customer",
+      "search_placeholder": "Search by name or ID",
+      "no_results": "No matching customers",
+      "select": "Customer Picker"
+    },
+    "submission_confirmed": {
+      "title": "Submission Confirmed",
+      "reference_label": "Reference Number",
+      "submitted_at": "Submitted At",
+      "back_to_desk": "Back to Desk"
+    }
   },
   "history": {
     "title": "Submission History",

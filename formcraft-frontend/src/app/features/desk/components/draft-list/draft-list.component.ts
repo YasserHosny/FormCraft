@@ -1,7 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Router } from '@angular/router';
+import { DraftResponse, DraftService } from '../../services/draft.service';
 
 @Component({
   selector: 'fc-draft-list',
@@ -51,13 +52,29 @@ import { Router } from '@angular/router';
     }
   `],
 })
-export class DraftListComponent {
-  @Input() drafts: any[] = [];
+export class DraftListComponent implements OnInit {
+  @Input() drafts: DraftResponse[] = [];
+  @Input() useNewThemeRoute = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private draftService: DraftService) {}
 
-  openDraft(draft: any): void {
+  ngOnInit(): void {
+    this.draftService.listDrafts().subscribe({
+      next: (drafts) => {
+        this.drafts = drafts;
+      },
+      error: () => {
+        this.drafts = [];
+      },
+    });
+  }
+
+  openDraft(draft: DraftResponse): void {
     if (!draft?.template_id || !draft?.id) return;
+    if (this.useNewThemeRoute) {
+      this.router.navigate(['/ui/desk/fill', draft.template_id], { queryParams: { draftId: draft.id } });
+      return;
+    }
     this.router.navigate(['/desk/fill', draft.template_id], { queryParams: { draft: draft.id } });
   }
 }

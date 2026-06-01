@@ -454,7 +454,41 @@
     "notification_updated": "تم تحديث {{name}} من الإصدار {{oldVersion}} إلى {{version}}",
     "notification_dismiss": "إخفاء",
     "deprecatedWarning": "يتوفر إصدار أحدث",
-    "archivedError": "هذا القالب لم يعد متاحاً"
+    "archivedError": "هذا القالب لم يعد متاحاً",
+    "page_number": "صفحة {{n}}",
+    "template_load_error": "تعذر تحميل النموذج",
+    "template_deprecated": "يتوفر إصدار أحدث من هذا النموذج",
+    "retry": "إعادة المحاولة",
+    "form_filler": {
+      "validation_error_summary": "يرجى تصحيح الحقول غير الصالحة قبل الإرسال",
+      "field_required": "هذا الحقل مطلوب",
+      "field_invalid": "قيمة غير صحيحة",
+      "submit_blocked": "تعذر الإرسال بسبب أخطاء التحقق",
+      "draft_saved": "تم حفظ المسودة بنجاح",
+      "draft_save_failed": "فشل حفظ المسودة",
+      "draft_version_mismatch": "نسخة المسودة تختلف عن إصدار النموذج الحالي",
+      "submit_success": "تم إرسال النموذج بنجاح",
+      "submit_failed": "فشل إرسال النموذج. حاول مرة أخرى.",
+      "retry": "إعادة المحاولة",
+      "read_only_mode": "وضع القراءة فقط: يمكن للمصمم المراجعة دون إرسال النموذج.",
+      "save_draft": "حفظ كمسودة",
+      "print_pdf": "طباعة PDF",
+      "submit": "إرسال"
+    },
+    "form_sections": "أقسام النموذج",
+    "my_drafts": "مسوداتي",
+    "customer_picker": {
+      "title": "اختيار عميل",
+      "search_placeholder": "ابحث بالاسم أو رقم الهوية",
+      "no_results": "لا توجد نتائج مطابقة",
+      "select": "اختيار عميل"
+    },
+    "submission_confirmed": {
+      "title": "تم تأكيد الإرسال",
+      "reference_label": "رقم المرجع",
+      "submitted_at": "تاريخ الإرسال",
+      "back_to_desk": "العودة إلى المكتب"
+    }
   },
   "history": {
     "title": "سجل الإرسالات",

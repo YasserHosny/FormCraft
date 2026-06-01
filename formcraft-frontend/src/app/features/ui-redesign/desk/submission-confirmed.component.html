@@ -1,0 +1,27 @@
+<div class="submission-confirmed" *ngIf="state">
+  <mat-card class="confirmed-card">
+    <div class="confirmed-icon">
+      <mat-icon>task_alt</mat-icon>
+    </div>
+
+    <h1>{{ 'desk.submission_confirmed.title' | translate }}</h1>
+
+    <div class="meta-row">
+      <span class="label">{{ 'desk.submission_confirmed.reference_label' | translate }}</span>
+      <strong class="reference">{{ state.referenceNumber }}</strong>
+    </div>
+
+    <div class="meta-row">
+      <span class="label">{{ state.templateName }}</span>
+    </div>
+
+    <div class="meta-row">
+      <span class="label">{{ 'desk.submission_confirmed.submitted_at' | translate }}</span>
+      <span>{{ state.submittedAt | date:'medium' }}</span>
+    </div>
+
+    <button mat-raised-button color="primary" (click)="backToDesk()">
+      {{ 'desk.submission_confirmed.back_to_desk' | translate }}
+    </button>
+  </mat-card>
+</div>

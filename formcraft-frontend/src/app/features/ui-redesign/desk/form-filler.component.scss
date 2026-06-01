@@ -298,7 +298,44 @@
   color: var(--fc-text-2);
 }
 
+.required-indicator {
+  color: #d32f2f;
+  margin-inline-start: 2px;
+  font-weight: 600;
+}
+
 .required { color: var(--fc-error); }
+
+.error-summary {
+  border: 1px solid #ef9a9a;
+  background: #ffebee;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #b71c1c;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: flex-start;
+}
+
+.error-summary ul {
+  margin: 6px 0 0;
+  padding-inline-start: 18px;
+}
+
+.signature-pad-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tafqeet-text {
+  display: inline-block;
+  margin-top: 4px;
+  color: #455a64;
+  direction: rtl;
+  font-family: 'Noto Naskh Arabic', serif;
+}
 
 .field-valid {
   font-size: 14px;

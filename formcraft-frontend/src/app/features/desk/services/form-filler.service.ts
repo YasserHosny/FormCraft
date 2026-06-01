@@ -15,6 +15,16 @@ export interface TemplateElement {
   validation: any;
   formatting: any;
   custom_validators_ids?: string[];
+  options?: Array<{ value: string; label_ar: string; label_en: string }>;
+  visible_when?: {
+    conditions: Array<{ field: string; operator: string; value: string | number | boolean | null }>;
+    logic: 'AND';
+  } | null;
+  required_when?: {
+    conditions: Array<{ field: string; operator: string; value: string | number | boolean | null }>;
+    logic: 'AND';
+  } | null;
+  tafqeet_enabled?: boolean;
 }
 
 export interface TemplatePage {

@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from supabase import Client
 
+from app.core.audit import AuditLogger
 from app.models.submission import Submission
 from app.services.condition_engine import ConditionEngine
 from app.services.validators.registry import ValidatorRegistry
@@ -93,7 +94,22 @@ class SubmissionService:
                 detail="Failed to create submission",
             )
 
-        return Submission(**result.data[0])
+        submission = Submission(**result.data[0])
+
+        audit = AuditLogger(self.client)
+        await audit.log_event(
+            user_id=str(operator_id),
+            action="FORM_SUBMITTED",
+            resource_type="submission",
+            resource_id=str(submission.id),
+            metadata={
+                "template_id": str(template_id),
+                "reference_number": submission.reference_number,
+            },
+            ip_address=None,
+        )
+
+        return submission
 
     def _validate_template(self, template_id: UUID, template_version: int) -> dict:
         try:

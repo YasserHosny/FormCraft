@@ -22,18 +22,24 @@
       <mat-icon color="warn">warning</mat-icon>
       <span>A newer version of this template is available. You can still fill this version.</span>
     </div>
+    <div class="deprecated-banner" *ngIf="isReadOnly">
+      <mat-icon color="warn">lock</mat-icon>
+      <span>{{ 'desk.form_filler.read_only_mode' | translate }}</span>
+    </div>
     <!-- Toolbar -->
     <fc-form-toolbar
       [formValid]="formValid"
       [isDirty]="isDirty"
       [submitting]="submitting"
       [savingDraft]="savingDraft"
+      [isReadOnly]="isReadOnly"
       (print)="onPrint()"
       (printNext)="onPrintAndNext()"
       (saveDraft)="onSaveDraft()"
       (clearAll)="onClearAll()"
       (cancel)="onCancel()"
-      (feedback)="openFeedbackDialog()">
+      (feedback)="openFeedbackDialog()"
+      (customerPicker)="openCustomerPicker()">
     </fc-form-toolbar>
 
     <!-- Error Summary -->

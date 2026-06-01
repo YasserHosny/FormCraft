@@ -86,7 +86,7 @@ export class SignaturePadComponent implements AfterViewInit, OnDestroy, OnChange
   @Input() penColor = '#000000';
   @Input() required = false;
   @Input() value: string | null = null;
-  @Output() valueChange = new EventEmitter<string>();
+  @Output() valueChange = new EventEmitter<string | null>();
 
   @ViewChild('signatureCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
@@ -212,7 +212,7 @@ export class SignaturePadComponent implements AfterViewInit, OnDestroy, OnChange
     const canvas = this.canvasRef.nativeElement;
     this.ctx.clearRect(0, 0, canvas.width, canvas.height);
     this.isEmpty = true;
-    this.valueChange.emit('');
+    this.valueChange.emit(null);
   }
 
   confirm(): void {

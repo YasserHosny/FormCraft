@@ -13,11 +13,14 @@ import { MatDialog } from '@angular/material/dialog';
 import { VersionWarningComponent, VersionWarningData } from '../components/version-warning/version-warning.component';
 import { TemplateFeedbackDialogComponent } from '../components/template-feedback-dialog/template-feedback-dialog.component';
 import { PrintDialogComponent } from '../components/print-dialog/print-dialog.component';
+import { CustomerPickerDialogComponent } from '../components/customer-picker/customer-picker-dialog.component';
 import { DraftService } from '../services/draft.service';
 import { SubmissionService } from '../services/submission.service';
 import { HistoryService } from '../services/history.service';
 import { AutoFillService } from '../services/auto-fill.service';
+import { CustomerService } from '../services/customer.service';
 import { OfflineSyncService } from '../offline/offline-sync.service';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'fc-fill',
@@ -42,6 +45,7 @@ export class FillComponent implements OnInit, OnDestroy {
   cloneInfo: { id: string; ref: string } | null = null;
   visibleKeys = new Set<string>();
   requiredKeys = new Set<string>();
+  isReadOnly = false;
 
   private destroy$ = new Subject<void>();
   private autoSaveInterval: ReturnType<typeof setInterval> | null = null;
@@ -61,10 +65,13 @@ export class FillComponent implements OnInit, OnDestroy {
     private historyService: HistoryService,
     private conditionEngine: ConditionEngineService,
     private autoFillService: AutoFillService,
+    private customerService: CustomerService,
     private offlineSync: OfflineSyncService,
+    private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
+    this.isReadOnly = this.authService.getCurrentUser()?.role === 'designer';
     const templateId = this.route.snapshot.paramMap.get('templateId');
     if (!templateId) {
       this.error = true;
@@ -354,6 +361,28 @@ export class FillComponent implements OnInit, OnDestroy {
     });
   }
 
+  openCustomerPicker(): void {
+    const dialogRef = this.dialog.open(CustomerPickerDialogComponent, { width: '560px' });
+    dialogRef.afterClosed().pipe(takeUntil(this.destroy$)).subscribe((customer: any) => {
+      if (!customer || !this.template) return;
+      this.customerService.getAutoFillData(customer.id, this.template.id).pipe(
+        takeUntil(this.destroy$),
+      ).subscribe({
+        next: (response) => {
+          const visibleKeys = this.visibleKeys.size === 0
+            ? new Set(this.template!.pages.flatMap(p => p.elements).map(e => e.key))
+            : this.visibleKeys;
+          this.autoFillService.executeAutoFill(
+            response.mappings || [],
+            customer,
+            this.form,
+            visibleKeys,
+          );
+        },
+      });
+    });
+  }
+
   onEntrySelected(event: { entry_id: string; values: Record<string, any>; elementKey: string }): void {
     if (!this.template) return;
 
@@ -380,14 +409,10 @@ export class FillComponent implements OnInit, OnDestroy {
   }
 
   onPrint(): void {
-    if (!this.formValid || this.submitting) {
-      this.form?.markAllAsTouched();
-      this.scrollFirstInvalidFieldIntoView();
-      return;
-    }
+    if (!this.formValid || this.submitting) return;
     this.submitting = true;
 
-    const fieldValues = this.form.value;
+    const fieldValues = this.getSubmissionPayload();
     this.validationService.refreshCustomValidators().pipe(
       switchMap(() => {
         this.rebuildValidators();
@@ -442,14 +467,10 @@ export class FillComponent implements OnInit, OnDestroy {
   }
 
   onPrintAndNext(): void {
-    if (!this.formValid || this.submitting) {
-      this.form?.markAllAsTouched();
-      this.scrollFirstInvalidFieldIntoView();
-      return;
-    }
+    if (!this.formValid || this.submitting) return;
     this.submitting = true;
 
-    const fieldValues = this.form.value;
+    const fieldValues = this.getSubmissionPayload();
     this.validationService.refreshCustomValidators().pipe(
       switchMap(() => {
         this.rebuildValidators();
@@ -547,13 +568,9 @@ export class FillComponent implements OnInit, OnDestroy {
   }
 
   onQueueOfflineSubmission(): void {
-    if (!this.template || !this.formValid || this.submitting) {
-      this.form?.markAllAsTouched();
-      this.scrollFirstInvalidFieldIntoView();
-      return;
-    }
+    if (!this.template || !this.formValid || this.submitting) return;
     this.submitting = true;
-    this.offlineSync.queueSubmission(this.template.id, this.template.version, this.form.value)
+    this.offlineSync.queueSubmission(this.template.id, this.template.version, this.getSubmissionPayload())
       .then(() => {
         this.submitting = false;
         this.isDirty = false;
@@ -589,25 +606,17 @@ export class FillComponent implements OnInit, OnDestroy {
     );
   }
 
-  private scrollFirstInvalidFieldIntoView(): void {
-    setTimeout(() => {
-      const firstInvalidKey = Object.keys(this.form.controls).find((key) => this.form.get(key)?.invalid);
-      if (!firstInvalidKey) return;
-
-      const target = document.querySelector(
-        `[formcontrolname="${firstInvalidKey}"], [name="${firstInvalidKey}"], .ng-invalid`,
-      );
-      target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
+  private getSubmissionPayload(): Record<string, any> {
+    const payload = this.form.value as Record<string, any>;
+    if (this.visibleKeys.size === 0) {
+      return payload;
+    }
+    return Object.fromEntries(Object.entries(payload).filter(([key]) => this.visibleKeys.has(key)));
   }
 
   openPrintDialog(fieldValues: Record<string, any>): void {
-    const isPhone = window.matchMedia('(max-width: 599px)').matches;
     this.dialog.open(PrintDialogComponent, {
-      width: isPhone ? '100vw' : '520px',
-      maxWidth: isPhone ? '100vw' : undefined,
-      height: isPhone ? '100vh' : undefined,
-      maxHeight: isPhone ? '100vh' : undefined,
+      width: '520px',
       data: {
         templateId: this.template!.id,
         templateName: this.template!.name,
@@ -679,7 +688,7 @@ export class FillComponent implements OnInit, OnDestroy {
           error: () => {},
         });
       }
-    }, 60000);
+    }, 10000);
   }
 
   stopAutoSave(): void {

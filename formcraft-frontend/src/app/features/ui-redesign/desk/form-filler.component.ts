@@ -1,80 +1,81 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { debounceTime, retry, Subject, takeUntil, timer } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+
 import { AvatarComponent } from '../shared/components/avatar.component';
 import { StatusChipComponent } from '../shared/components/status-chip.component';
 import { FormFillerService, FillTemplate, TemplateElement } from '../../../features/desk/services/form-filler.service';
 import { ConditionEngineService, ConditionalElement } from '../../../features/desk/services/condition-engine.service';
 import { AutoFillService } from '../../../features/desk/services/auto-fill.service';
-import { CustomerService } from '../../../features/desk/services/customer.service';
-import { FillerTafqeetService } from '../../../features/desk/services/filler-tafqeet.service';
+import { FillerTafqeetService, TafqeetSourceMapping } from '../../../features/desk/services/filler-tafqeet.service';
 import { ValidationService } from '../../../features/desk/services/validation.service';
 import { SubmissionService } from '../../../features/desk/services/submission.service';
 import { DraftService } from '../../../features/desk/services/draft.service';
-import { VersionWarningComponent, VersionWarningData } from '../../../features/desk/components/version-warning/version-warning.component';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
+import { AuthService } from '../../../core/auth/auth.service';
+import { CustomerService } from '../../../features/desk/services/customer.service';
+import { VersionWarningComponent } from '../../../features/desk/components/version-warning/version-warning.component';
+import { SignaturePadComponent } from '../../../features/desk/components/signature-pad/signature-pad.component';
+import { Customer } from '../../../features/desk/customers/customer.models';
+import { CustomerPickerDialogComponent } from '../../../features/desk/components/customer-picker/customer-picker-dialog.component';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'fc-form-filler',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatSnackBarModule, MatDialogModule, TranslateModule, AvatarComponent, StatusChipComponent, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatSnackBarModule, TranslateModule, AvatarComponent, StatusChipComponent, SignaturePadComponent],
   templateUrl: './form-filler.component.html',
   styleUrl: './form-filler.component.scss',
 })
 export class FormFillerComponent implements OnInit, OnDestroy {
-  showCustomerPicker = false;
   templateId = '';
   templateName = '';
   templateCode = '';
+  retryLabel = 'Retry';
+
   loading = true;
   error: string | null = null;
+  submitError: string | null = null;
+  submitted = false;
+  submitting = false;
+  isReadOnly = false;
+
   template: FillTemplate | null = null;
   formGroup: FormGroup;
   draftId: string | null = null;
-  draftUpdatedAt: string | null = null;
-  submitting = false;
-  savingDraft = false;
-  retryCount = 0;
-  submissionError: string | null = null;
-  showRetryBanner = false;
-  tafqeetValues: Record<string, string> = {};
-  currentLanguage = 'ar';
-  visibleFields = new Set<string>();
-  requiredFields = new Set<string>();
-  hasSubmitted = false;
-  hasUnsavedChanges = false;
-  sections: any[] = [];
-  sideSections: any[] = [];
-  shortcuts = [
-    { labelKey: 'DESK.FILL.SHORTCUT_SAVE', key: 'Ctrl+S' },
-    { labelKey: 'DESK.FILL.SHORTCUT_SUBMIT', key: 'Ctrl+Enter' },
-  ];
-  recentCustomers: string[] = [];
-  customerResults: any[] = [];
-  selectedCustomer: any = null;
+  currentLanguage: 'ar' | 'en' = 'ar';
+
+  sections: Array<{ number: string; title: string; complete: boolean; fields: Array<{ key: string; type: string; label: string; placeholder: string; required: boolean; validation: any; options: Array<{value: string; label: string}>; element: TemplateElement }>; columns: number }> = [];
+  sideSections: Array<{ number: string; label: string; state: string; count: string }> = [];
+
+  visibleKeys = new Set<string>();
+  requiredKeys = new Set<string>();
+  tafqeetValues = new Map<string, string>();
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private snackBar: MatSnackBar,
+    private dialog: MatDialog,
     private formFillerService: FormFillerService,
     private conditionEngineService: ConditionEngineService,
     private autoFillService: AutoFillService,
-    private customerService: CustomerService,
     private tafqeetService: FillerTafqeetService,
     private validationService: ValidationService,
     private submissionService: SubmissionService,
     private draftService: DraftService,
+    private customerService: CustomerService,
+    private authService: AuthService,
     private languageService: LanguageService,
     private translate: TranslateService,
-    private dialog: MatDialog,
     private fb: FormBuilder,
   ) {
     this.formGroup = this.fb.group({});
@@ -84,160 +85,213 @@ export class FormFillerComponent implements OnInit, OnDestroy {
     this.templateId = this.route.snapshot.paramMap.get('templateId') || '';
     this.draftId = this.route.snapshot.queryParamMap.get('draftId');
     this.currentLanguage = this.languageService.getLanguage() === 'ar' ? 'ar' : 'en';
+    this.retryLabel = this.translate.instant('desk.retry');
+    this.isReadOnly = this.authService.getCurrentUser()?.role === 'designer';
+
+    this.conditionEngineService.visibilityChanged$.pipe(takeUntil(this.destroy$)).subscribe((keys) => {
+      this.visibleKeys = keys;
+    });
+
+    this.conditionEngineService.requiredChanged$.pipe(takeUntil(this.destroy$)).subscribe((keys) => {
+      this.requiredKeys = keys;
+      this.updateRequiredValidators();
+    });
 
     if (!this.templateId) {
       this.loading = false;
-      this.error = this.translate.instant('DESK.FILL.NO_TEMPLATE_ID');
+      this.error = this.translate.instant('desk.template_load_error');
       return;
     }
 
-    this.formFillerService.getTemplate(this.templateId).pipe(takeUntil(this.destroy$)).subscribe({
+    this.loadTemplate();
+  }
+
+  ngOnDestroy(): void {
+    if (this.formGroup.dirty && !this.submitted && this.templateId) {
+      localStorage.setItem(`fc_draft_${this.templateId}`, JSON.stringify(this.formGroup.value));
+    }
+    this.conditionEngineService.destroy();
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private loadTemplate(): void {
+    this.loading = true;
+    this.formFillerService.getTemplate(this.templateId).subscribe({
       next: (template) => {
         this.template = template;
         this.templateName = template.name;
         this.templateCode = `v${template.version}`;
+
         this.buildFormFromTemplate(template);
-        this.draftId ? this.loadDraft(this.draftId) : this.loading = false;
+        this.flushLocalDraftIfExists();
+
+        if (this.draftId) {
+          this.loadDraft(this.draftId);
+        } else {
+          this.loading = false;
+        }
         this.error = null;
       },
-      error: (err) => {
-        console.error('Failed to load template:', err);
+      error: () => {
         this.loading = false;
-        this.error = this.translate.instant('DESK.FILL.TEMPLATE_LOAD_FAILED');
+        this.error = this.translate.instant('desk.template_load_error');
       },
     });
   }
 
-  ngOnDestroy(): void {
-    if (this.hasUnsavedChanges && this.templateId) this.saveDraft();
-    this.destroy$.next();
-    this.destroy$.complete();
-    this.conditionEngineService.destroy();
+  private flushLocalDraftIfExists(): void {
+    const key = `fc_draft_${this.templateId}`;
+    const raw = localStorage.getItem(key);
+    if (!raw || !this.template) return;
+
+    try {
+      const fieldValues = JSON.parse(raw) as Record<string, any>;
+      this.draftService.saveDraft(this.templateId, this.template.version, fieldValues).subscribe({
+        next: (draft) => {
+          this.draftId = draft.id;
+          localStorage.removeItem(key);
+        },
+      });
+    } catch {
+      localStorage.removeItem(key);
+    }
   }
 
   private buildFormFromTemplate(template: FillTemplate): void {
-    const controls: Record<string, any> = {};
-    const allElements = template.pages.flatMap((page) => page.elements);
+    const controls: Record<string, FormControl> = {};
+
     this.sections = [];
     this.sideSections = [];
 
     template.pages.forEach((page, pageIndex) => {
-      const sectionNumber = String(pageIndex + 1);
-      const pageLabel = this.translate.instant('DESK.FILL.PAGE_LABEL', { number: sectionNumber });
-      page.elements.forEach((element) => {
-        const validators = [];
-        if (element.required) validators.push(Validators.required);
-        if (element.validation) validators.push(...this.validationService.getValidatorFn(element));
-        controls[element.key] = ['', validators];
+      const pageTitle = this.translate.instant('desk.page_number', { n: pageIndex + 1 });
+
+      page.elements.forEach((element: TemplateElement) => {
+        const validatorFns = this.validationService.getValidatorFn(element, template.country, this.currentLanguage);
+        controls[element.key] = new FormControl('', validatorFns);
       });
+
       this.sections.push({
-        number: sectionNumber,
-        title: pageLabel,
+        number: String(pageIndex + 1),
+        title: pageTitle,
         complete: false,
-        fields: page.elements.map((element: TemplateElement) => ({
-          key: element.key,
-          type: element.type,
-          label: this.currentLanguage === 'ar' ? element.label_ar : element.label_en,
-          placeholder: (element as any).placeholder_text?.[this.currentLanguage] || '',
-          required: element.required,
-          options: (element as any).options || [],
-          span: (element as any).span,
-          suffix: (element as any).suffix,
-          tafqeetEnabled: !!(element.formatting as any)?.tafqeet_enabled,
+        fields: page.elements.map((el: TemplateElement) => ({
+          key: el.key,
+          type: el.type,
+          label: this.currentLanguage === 'ar' ? el.label_ar : el.label_en,
+          placeholder: '',
+          required: !!el.required,
+          validation: el.validation,
+          options: (el.options || []).map((opt) => ({
+            value: opt.value,
+            label: this.currentLanguage === 'ar' ? opt.label_ar : opt.label_en,
+          })),
+          element: el,
         })),
         columns: 2,
       });
-      this.sideSections.push({ number: sectionNumber, label: pageLabel, state: pageIndex === 0 ? 'active' : 'pending', count: `0/${page.elements.length}` });
+
+      this.sideSections.push({
+        number: String(pageIndex + 1),
+        label: pageTitle,
+        state: pageIndex === 0 ? 'active' : 'pending',
+        count: `0/${page.elements.length}`,
+      });
     });
 
     this.formGroup = this.fb.group(controls);
-    this.visibleFields = new Set(allElements.map((element) => element.key));
-    this.requiredFields = new Set(allElements.filter((element) => element.required).map((element) => element.key));
-    this.initializeConditionEngine(allElements);
-    this.wireTafqeetSubscriptions(allElements);
-    this.formGroup.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.hasUnsavedChanges = true);
-  }
 
-  private initializeConditionEngine(elements: TemplateElement[]): void {
-    const conditionalElements: ConditionalElement[] = elements.map((element) => ({
-      key: element.key,
-      required: element.required,
-      visible_when: (element as any).visible_when || null,
-      required_when: (element as any).required_when || null,
-      computed_value: (element as any).computed_value || null,
-      default_value: (element as any).default_value || null,
-      placeholder_text: (element as any).placeholder_text || null,
+    const flatElements = template.pages.flatMap((p) => p.elements);
+    const conditionalElements: ConditionalElement[] = flatElements.map((el) => ({
+      key: el.key,
+      required: el.required,
+      visible_when: el.visible_when || null,
+      required_when: el.required_when || null,
     }));
-    const defaults = this.conditionEngineService.resolveDefaults(conditionalElements, this.currentLanguage);
-    Object.entries(defaults).forEach(([key, value]) => {
-      const control = this.formGroup.get(key);
-      if (control && !control.value) control.setValue(value, { emitEvent: false });
-    });
-    this.conditionEngineService.initialize(conditionalElements, this.formGroup);
-    this.conditionEngineService.visibilityChanged$.pipe(takeUntil(this.destroy$)).subscribe((visibleKeys) => {
-      this.visibleFields = visibleKeys;
-      this.syncHiddenControls(visibleKeys);
-    });
-    this.conditionEngineService.requiredChanged$.pipe(takeUntil(this.destroy$)).subscribe((requiredKeys) => this.requiredFields = requiredKeys);
-  }
 
-  private wireTafqeetSubscriptions(elements: TemplateElement[]): void {
-    elements.filter((element) => !!(element.formatting as any)?.tafqeet_enabled).forEach((element) => {
+    this.conditionEngineService.initialize(conditionalElements, this.formGroup);
+
+    this.formGroup.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.submitError = null;
+    });
+
+    for (const element of flatElements) {
+      if (!element.tafqeet_enabled) continue;
       const control = this.formGroup.get(element.key);
-      if (!control) return;
-      control.valueChanges.pipe(debounceTime(100), takeUntil(this.destroy$)).subscribe((value) => {
-        const amount = value !== null && value !== undefined && value !== '' ? Number(value) : NaN;
-        if (isNaN(amount)) {
-          this.tafqeetValues[element.key] = '';
+      if (!control) continue;
+
+      control.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
+        if (value === null || value === undefined || value === '') {
+          this.tafqeetValues.delete(element.key);
           return;
         }
-        const formatting = {
-          currency_code: (element.formatting as any)?.currency_code || 'SAR',
-          language: (element.formatting as any)?.language || 'ar',
-          show_currency: (element.formatting as any)?.show_currency !== false,
-          prefix: (element.formatting as any)?.prefix || 'none',
-          suffix: (element.formatting as any)?.suffix || 'la_ghair',
+
+        const amount = Number(value);
+        if (Number.isNaN(amount)) {
+          this.tafqeetValues.delete(element.key);
+          return;
+        }
+
+        const formatting: TafqeetSourceMapping['formatting'] = {
+          currency_code: 'SAR',
+          language: 'ar',
+          show_currency: true,
+          prefix: 'none',
+          suffix: 'la_ghair',
         };
-        this.tafqeetService.compute(amount, formatting as any).pipe(takeUntil(this.destroy$)).subscribe((result) => this.tafqeetValues[element.key] = result || '');
+
+        this.tafqeetService.compute(amount, formatting).subscribe((result) => {
+          if (result) {
+            this.tafqeetValues.set(element.key, result);
+          } else {
+            this.tafqeetValues.delete(element.key);
+          }
+        });
       });
-    });
+    }
   }
 
-  private syncHiddenControls(visibleKeys: Set<string>): void {
-    Object.keys(this.formGroup.controls).forEach((key) => {
-      const control = this.formGroup.get(key);
-      if (!control) return;
-      visibleKeys.has(key) ? control.enable({ emitEvent: false }) : control.disable({ emitEvent: false });
-    });
-  }
+  private updateRequiredValidators(): void {
+    if (!this.template) return;
 
-  private isFormValid(): boolean {
-    return Array.from(this.visibleFields).every((key) => !this.formGroup.get(key)?.invalid);
+    const allElements = this.template.pages.flatMap((p) => p.elements);
+    for (const element of allElements) {
+      const control = this.formGroup.get(element.key);
+      if (!control) continue;
+
+      const baseValidators = this.validationService.getValidatorFn(element, this.template.country, this.currentLanguage)
+        .filter((fn) => fn !== Validators.required);
+
+      if (this.requiredKeys.has(element.key) || element.required) {
+        baseValidators.unshift(Validators.required);
+      }
+
+      control.setValidators(baseValidators);
+      control.updateValueAndValidity({ emitEvent: false });
+    }
   }
 
   private loadDraft(draftId: string): void {
-    this.draftService.getDraft(draftId).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (draft: any) => {
-        if (draft.expires_at && new Date(draft.expires_at) < new Date()) {
-          this.snackBar.open(this.translate.instant('DESK.FILL.DRAFT_EXPIRED'), '', { duration: 3000 });
-          this.router.navigate(['/ui/desk']);
-          this.loading = false;
-          return;
+    this.draftService.getDraft(draftId).subscribe({
+      next: (draft) => {
+        if (draft.field_values) {
+          this.formGroup.patchValue(draft.field_values);
         }
+
         if (this.template && draft.template_version !== this.template.version) {
-          const dialogRef = this.dialog.open(VersionWarningComponent, { data: { oldVersion: draft.template_version, newVersion: this.template.version } as VersionWarningData });
-          dialogRef.afterClosed().pipe(takeUntil(this.destroy$)).subscribe((result) => {
-            if (result === 'start_fresh') this.formGroup.reset();
-            else if (draft.field_values) this.formGroup.patchValue(draft.field_values);
+          this.dialog.open(VersionWarningComponent, {
+            data: {
+              oldVersion: draft.template_version,
+              newVersion: this.template.version,
+            },
           });
+          this.snackBar.open(this.translate.instant('desk.form_filler.draft_version_mismatch'), '', { duration: 4000 });
         }
-        this.draftUpdatedAt = draft.updated_at;
-        if (draft.field_values) this.formGroup.patchValue(draft.field_values);
+
         this.loading = false;
       },
-      error: (err) => {
-        console.error('Failed to load draft:', err);
-        this.snackBar.open(this.translate.instant('DESK.FILL.DRAFT_LOAD_FAILED'), '', { duration: 3000 });
+      error: () => {
         this.loading = false;
       },
     });
@@ -248,101 +302,128 @@ export class FormFillerComponent implements OnInit, OnDestroy {
   }
 
   saveDraft(): void {
-    if (!this.templateId || this.savingDraft) return;
-    this.savingDraft = true;
-    const templateVersion = this.template?.version || 1;
-    const completionPercent = this.calculateCompletion();
-    const request$ = this.draftId
-      ? this.draftService.updateDraft(this.draftId, this.formGroup.value, undefined, completionPercent)
-      : this.draftService.saveDraft(this.templateId, templateVersion, this.formGroup.value, undefined, completionPercent);
-    request$.pipe(takeUntil(this.destroy$)).subscribe({
-      next: (response: any) => {
-        this.savingDraft = false;
-        this.hasUnsavedChanges = false;
-        if (this.draftId && this.draftUpdatedAt && response.updated_at && new Date(response.updated_at) > new Date(this.draftUpdatedAt)) {
-          this.snackBar.open(this.translate.instant('DESK.FILL.DRAFT_CONCURRENT_MODIFIED'), '', { duration: 4000 });
-        }
-        this.draftId = this.draftId || response.id;
-        this.draftUpdatedAt = response.updated_at || this.draftUpdatedAt;
-        this.snackBar.open(this.translate.instant('DESK.FILL.DRAFT_SAVED'), '', { duration: 3000 });
+    if (!this.templateId || !this.template) return;
+
+    if (this.draftId) {
+      this.draftService.updateDraft(this.draftId, this.formGroup.value).subscribe({
+        next: () => {
+          this.formGroup.markAsPristine();
+          this.snackBar.open(this.translate.instant('desk.form_filler.draft_saved'), '', { duration: 3000 });
+        },
+        error: () => {
+          this.snackBar.open(this.translate.instant('desk.form_filler.draft_save_failed'), '', { duration: 3000 });
+        },
+      });
+      return;
+    }
+
+    this.draftService.saveDraft(this.templateId, this.template.version, this.formGroup.value).subscribe({
+      next: (response) => {
+        this.draftId = response.id;
+        this.formGroup.markAsPristine();
+        this.snackBar.open(this.translate.instant('desk.form_filler.draft_saved'), '', { duration: 3000 });
       },
-      error: (err) => {
-        console.error('Failed to save draft:', err);
-        this.savingDraft = false;
-        this.snackBar.open(this.translate.instant('DESK.FILL.DRAFT_SAVE_FAILED'), '', { duration: 3000 });
+      error: () => {
+        this.snackBar.open(this.translate.instant('desk.form_filler.draft_save_failed'), '', { duration: 3000 });
       },
     });
   }
 
   submitForm(): void {
-    this.hasSubmitted = true;
-    if (!this.templateId || !this.isFormValid()) {
-      this.snackBar.open(this.translate.instant('DESK.FILL.REQUIRED_FIELDS_MISSING'), '', { duration: 3000 });
-      this.formGroup.markAllAsTouched();
-      this.scrollFirstInvalidFieldIntoView();
+    this.submitted = true;
+    this.submitError = null;
+
+    if (this.isReadOnly || !this.templateId || !this.template) {
       return;
     }
-    if (this.submitting) return;
+
+    if (!this.formGroup.valid) {
+      this.snackBar.open(this.translate.instant('desk.form_filler.submit_blocked'), '', { duration: 3000 });
+      return;
+    }
+
     this.submitting = true;
-    this.dismissBanner();
-    this.submissionService.submit(this.templateId, this.template?.version || 1, this.formGroup.value).pipe(
-      retry({ count: 3, delay: (_error, retryIndex) => { this.retryCount = retryIndex; return timer(Math.pow(2, retryIndex - 1) * 1000); } }),
-      takeUntil(this.destroy$),
-    ).subscribe({
-      next: (response: any) => {
+
+    const payload = Object.fromEntries(
+      Object.entries(this.formGroup.value).filter(([key]) => this.visibleKeys.size === 0 || this.visibleKeys.has(key)),
+    );
+
+    this.submissionService.submit(this.templateId, this.template.version, payload).subscribe({
+      next: (response) => {
         this.submitting = false;
-        this.retryCount = 0;
-        this.hasUnsavedChanges = false;
-        this.snackBar.open(this.translate.instant('DESK.FILL.SUBMIT_SUCCESS', { ref: response.reference_number }), '', { duration: 3000 });
-        setTimeout(() => this.router.navigate(['/ui/desk']), 2000);
+        this.submitted = true;
+        this.formGroup.markAsPristine();
+        this.router.navigate(['/ui/desk/submission-confirmed'], {
+          state: {
+            referenceNumber: response.reference_number,
+            templateName: this.template?.name || '',
+            submittedAt: new Date().toISOString(),
+          },
+        });
       },
-      error: (err) => {
-        console.error('Failed to submit form:', err);
+      error: () => {
         this.submitting = false;
-        this.showRetryBanner = true;
-        this.submissionError = this.translate.instant('DESK.FILL.SUBMIT_RETRY_EXHAUSTED');
-        this.snackBar.open(this.translate.instant('DESK.FILL.SUBMIT_FAILED'), '', { duration: 3000 });
+        this.submitError = this.translate.instant('desk.form_filler.submit_failed');
       },
     });
   }
 
-  retrySubmit(): void { this.submitForm(); }
-  dismissBanner(): void { this.showRetryBanner = false; this.submissionError = null; }
-
-  private scrollFirstInvalidFieldIntoView(): void {
-    setTimeout(() => document.querySelector('.form-field')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+  retrySubmit(): void {
+    this.submitForm();
   }
 
   printPdf(): void {
-    this.templateId
-      ? this.router.navigate(['/desk/fill', this.templateId], { queryParams: { print: true } })
-      : this.snackBar.open(this.translate.instant('DESK.FILL.PRINT_OPEN_FROM_DESK'), '', { duration: 3000 });
+    if (this.templateId) {
+      this.router.navigate(['/desk/fill', this.templateId], { queryParams: { print: true } });
+    }
   }
 
-  openCustomerPicker(): void { this.showCustomerPicker = true; }
-  closeCustomerPicker(): void { this.showCustomerPicker = false; }
-  createNewCustomer(): void { this.closeCustomerPicker(); this.router.navigate(['/desk/customers/new']); }
+  openCustomerPicker(): void {
+    const dialogRef = this.dialog.open(CustomerPickerDialogComponent, { width: '560px' });
+    dialogRef.afterClosed().subscribe((customer: Customer | undefined) => {
+      if (!customer || !this.templateId) return;
 
-  searchCustomers(query: string): void {
-    this.customerService.search(query).pipe(takeUntil(this.destroy$)).subscribe((response: any) => this.customerResults = response.items || response.customers || response.results || []);
-  }
-
-  selectCustomer(customerId: string, customer?: any): void {
-    if (!this.templateId) return;
-    this.selectedCustomer = customer || this.customerResults.find((c) => c.id === customerId) || null;
-    this.customerService.getAutoPopulateData(customerId, this.templateId).pipe(takeUntil(this.destroy$)).subscribe((response: any) => {
-      this.autoFillService.executeAutoFill(response.mappings || [], response.values || response.entry_values || response.customer || {}, this.formGroup, this.visibleFields);
-      this.closeCustomerPicker();
+      this.customerService.getAutoPopulateData(customer.id, this.templateId).subscribe({
+        next: (response) => {
+          const visible = this.visibleKeys.size === 0
+            ? new Set(Object.keys(this.formGroup.controls))
+            : this.visibleKeys;
+          this.autoFillService.executeAutoFill(response.mappings || [], customer as unknown as Record<string, any>, this.formGroup, visible);
+        },
+      });
     });
   }
 
-  calculateCompletion(): number {
-    const requiredVisibleKeys = Array.from(this.requiredFields).filter((key) => this.visibleFields.has(key));
-    if (requiredVisibleKeys.length === 0) return 100;
-    const filledFields = requiredVisibleKeys.filter((key) => {
-      const value = this.formGroup.get(key)?.value;
-      return value !== null && value !== undefined && value !== '';
-    }).length;
-    return Math.round((filledFields / requiredVisibleKeys.length) * 100);
+  onSignatureConfirmed(key: string, base64Value: string | null): void {
+    this.formGroup.get(key)?.setValue(base64Value);
+  }
+
+  onSignatureCleared(key: string): void {
+    this.formGroup.get(key)?.setValue(null);
+  }
+
+  getErrorMessage(fieldKey: string): string {
+    const control = this.formGroup.get(fieldKey);
+    if (!control?.errors) {
+      return '';
+    }
+    if (control.hasError('required')) {
+      return this.translate.instant('desk.form_filler.field_required');
+    }
+    return this.translate.instant('desk.form_filler.field_invalid');
+  }
+
+  getInvalidVisibleFields(): Array<{ label: string; message: string }> {
+    const items: Array<{ label: string; message: string }> = [];
+    for (const section of this.sections) {
+      for (const field of section.fields) {
+        const control = this.formGroup.get(field.key);
+        const isVisible = this.visibleKeys.size === 0 || this.visibleKeys.has(field.key);
+        if (isVisible && control?.invalid) {
+          items.push({ label: field.label, message: this.getErrorMessage(field.key) });
+        }
+      }
+    }
+    return items;
   }
 }

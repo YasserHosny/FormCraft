@@ -1,4 +1,4 @@
-import { Component, Input, Optional, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,8 +10,10 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule } from '@ngx-translate/core';
+import { debounceTime, switchMap, catchError, of } from 'rxjs';
 import { TemplateElement } from '../../services/form-filler.service';
 import { ValidationService } from '../../services/validation.service';
+import { FillerTafqeetService } from '../../services/filler-tafqeet.service';
 import { SignaturePadComponent } from '../signature-pad/signature-pad.component';
 import { TableInputComponent } from '../table-input/table-input.component';
 import { BoundDropdownComponent } from '../bound-dropdown/bound-dropdown.component';
@@ -47,6 +49,15 @@ imports: [
         </mat-error>
       </mat-form-field>
 
+      <!-- Textarea -->
+      <mat-form-field *ngSwitchCase="'textarea'" appearance="outline" class="field-full">
+        <mat-label>{{ label }}</mat-label>
+        <textarea matInput [formControl]="control" [required]="element?.required ?? false" rows="4"></textarea>
+        <mat-error *ngIf="control?.touched && control?.invalid">
+          {{ getErrorMessage() }}
+        </mat-error>
+      </mat-form-field>
+
       <!-- Number -->
       <mat-form-field *ngSwitchCase="'number'" appearance="outline" class="field-full">
         <mat-label>{{ label }}</mat-label>
@@ -55,6 +66,7 @@ imports: [
           {{ getErrorMessage() }}
         </mat-error>
       </mat-form-field>
+      <span class="tafqeet-text" *ngIf="element?.type === 'number' && element?.tafqeet_enabled && tafqeetText" dir="rtl">{{ tafqeetText }}</span>
 
       <!-- Currency -->
       <mat-form-field *ngSwitchCase="'currency'" appearance="outline" class="field-full">
@@ -210,19 +222,57 @@ imports: [
       display: block;
       margin-top: 4px;
     }
+    .tafqeet-text {
+      display: block;
+      margin-top: 4px;
+      color: #455a64;
+      direction: rtl;
+      font-family: 'Noto Naskh Arabic', serif;
+      font-size: 13px;
+    }
     :host-context([dir='rtl']) .field-label {
       text-align: right;
     }
   `],
 })
-export class FieldRendererComponent {
+export class FieldRendererComponent implements OnInit {
   @Input() element: TemplateElement | null = null;
   @Input() control: FormControl = new FormControl('');
   @Input() label = '';
   @Input() country = '';
   @Output() entrySelected = new EventEmitter<{ entry_id: string; values: Record<string, any>; elementKey: string }>();
 
-  constructor(private validationService: ValidationService) {}
+  tafqeetText: string | null = null;
+
+  constructor(
+    private validationService: ValidationService,
+    private tafqeetService: FillerTafqeetService,
+  ) {}
+
+  ngOnInit(): void {
+    if (this.element?.type === 'number' && this.element?.tafqeet_enabled) {
+      const formatting = {
+        currency_code: this.element?.formatting?.currency_code || 'SAR',
+        language: this.element?.formatting?.language || 'ar',
+        show_currency: this.element?.formatting?.show_currency !== false,
+        prefix: 'none',
+        suffix: 'la_ghair',
+      };
+
+      this.control.valueChanges.pipe(
+        debounceTime(200),
+        switchMap((value: any) => {
+          const num = value !== null && value !== undefined && value !== '' ? Number(value) : NaN;
+          if (isNaN(num)) {
+            return of(null);
+          }
+          return this.tafqeetService.compute(num, formatting).pipe(catchError(() => of(null)));
+        }),
+      ).subscribe((result) => {
+        this.tafqeetText = result;
+      });
+    }
+  }
 
   get fieldDir(): 'rtl' | 'ltr' | 'auto' {
     return this.element?.direction === 'ltr' || this.element?.direction === 'auto' ? this.element.direction : 'rtl';
@@ -283,9 +333,9 @@ export class FieldRendererComponent {
     }
   }
 
-  onSignatureChange(dataUrl: string): void {
+  onSignatureChange(dataUrl: string | null): void {
     if (!dataUrl) {
-      this.control.setValue('');
+      this.control.setValue(null);
       this.control.markAsTouched();
       return;
     }

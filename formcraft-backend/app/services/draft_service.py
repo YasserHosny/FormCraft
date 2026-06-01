@@ -87,7 +87,7 @@ class DraftService:
         audit = AuditLogger(self.client)
         await audit.log_event(
             user_id=str(operator_id),
-            action="DRAFT_UPDATED",
+            action="DRAFT_SAVED",
             resource_type="draft",
             resource_id=str(draft_id),
             metadata={"field_count": len(field_values) if field_values else 0},
@@ -120,6 +120,16 @@ class DraftService:
             )
 
         return draft
+
+    async def list_drafts(self, operator_id: UUID) -> list[Draft]:
+        result = (
+            self.client.table("drafts")
+            .select("*")
+            .eq("operator_id", str(operator_id))
+            .order("updated_at", desc=True)
+            .execute()
+        )
+        return [Draft(**row) for row in (result.data or [])]
 
     async def delete_draft(self, draft_id: UUID, operator_id: UUID) -> None:
         result = (

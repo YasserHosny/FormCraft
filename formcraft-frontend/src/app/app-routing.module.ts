@@ -105,7 +105,7 @@ const routes: Routes = [
     loadChildren: () =>
       import('./features/desk/desk.module').then((m) => m.DeskModule),
     canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['admin', 'branch_manager', 'operator'] },
+    data: { roles: ['admin', 'branch_manager', 'operator', 'designer'] },
   },
   {
     path: 'platform',
