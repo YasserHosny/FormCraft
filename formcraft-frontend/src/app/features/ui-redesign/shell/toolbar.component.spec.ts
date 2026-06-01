@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterModule } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
+import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
 import { AuthService, User } from '../../../core/auth/auth.service';
 import { ToolbarComponent } from './toolbar.component';
@@ -18,7 +19,11 @@ describe('Redesign ToolbarComponent', () => {
     });
 
     await TestBed.configureTestingModule({
-      imports: [ToolbarComponent, RouterModule.forRoot([])],
+      imports: [
+        ToolbarComponent,
+        RouterModule.forRoot([]),
+        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+      ],
       providers: [
         {
           provide: AuthService,

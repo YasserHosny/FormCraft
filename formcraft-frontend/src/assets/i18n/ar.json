@@ -3,8 +3,25 @@
     "studio": "استوديو التصميم",
     "desk": "مكتب النماذج",
     "admin": "لوحة الإدارة",
-    "platform": "إدارة المنصة",
-    "unauthorized": "غير مصرح بهذا القسم"
+    "adminExport": "التصدير",
+    "portal": "البوابة",
+    "integrations": "التكاملات",
+    "platform": "المنصة",
+    "unauthorized": "غير مصرح بهذا القسم",
+    "menu": "القائمة",
+    "new_theme": "الثيم الجديد",
+    "classic_theme": "الثيم الكلاسيكي",
+    "open_classic": "فتح الثيم الكلاسيكي",
+    "keyboard_shortcuts": "اختصارات لوحة المفاتيح",
+    "my_feedback": "ملاحظاتي",
+    "notifications": "الإشعارات",
+    "profile": "الملف الشخصي",
+    "logout": "تسجيل الخروج",
+    "role_admin": "مسؤول",
+    "role_designer": "مصمم",
+    "role_operator": "مشغل",
+    "role_viewer": "مشاهد",
+    "role_branch_manager": "مدير فرع"
   },
   "common": {
     "save": "حفظ",
@@ -25,7 +42,8 @@
     "none": "بدون",
     "all": "الكل",
     "view": "عرض",
-    "clear": "مسح"
+    "clear": "مسح",
+    "help": "المساعدة"
   },
   "adminExport": {
     "title": "تصدير البيانات",
