@@ -14,19 +14,32 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--fc-surface);
-  border: 1px solid var(--fc-border-strong);
+  background: transparent;
+  border: 1px solid var(--fc-border);
   border-radius: 6px;
   height: 32px;
   padding: 0 10px;
   flex: 1;
   max-width: 380px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    border-color: var(--fc-border-strong);
+    background: var(--fc-surface-2);
+  }
+
+  &:focus-within {
+    border-color: var(--fc-primary);
+    background: var(--fc-surface);
+    box-shadow: 0 0 0 2px var(--fc-primary-50);
+  }
 
   mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
     color: var(--fc-text-3);
+    opacity: 0.8;
   }
 
   input {
@@ -35,11 +48,13 @@
     outline: none;
     background: transparent;
     font: inherit;
-    font-size: 13px;
+    font-size: 12px;
+    font-weight: 500;
     color: var(--fc-text);
 
     &::placeholder {
       color: var(--fc-text-3);
+      opacity: 0.55;
     }
   }
 }

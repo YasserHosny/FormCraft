@@ -197,7 +197,7 @@
     "pageCount": "{{count}} pages",
     "list_title": "Templates",
     "subtitle": "Manage {{total}} institutional templates · {{published}} published · {{review}} in review",
-    "search_placeholder": "Search templates by name, code or department...",
+    "search_placeholder": "Search templates and customers...",
     "status_label": "Status:",
     "dept_label": "Department:",
     "btn_export": "Export",
