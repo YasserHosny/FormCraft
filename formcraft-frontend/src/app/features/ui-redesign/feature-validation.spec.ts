@@ -321,6 +321,9 @@ describe('FormCraft feature validation automation', () => {
         jasmine.createSpyObj('HistoryService', {
           getSubmissions: of({ total: 2, items: [{ id: '1', template_name: 'Test', status: 'submitted', reference_number: 'REF-001', created_at: new Date(), key_summary: ['Customer'] }] }),
         }),
+        {
+          currentUser$: of({ display_name: 'Operator', email: 'operator@example.com' }),
+        } as any,
       );
 
       component.ngOnInit();
@@ -336,11 +339,70 @@ describe('FormCraft feature validation automation', () => {
     it('validates form filler groups, save, print, submit, and customer picker actions', () => {
       const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
       const snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+      const visibility$ = new BehaviorSubject<Set<string>>(new Set(['name']));
+      const required$ = new BehaviorSubject<Set<string>>(new Set());
+      const formFillerService = jasmine.createSpyObj('FormFillerService', {
+        getTemplate: of({
+          id: 'tpl-1',
+          name: 'Fill Template',
+          version: 4,
+          language: 'ar',
+          country: 'AE',
+          is_deprecated: false,
+          pages: [{
+            id: 'p1',
+            sort_order: 1,
+            width_mm: 210,
+            height_mm: 297,
+            elements: [{
+              id: 'e1',
+              key: 'name',
+              type: 'text',
+              label_ar: 'الاسم',
+              label_en: 'Name',
+              required: false,
+              direction: 'auto',
+              sort_order: 1,
+              validation: null,
+              formatting: {},
+            }],
+          }],
+        }),
+      });
+      const conditionEngine = jasmine.createSpyObj('ConditionEngineService', ['initialize', 'destroy', 'resolveDefaults']);
+      conditionEngine.visibilityChanged$ = visibility$.asObservable();
+      conditionEngine.requiredChanged$ = required$.asObservable();
+      conditionEngine.resolveDefaults.and.returnValue({});
+      const translate = jasmine.createSpyObj('TranslateService', ['instant']);
+      translate.instant.and.callFake((key: string, params?: any) => key === 'DESK.FILL.PAGE_LABEL' ? `Page ${params.number}` : key);
+      const draftService = jasmine.createSpyObj('DraftService', {
+        saveDraft: of({ id: 'draft-1', updated_at: '2026-06-01T00:00:00Z' }),
+        updateDraft: of({ id: 'draft-1', updated_at: '2026-06-01T00:00:00Z' }),
+      });
+      const submissionService = jasmine.createSpyObj('SubmissionService', {
+        submit: of({ reference_number: 'REF-1' }),
+      });
       const component = new FormFillerComponent(
-        { snapshot: { paramMap: new Map([['templateId', 'tpl-1']]) } } as any,
+        {
+          snapshot: {
+            paramMap: new Map([['templateId', 'tpl-1']]),
+            queryParamMap: new Map(),
+          },
+        } as any,
         router,
         snackBar,
-        jasmine.createSpyObj<TemplateService>('TemplateService', { get: of({ name: 'Fill Template', version: 4 }) }),
+        formFillerService as any,
+        conditionEngine,
+        jasmine.createSpyObj('AutoFillService', ['executeAutoFill']),
+        jasmine.createSpyObj('CustomerService', ['search', 'getAutoPopulateData']),
+        jasmine.createSpyObj('FillerTafqeetService', { compute: of('') }),
+        jasmine.createSpyObj('ValidationService', { getValidatorFn: [] }),
+        submissionService,
+        draftService,
+        { getLanguage: () => 'ar' } as any,
+        translate,
+        jasmine.createSpyObj('MatDialog', ['open']),
+        new FormBuilder(),
       );
 
       component.ngOnInit();
@@ -351,16 +413,20 @@ describe('FormCraft feature validation automation', () => {
       component.createNewCustomer();
 
       expect(component.sections.length).toBeGreaterThan(0);
-      expect(snackBar.open).toHaveBeenCalledWith('تم حفظ المسودة بنجاح', '', { duration: 3000 });
-      expect(snackBar.open).toHaveBeenCalledWith('تم إرسال النموذج بنجاح', '', { duration: 3000 });
+      expect(snackBar.open).toHaveBeenCalledWith('DESK.FILL.DRAFT_SAVED', '', { duration: 3000 });
+      expect(snackBar.open).toHaveBeenCalledWith('DESK.FILL.SUBMIT_SUCCESS', '', { duration: 3000 });
       expect(router.navigate).toHaveBeenCalledWith(['/desk/fill', 'tpl-1'], { queryParams: { print: true } });
       expect(router.navigate).toHaveBeenCalledWith(['/desk/customers/new']);
     });
 
     it('validates customer table add/view/fill actions', () => {
       const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
-      const component = new CustomersComponent(router);
+      const customerService = jasmine.createSpyObj('CustomerService', {
+        list: of({ items: [{ id: 'cust-1', name: 'Customer' }], total: 1 }),
+      });
+      const component = new CustomersComponent(router, customerService);
 
+      component.ngOnInit();
       component.addCustomer();
       component.viewCustomer('cust-1');
       component.fillFormForCustomer();

@@ -130,9 +130,9 @@ export class ValidationService {
     }
 
     return ids
-      .map((id: string) => this.customValidators.find((validator) => validator.id === id))
-      .filter((validator): validator is CustomValidator => !!validator)
-      .map((validator) => {
+      .map((id: string): CustomValidator | undefined => this.customValidators.find((validator: CustomValidator) => validator.id === id))
+      .filter((validator: CustomValidator | undefined): validator is CustomValidator => !!validator)
+      .map((validator: CustomValidator) => {
         const message = this.pickErrorMessage(validator, { preferredLanguage: language });
         return (control: AbstractControl) => {
           const value = control.value;

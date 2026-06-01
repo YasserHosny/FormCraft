@@ -32,6 +32,7 @@ async def create_draft(
         operator_id=current_user.id,
         org_id=current_user.id,
         name=body.name,
+        completion_percent=body.completion_percent,
     )
     return draft
 
@@ -51,6 +52,7 @@ async def update_draft(
         operator_id=current_user.id,
         field_values=body.field_values,
         name=body.name,
+        completion_percent=body.completion_percent,
     )
     return draft
 

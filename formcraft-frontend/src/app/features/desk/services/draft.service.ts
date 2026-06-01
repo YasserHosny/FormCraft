@@ -21,11 +21,13 @@ export interface CreateDraftRequest {
   template_id: string;
   template_version: number;
   field_values: Record<string, any>;
+  completion_percent?: number;
   name?: string;
 }
 
 export interface UpdateDraftRequest {
   field_values: Record<string, any>;
+  completion_percent?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -34,7 +36,13 @@ export class DraftService {
 
   constructor(private http: HttpClient) {}
 
-  saveDraft(templateId: string, templateVersion: number, fieldValues: Record<string, any>, name?: string): Observable<DraftResponse> {
+  saveDraft(
+    templateId: string,
+    templateVersion: number,
+    fieldValues: Record<string, any>,
+    name?: string,
+    completionPercent?: number,
+  ): Observable<DraftResponse> {
     const body: CreateDraftRequest = {
       template_id: templateId,
       template_version: templateVersion,
@@ -43,13 +51,24 @@ export class DraftService {
     if (name) {
       body.name = name;
     }
+    if (completionPercent !== undefined) {
+      body.completion_percent = completionPercent;
+    }
     return this.http.post<DraftResponse>(this.apiUrl, body);
   }
 
-  updateDraft(draftId: string, fieldValues: Record<string, any>): Observable<DraftResponse> {
+  updateDraft(
+    draftId: string,
+    fieldValues: Record<string, any>,
+    name?: string,
+    completionPercent?: number,
+  ): Observable<DraftResponse> {
     const body: UpdateDraftRequest = {
       field_values: fieldValues,
     };
+    if (completionPercent !== undefined) {
+      body.completion_percent = completionPercent;
+    }
     return this.http.patch<DraftResponse>(`${this.apiUrl}/${draftId}`, body);
   }
 

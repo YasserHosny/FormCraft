@@ -25,6 +25,7 @@ class DraftService:
         operator_id: UUID,
         org_id: UUID,
         name: str | None = None,
+        completion_percent: int | None = None,
     ) -> Draft:
         data = {
             "template_id": str(template_id),
@@ -33,6 +34,7 @@ class DraftService:
             "org_id": str(org_id),
             "field_values": field_values,
             "name": name,
+            "completion_percent": completion_percent if completion_percent is not None else 0,
         }
 
         result = self.client.table("drafts").insert(data).execute()
@@ -62,12 +64,15 @@ class DraftService:
         operator_id: UUID,
         field_values: dict | None = None,
         name: str | None = None,
+        completion_percent: int | None = None,
     ) -> Draft:
         updates = {"updated_at": datetime.now(timezone.utc).isoformat()}
         if field_values is not None:
             updates["field_values"] = field_values
         if name is not None:
             updates["name"] = name
+        if completion_percent is not None:
+            updates["completion_percent"] = completion_percent
 
         result = (
             self.client.table("drafts")

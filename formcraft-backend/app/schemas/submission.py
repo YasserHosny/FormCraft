@@ -62,11 +62,13 @@ class CreateDraftRequest(BaseModel):
     template_version: int
     field_values: dict[str, object] = Field(default_factory=dict)
     name: str | None = None
+    completion_percent: int | None = None
 
 
 class UpdateDraftRequest(BaseModel):
     field_values: dict[str, object] | None = None
     name: str | None = None
+    completion_percent: int | None = None
 
 
 class DraftResponse(BaseModel):
