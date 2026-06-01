@@ -22,6 +22,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { CustomerService } from '../../../features/desk/services/customer.service';
 import { VersionWarningComponent } from '../../../features/desk/components/version-warning/version-warning.component';
 import { SignaturePadComponent } from '../../../features/desk/components/signature-pad/signature-pad.component';
+import { PrintDialogComponent } from '../../../features/desk/components/print-dialog/print-dialog.component';
 import { Customer } from '../../../features/desk/customers/customer.models';
 import { CustomerPickerDialogComponent } from '../../../features/desk/components/customer-picker/customer-picker-dialog.component';
 import { Subject, takeUntil } from 'rxjs';
@@ -373,9 +374,41 @@ export class FormFillerComponent implements OnInit, OnDestroy {
   }
 
   printPdf(): void {
-    if (this.templateId) {
-      this.router.navigate(['/desk/fill', this.templateId], { queryParams: { print: true } });
+    if (!this.template || !this.templateId) return;
+    if (!this.formGroup.valid) {
+      this.snackBar.open(this.translate.instant('desk.form_filler.submit_blocked'), '', { duration: 3000 });
+      return;
     }
+
+    this.submitting = true;
+    const payload = Object.fromEntries(
+      Object.entries(this.formGroup.value).filter(([key]) => this.visibleKeys.size === 0 || this.visibleKeys.has(key)),
+    );
+
+    this.submissionService.submit(this.templateId, this.template.version, payload).subscribe({
+      next: (response) => {
+        this.submitting = false;
+        this.submitted = true;
+        this.formGroup.markAsPristine();
+        this.snackBar.open(
+          this.translate.instant('filler.reference_number', { ref: response.reference_number }),
+          '',
+          { duration: 4000 },
+        );
+        this.dialog.open(PrintDialogComponent, {
+          width: '520px',
+          data: {
+            templateId: this.templateId,
+            templateName: this.template?.name || '',
+            fieldValues: payload,
+          },
+        });
+      },
+      error: () => {
+        this.submitting = false;
+        this.snackBar.open(this.translate.instant('desk.form_filler.submit_failed'), '', { duration: 3000 });
+      },
+    });
   }
 
   openCustomerPicker(): void {

@@ -64,6 +64,12 @@ export class ValidationService {
         this.customValidators$ = undefined;
         return validators;
       }),
+      catchError(() => {
+        // Endpoint may be unavailable (e.g. feature not yet deployed). Treat as empty list
+        // so the forkJoin in the fill component does not crash the whole load sequence.
+        this.customValidators$ = undefined;
+        return of([] as CustomValidator[]);
+      }),
       shareReplay(1),
     );
     return this.customValidators$;
