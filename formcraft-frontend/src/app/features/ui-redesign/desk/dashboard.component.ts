@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
 import { StatusChipComponent } from '../shared/components/status-chip.component';
 import { AvatarComponent } from '../shared/components/avatar.component';
@@ -10,14 +11,15 @@ import { DraftListComponent } from '../../../features/desk/components/draft-list
 import { TemplateService } from '../../../core/services/template.service';
 import { DeskService } from '../../../features/desk/services/desk.service';
 import { HistoryService } from '../../../features/desk/services/history.service';
-import { AuthService } from '../../../core/auth/auth.service';
-import { Subject } from 'rxjs';
+import { AuthService, User } from '../../../core/auth/auth.service';
+import { LanguageService } from '../../../core/i18n/language.service';
+import { Subject, merge } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'fc-desk-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, PageHeaderComponent, StatusChipComponent, AvatarComponent, KpiCardComponent, DraftListComponent],
+  imports: [CommonModule, RouterModule, MatIconModule, TranslateModule, PageHeaderComponent, StatusChipComponent, AvatarComponent, KpiCardComponent, DraftListComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
@@ -41,10 +43,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Real pinned templates
   pinnedTemplates: any[] = [];
 
-  // User greeting
+  // User greeting — rebuilt on user change or language switch
   userGreeting: string = '';
   pageSubtitle: string = '';
 
+  private currentUser: User | null = null;
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -52,29 +55,35 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private templateService: TemplateService,
     private deskService: DeskService,
     private historyService: HistoryService,
-    private authService: AuthService
+    private authService: AuthService,
+    private translate: TranslateService,
+    private languageService: LanguageService,
   ) {}
 
   ngOnInit(): void {
     this.loading = true;
-    this.loadUserGreeting();
+
+    // Rebuild greeting whenever the user or language changes
+    merge(
+      this.authService.currentUser$,
+      this.translate.onLangChange,
+    ).pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.buildGreeting());
+
     this.loadDashboardData();
   }
 
-  private loadUserGreeting(): void {
-    this.authService.currentUser$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((user) => {
-        if (user) {
-          const displayName = user.display_name || user.email || 'المستخدم';
-          this.userGreeting = `مرحباً ${displayName}`;
+  private buildGreeting(): void {
+    this.currentUser = this.authService.getCurrentUser();
+    if (!this.currentUser) return;
 
-          // Get current date with day name
-          const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-          const dateStr = new Date().toLocaleDateString('ar-AE', options);
-          this.pageSubtitle = dateStr;
-        }
-      });
+    const name = this.currentUser.display_name || this.currentUser.email || '';
+    this.userGreeting = this.translate.instant('desk.dashboard.greeting', { name });
+
+    const lang = this.languageService.getLanguage();
+    const locale = lang === 'ar' ? 'ar-AE' : 'en-GB';
+    const opts: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    this.pageSubtitle = new Date().toLocaleDateString(locale, opts);
   }
 
   private loadDashboardData(): void {
@@ -82,19 +91,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (dashboardData) => {
-          // T007: Extract KPI counts from dashboard
           this.pendingDrafts = dashboardData.drafts?.length || 0;
           this.activeTemplates = dashboardData.templates?.total || 0;
 
-          // Extract pinned templates (max 6, published only)
           this.pinnedTemplates = (dashboardData.pinned || [])
             .filter((p: any) => p.is_published === true)
             .slice(0, 6);
 
-          // Extract drafts
           this.drafts = dashboardData.drafts || [];
 
-          // T008: Get today's submissions count
           const today = new Date().toISOString().split('T')[0];
           this.historyService.getSubmissions({ date_from: today, limit: 1 })
             .pipe(takeUntil(this.destroy$))
@@ -112,13 +117,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
               },
             });
 
-          // Load recent activity
           this.historyService.getSubmissions({ limit: 10, sort_by: 'created_at', sort_dir: 'desc' })
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-              next: (response) => {
-                this.activities = response.items || [];
-              },
+              next: (response) => { this.activities = response.items || []; },
               error: (err) => {
                 console.error('Failed to load activities:', err);
                 this.activities = [];
@@ -157,5 +159,4 @@ export class DashboardComponent implements OnInit, OnDestroy {
   fillTemplate(templateId: string): void {
     this.router.navigate(['/ui/desk/fill', templateId]);
   }
-
 }
