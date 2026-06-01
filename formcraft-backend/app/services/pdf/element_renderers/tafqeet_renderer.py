@@ -8,7 +8,6 @@ import logging
 from decimal import Decimal
 
 from app.services.pdf.element_renderers.base import ElementHTMLRenderer
-from app.services.pdf.bidi import apply_bidi, reshape_arabic
 from app.services.tafqeet.converter import TafqeetConverter
 
 logger = logging.getLogger(__name__)
@@ -76,11 +75,12 @@ class TafqeetRenderer(ElementHTMLRenderer):
             is_ar = any("\u0600" <= ch <= "\u06FF" for ch in line)
             direction = "rtl" if is_ar else "ltr"
             text_align = "right" if is_ar else "left"
-            # FR-013: Arabic text requires arabic-reshaper + python-bidi
-            shaped = apply_bidi(reshape_arabic(line)) if is_ar else line
+            # WeasyPrint uses HarfBuzz which handles Arabic shaping and BiDi natively.
+            # Do NOT pre-process with arabic_reshaper / python-bidi \u2014 that causes double
+            # BiDi processing which reverses/breaks the glyph order.
             html_lines.append(
                 f'<p style="margin:0; direction:{direction}; text-align:{text_align};">'
-                f"{shaped}</p>"
+                f"{line}</p>"
             )
 
         style = self._base_style(element)

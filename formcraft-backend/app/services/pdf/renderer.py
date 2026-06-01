@@ -14,6 +14,7 @@ def render_template_pdf(
     overlay_mode: bool = False,
     x_offset_mm: float = 0.0,
     y_offset_mm: float = 0.0,
+    field_values: dict | None = None,
 ) -> bytes:
     """Render a template dict to PDF bytes via WeasyPrint."""
     html_string = build_html(
@@ -21,6 +22,7 @@ def render_template_pdf(
         overlay_mode=overlay_mode,
         x_offset_mm=x_offset_mm,
         y_offset_mm=y_offset_mm,
+        field_values=field_values or {},
     )
     mode_label = "overlay" if overlay_mode else "full"
     logger.info("Rendering %s PDF for template: %s", mode_label, template.get("name", "unknown"))

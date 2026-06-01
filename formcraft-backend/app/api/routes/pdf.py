@@ -1,6 +1,7 @@
 from io import BytesIO
 from typing import Annotated
 from uuid import UUID
+from urllib.parse import quote
 from zipfile import ZipFile
 
 from fastapi import APIRouter, Depends
@@ -15,6 +16,23 @@ from app.services.print_settings_service import PrintSettingsService
 from app.services.template_service import TemplateService
 
 router = APIRouter(prefix="/pdf", tags=["PDF"])
+
+
+def _content_disposition(disposition: str, filename: str) -> str:
+    """Build a Content-Disposition header that is safe for non-ASCII filenames.
+
+    Uses RFC 5987 ``filename*`` encoding so Arabic (and any Unicode) filenames
+    are transmitted correctly, while keeping a plain ASCII ``filename`` fallback
+    for older clients that don't understand ``filename*``.
+    """
+    try:
+        # Attempt latin-1 encoding — succeeds for pure-ASCII names
+        filename.encode("latin-1")
+        return f'{disposition}; filename="{filename}"'
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        # Percent-encode the full name and use RFC 5987 extended value
+        encoded = quote(filename, safe="")
+        return f"{disposition}; filename*=UTF-8''{encoded}"
 
 
 def _get_profile_offsets(client, profile_id: UUID) -> tuple[float, float]:
@@ -63,13 +81,15 @@ async def render_pdf(
                 # printer_profiles table may not exist yet (migration pending)
                 pass
 
+    fv = body.field_values if body else None
+
     if print_mode == "both":
         buf = BytesIO()
         with ZipFile(buf, "w") as zf:
-            full_pdf = render_template_pdf(template, overlay_mode=False)
+            full_pdf = render_template_pdf(template, overlay_mode=False, field_values=fv)
             zf.writestr(f"{template['name']}_full.pdf", full_pdf)
             overlay_pdf = render_template_pdf(
-                template, overlay_mode=True, x_offset_mm=x_offset, y_offset_mm=y_offset
+                template, overlay_mode=True, x_offset_mm=x_offset, y_offset_mm=y_offset, field_values=fv
             )
             zf.writestr(f"{template['name']}_overlay.pdf", overlay_pdf)
         buf.seek(0)
@@ -77,7 +97,7 @@ async def render_pdf(
             buf,
             media_type="application/zip",
             headers={
-                "Content-Disposition": f'attachment; filename="{template["name"]}_prints.zip"'
+                "Content-Disposition": _content_disposition("attachment", f'{template["name"]}_prints.zip')
             },
         )
 
@@ -87,13 +107,14 @@ async def render_pdf(
         overlay_mode=overlay_mode,
         x_offset_mm=x_offset,
         y_offset_mm=y_offset,
+        field_values=fv,
     )
 
     return StreamingResponse(
         iter([pdf_bytes]),
         media_type="application/pdf",
         headers={
-            "Content-Disposition": f'attachment; filename="{template["name"]}.pdf"'
+            "Content-Disposition": _content_disposition("attachment", f'{template["name"]}.pdf')
         },
     )
 
@@ -113,6 +134,6 @@ async def preview_pdf(
         iter([pdf_bytes]),
         media_type="application/pdf",
         headers={
-            "Content-Disposition": f'inline; filename="{template["name"]}.pdf"'
+            "Content-Disposition": _content_disposition("inline", f'{template["name"]}.pdf')
         },
     )
