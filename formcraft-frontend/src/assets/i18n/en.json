@@ -1348,7 +1348,26 @@
     "period": "Period",
     "dateRange": "Date Range",
     "na": "N/A",
-    "computedAt": "Computed at"
+    "computedAt": "Computed at",
+    "dashboard": {
+      "loading": "Loading...",
+      "error": "Failed to load. Retry?",
+      "empty": "No data for selected period.",
+      "retry": "Retry",
+      "filter": {
+        "period": "Period",
+        "department": "Department",
+        "branch": "Branch",
+        "all_departments": "All Departments",
+        "all_branches": "All Branches"
+      },
+      "periods": {
+        "7d": "7 Days",
+        "30d": "30 Days",
+        "90d": "90 Days",
+        "yearly": "Yearly"
+      }
+    }
   },
   "RETENTION": {
     "TITLE": "Data Retention",

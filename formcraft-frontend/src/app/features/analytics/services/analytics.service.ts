@@ -4,12 +4,17 @@ import { Observable } from 'rxjs';
 import {
   BusiestHoursResponse,
   ComplianceScorecardResponse,
+  DashboardFilter,
+  DashboardSummaryResponse,
+  DepartmentDistributionResponse,
   ExportRequest,
   ExportResponse,
   FieldAnalyticsResponse,
   OperatorAnalyticsResponse,
+  SubmissionsOverTimeResponse,
   TemplatesNeedingAttentionResponse,
   TemplateUsageResponse,
+  TopTemplatesResponse,
   VersionAdoptionResponse,
 } from '../models/analytics.model';
 
@@ -68,5 +73,33 @@ export class AnalyticsService {
 
   exportReport(request: ExportRequest): Observable<ExportResponse> {
     return this.http.post<ExportResponse>(`${this.baseUrl}/export`, request);
+  }
+
+  getDashboardSummary(filter: DashboardFilter): Observable<DashboardSummaryResponse> {
+    let params: any = { period: filter.period };
+    if (filter.departmentId) params.department_id = filter.departmentId;
+    if (filter.branchId) params.branch_id = filter.branchId;
+    return this.http.get<DashboardSummaryResponse>(`${this.baseUrl}/dashboard/summary`, { params });
+  }
+
+  getSubmissionsOverTime(filter: DashboardFilter): Observable<SubmissionsOverTimeResponse> {
+    let params: any = { period: filter.period };
+    if (filter.departmentId) params.department_id = filter.departmentId;
+    if (filter.branchId) params.branch_id = filter.branchId;
+    return this.http.get<SubmissionsOverTimeResponse>(`${this.baseUrl}/dashboard/submissions-over-time`, { params });
+  }
+
+  getDepartmentDistribution(filter: Omit<DashboardFilter, 'departmentId'>): Observable<DepartmentDistributionResponse> {
+    let params: any = { period: filter.period };
+    if (filter.branchId) params.branch_id = filter.branchId;
+    return this.http.get<DepartmentDistributionResponse>(`${this.baseUrl}/dashboard/department-distribution`, { params });
+  }
+
+  getTopTemplates(filter: DashboardFilter, limit?: number): Observable<TopTemplatesResponse> {
+    let params: any = { period: filter.period };
+    if (filter.departmentId) params.department_id = filter.departmentId;
+    if (filter.branchId) params.branch_id = filter.branchId;
+    if (limit !== undefined) params.limit = limit;
+    return this.http.get<TopTemplatesResponse>(`${this.baseUrl}/dashboard/top-templates`, { params });
   }
 }

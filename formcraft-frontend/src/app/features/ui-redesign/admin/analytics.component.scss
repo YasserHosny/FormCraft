@@ -393,6 +393,56 @@
   mat-icon { font-size: 16px; width: 16px; height: 16px; color: var(--fc-text-3); }
 }
 
+// Skeleton placeholders
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.skeleton-box {
+  background: linear-gradient(90deg, var(--fc-surface-2) 25%, var(--fc-surface-3) 50%, var(--fc-surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+.kpi-skeleton {
+  height: 96px;
+}
+
+.chart-skeleton {
+  height: 200px;
+}
+
+.donut-skeleton {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+}
+
+.bar-skeleton {
+  height: 240px;
+}
+
+.table-skeleton {
+  height: 200px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// Widget error state
+.widget-error {
+  padding: 16px;
+  text-align: center;
+  color: var(--fc-text-2);
+  font-size: 13px;
+}
+
 // Responsive
 @media (max-width: 1200px) {
   .chart-row-1, .chart-row-2 { grid-template-columns: 1fr; }

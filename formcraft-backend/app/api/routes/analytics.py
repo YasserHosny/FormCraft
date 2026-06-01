@@ -7,21 +7,27 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from supabase import Client
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, require_role
 from app.core.supabase import get_supabase_client
+from app.models.enums import Role
 from app.models.user import UserProfile as User
 from app.schemas.analytics import (
     BusiestHoursResponse,
     ComplianceScorecardResponse,
+    DashboardSummaryResponse,
+    DepartmentDistributionResponse,
     ExportRequest,
     ExportResponse,
     FieldAnalyticsResponse,
     OperatorAnalyticsResponse,
+    SubmissionsOverTimeResponse,
     TemplatesNeedingAttentionResponse,
     TemplateUsageResponse,
+    TopTemplatesResponse,
     VersionAdoptionResponse,
 )
 from app.services.analytics.compliance_analytics import ComplianceAnalyticsService
+from app.services.analytics.dashboard_analytics import DashboardAnalyticsService
 from app.services.analytics.export_service import AnalyticsExportService
 from app.services.analytics.field_analytics import FieldAnalyticsService
 from app.services.analytics.operator_analytics import OperatorAnalyticsService
@@ -168,3 +174,76 @@ async def export_analytics(
         request=request,
     )
     return ExportResponse(**result)
+
+
+# ───────────────────────────────────────────────────────────────
+# 054-analytics-real-data — Dashboard Routes (stubs → 501)
+# ───────────────────────────────────────────────────────────────
+
+
+@router.get("/dashboard/summary", response_model=DashboardSummaryResponse)
+async def get_dashboard_summary(
+    period: str = Query("30d", enum=["7d", "30d", "90d", "yearly"]),
+    department_id: UUID | None = None,
+    branch_id: UUID | None = None,
+    current_user: User = Depends(require_role(Role.ADMIN)),
+    client: Client = Depends(get_supabase_client),
+) -> DashboardSummaryResponse:
+    service = DashboardAnalyticsService(client)
+    return await service.get_summary(
+        org_id=current_user.org_id,
+        period=period,
+        department_id=department_id,
+        branch_id=branch_id,
+    )
+
+
+@router.get("/dashboard/submissions-over-time", response_model=SubmissionsOverTimeResponse)
+async def get_dashboard_submissions_over_time(
+    period: str = Query("30d", enum=["7d", "30d", "90d", "yearly"]),
+    department_id: UUID | None = None,
+    branch_id: UUID | None = None,
+    current_user: User = Depends(require_role(Role.ADMIN)),
+    client: Client = Depends(get_supabase_client),
+) -> SubmissionsOverTimeResponse:
+    service = DashboardAnalyticsService(client)
+    return await service.get_submissions_over_time(
+        org_id=current_user.org_id,
+        period=period,
+        department_id=department_id,
+        branch_id=branch_id,
+    )
+
+
+@router.get("/dashboard/department-distribution", response_model=DepartmentDistributionResponse)
+async def get_dashboard_department_distribution(
+    period: str = Query("30d", enum=["7d", "30d", "90d", "yearly"]),
+    branch_id: UUID | None = None,
+    current_user: User = Depends(require_role(Role.ADMIN)),
+    client: Client = Depends(get_supabase_client),
+) -> DepartmentDistributionResponse:
+    service = DashboardAnalyticsService(client)
+    return await service.get_department_distribution(
+        org_id=current_user.org_id,
+        period=period,
+        branch_id=branch_id,
+    )
+
+
+@router.get("/dashboard/top-templates", response_model=TopTemplatesResponse)
+async def get_dashboard_top_templates(
+    period: str = Query("30d", enum=["7d", "30d", "90d", "yearly"]),
+    department_id: UUID | None = None,
+    branch_id: UUID | None = None,
+    limit: int = Query(7, ge=1, le=20),
+    current_user: User = Depends(require_role(Role.ADMIN)),
+    client: Client = Depends(get_supabase_client),
+) -> TopTemplatesResponse:
+    service = DashboardAnalyticsService(client)
+    return await service.get_top_templates(
+        org_id=current_user.org_id,
+        period=period,
+        department_id=department_id,
+        branch_id=branch_id,
+        limit=limit,
+    )

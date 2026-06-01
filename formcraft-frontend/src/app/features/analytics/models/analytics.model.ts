@@ -122,3 +122,66 @@ export interface ExportResponse {
   downloadUrl: string;
   expiresAt: string;
 }
+
+// ───────────────────────────────────────────
+// 054-analytics-real-data — Dashboard Analytics
+// ───────────────────────────────────────────
+
+export interface DashboardFilter {
+  period: '7d' | '30d' | '90d' | 'yearly';
+  departmentId?: string;
+  branchId?: string;
+}
+
+export interface DashboardSummaryResponse {
+  totalFormsFilled: number;
+  totalFormsFilledPrev: number;
+  deltaPct: number | null;
+  activeTemplates: number;
+  totalTemplates: number;
+  avgFillTimeMs: number | null;
+  avgFillTimePrevMs: number | null;
+  fillTimeDeltaPct: number | null;
+  uniqueCustomers: number;
+  newCustomersThisWeek: number;
+  period: string;
+  cacheExpiresAt: string;
+}
+
+export interface TimeSeriesPoint {
+  date: string;
+  count: number;
+}
+
+export interface SubmissionsOverTimeResponse {
+  points: TimeSeriesPoint[];
+  peakDate: string | null;
+  peakCount: number;
+  granularity: 'daily' | 'monthly';
+  cacheExpiresAt: string;
+}
+
+export interface DepartmentShareItem {
+  departmentId: string;
+  departmentName: string;
+  count: number;
+  percentage: number;
+}
+
+export interface DepartmentDistributionResponse {
+  departments: DepartmentShareItem[];
+  total: number;
+  cacheExpiresAt: string;
+}
+
+export interface TopTemplateItem {
+  templateId: string;
+  templateName: string;
+  templateCode: string;
+  count: number;
+}
+
+export interface TopTemplatesResponse {
+  templates: TopTemplateItem[];
+  cacheExpiresAt: string;
+}
