@@ -15,6 +15,14 @@ import { AvatarComponent } from '../shared/components/avatar.component';
 import { TemplateService } from '../../../core/services/template.service';
 import { RedesignCloneDialogComponent } from './clone-dialog.component';
 
+interface PreviewElement {
+  x_mm: number;
+  y_mm: number;
+  width_mm: number;
+  height_mm: number;
+  type: string;
+}
+
 interface RedesignTemplate {
   id: string;
   name: string;
@@ -28,6 +36,7 @@ interface RedesignTemplate {
   submissions: number;
   pages: number;
   fields: number;
+  previewElements: PreviewElement[];
 }
 
 interface TemplateRow {
@@ -39,7 +48,7 @@ interface TemplateRow {
   updated_at?: string;
   created_at?: string;
   created_by?: string;
-  pages?: Array<{ elements?: unknown[] }>;
+  pages?: Array<{ elements?: Array<Partial<PreviewElement> & Record<string, unknown>> }>;
 }
 
 @Component({
@@ -242,10 +251,44 @@ export class TemplateListComponent implements OnInit, OnDestroy {
     this.updateStatusCounts();
   }
 
+  /** Color fill for each element type in the SVG mini-canvas. */
+  elementFill(type: string): string {
+    const fills: Record<string, string> = {
+      text:        '#C7D2FE',   // light indigo — labels / headings
+      text_block:  '#A5B4FC',   // indigo — rich text blocks
+      field:       '#BBF7D0',   // green — input fields
+      input:       '#BBF7D0',
+      checkbox:    '#FDE68A',   // yellow — checkboxes / radio
+      radio:       '#FDE68A',
+      signature:   '#FBCFE8',   // pink — signature boxes
+      image:       '#BAE6FD',   // sky — images / logos
+      table:       '#DDD6FE',   // purple — tables / grids
+      separator:   '#E2E8F0',   // slate — dividers
+      barcode:     '#FEF08A',   // lime — barcodes / QR
+      qr:          '#FEF08A',
+    };
+    return fills[type] ?? '#E2E8F0';
+  }
+
   private mapTemplate(row: TemplateRow, index: number): RedesignTemplate {
     const pages = row.pages?.length || 1;
+    const rawElements = row.pages?.[0]?.elements ?? [];
     const fields = row.pages?.reduce((count, page) => count + (page.elements?.length || 0), 0) || 0;
     const category = row.category || 'general';
+
+    // Extract position data for the SVG mini-canvas (first page only, clipped to viewBox)
+    const previewElements: PreviewElement[] = rawElements
+      .filter((el) => el.x_mm != null && el.y_mm != null && el.width_mm != null && el.height_mm != null)
+      .map((el) => ({
+        x_mm:      el.x_mm as number,
+        y_mm:      el.y_mm as number,
+        width_mm:  el.width_mm as number,
+        height_mm: el.height_mm as number,
+        type:      (el.type as string) || 'field',
+      }))
+      // Only keep elements visible within the 210×130 mm viewBox
+      .filter((el) => el.x_mm < 210 && el.y_mm < 130);
+
     return {
       id: row.id || '',
       name: row.name || this.translate.instant('templates.untitled'),
@@ -259,6 +302,7 @@ export class TemplateListComponent implements OnInit, OnDestroy {
       submissions: 0,
       pages,
       fields,
+      previewElements,
     };
   }
 
