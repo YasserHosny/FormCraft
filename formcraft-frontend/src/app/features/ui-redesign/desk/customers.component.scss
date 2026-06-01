@@ -1,4 +1,6 @@
 // Filter bar
+@use '../../../../styles/responsive' as responsive;
+
 .filter-bar {
   padding: 12px 24px;
   background: var(--fc-surface);
@@ -252,4 +254,51 @@
   font-size: 10px;
   margin-inline-start: 4px;
   font-family: 'Noto Sans', sans-serif;
+}
+
+@include responsive.fc-tablet {
+  .filter-bar,
+  .pagination {
+    flex-wrap: wrap;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .fc-table {
+    min-width: 900px;
+  }
+}
+
+@include responsive.fc-phone {
+  .filter-bar,
+  .stat-strip,
+  .pagination,
+  .page-controls {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .fc-search-box,
+  .fc-filter-pill,
+  .filter-bar .fc-btn,
+  .page-controls .fc-filter-pill {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .stat-strip {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .fc-table {
+    min-width: 760px;
+  }
 }

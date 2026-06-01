@@ -1,0 +1,28 @@
+$fc-phone-max: 599px;
+$fc-tablet-min: 600px;
+$fc-tablet-max: 959px;
+$fc-desktop-min: 960px;
+
+@mixin fc-phone {
+  @media (max-width: #{$fc-phone-max}) {
+    @content;
+  }
+}
+
+@mixin fc-tablet {
+  @media (min-width: #{$fc-tablet-min}) and (max-width: #{$fc-tablet-max}) {
+    @content;
+  }
+}
+
+@mixin fc-phone-tablet {
+  @media (max-width: #{$fc-tablet-max}) {
+    @content;
+  }
+}
+
+@mixin fc-desktop {
+  @media (min-width: #{$fc-desktop-min}) {
+    @content;
+  }
+}
