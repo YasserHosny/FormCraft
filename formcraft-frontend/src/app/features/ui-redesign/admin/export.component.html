@@ -1,0 +1,182 @@
+<div class="page-body">
+  <h2 class="page-title">{{ 'adminExport.title' | translate }}</h2>
+
+  <!-- Filters -->
+  <section class="fc-card filter-card">
+    <div class="card-header">
+      <div class="card-header-info">
+        <h3>{{ 'adminExport.filters' | translate }}</h3>
+      </div>
+    </div>
+    <div class="card-body filter-grid">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>{{ 'adminExport.templateId' | translate }}</mat-label>
+        <input matInput [formControl]="form.controls.template_id" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>{{ 'adminExport.dateFrom' | translate }}</mat-label>
+        <input matInput type="date" [formControl]="form.controls.date_from" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>{{ 'adminExport.dateTo' | translate }}</mat-label>
+        <input matInput type="date" [formControl]="form.controls.date_to" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>{{ 'adminExport.branchId' | translate }}</mat-label>
+        <input matInput [formControl]="form.controls.branch_id" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>{{ 'adminExport.operatorId' | translate }}</mat-label>
+        <input matInput [formControl]="form.controls.operator_id" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>{{ 'common.status' | translate }}</mat-label>
+        <input matInput [formControl]="form.controls.status" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>{{ 'adminExport.format' | translate }}</mat-label>
+        <mat-select [formControl]="form.controls.format">
+          <mat-option value="csv">{{ 'export.format.csv' | translate }}</mat-option>
+          <mat-option value="xlsx">{{ 'export.format.xlsx' | translate }}</mat-option>
+          <mat-option value="json">{{ 'export.format.json' | translate }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>{{ 'adminExport.scope' | translate }}</mat-label>
+        <mat-select [formControl]="form.controls.scope">
+          <mat-option value="flattened">{{ 'export.scope.flattened' | translate }}</mat-option>
+          <mat-option value="structured">{{ 'export.scope.structured' | translate }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="filter-actions">
+      <button class="fc-btn primary" (click)="previewExport()" [disabled]="state === 'preview_loading'">
+        <mat-icon>visibility</mat-icon>
+        <span *ngIf="state !== 'preview_loading'">{{ 'adminExport.preview' | translate }}</span>
+        <span *ngIf="state === 'preview_loading'">{{ 'common.loading' | translate }}</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Preview Panel -->
+  <section class="fc-card preview-card" *ngIf="state === 'preview_loading' || state === 'preview_ready' || state === 'preview_error' || state === 'downloading'">
+    <div class="card-header">
+      <div class="card-header-info">
+        <h3>{{ 'adminExport.preview' | translate }}</h3>
+      </div>
+    </div>
+    <div class="card-body">
+      <div *ngIf="state === 'preview_loading'" class="loading-state">
+        <mat-spinner diameter="32"></mat-spinner>
+        <span>{{ 'common.loading' | translate }}</span>
+      </div>
+
+      <div *ngIf="state === 'preview_error'" class="widget-error">
+        <p>{{ 'errors.generic' | translate }}</p>
+        <button class="fc-btn outline" (click)="retryPreview()">
+          <mat-icon>refresh</mat-icon>
+          {{ 'common.retry' | translate }}
+        </button>
+      </div>
+
+      <div *ngIf="state === 'preview_ready' || state === 'downloading'" class="preview-result">
+        <div class="preview-row">
+          <span class="preview-label">{{ 'adminExport.matchingCount' | translate }}</span>
+          <span class="preview-value">{{ preview?.matching_count | number }}</span>
+        </div>
+
+        <div *ngIf="preview?.estimated_file_size_bytes" class="preview-row">
+          <span class="preview-label">{{ 'adminExport.estimatedSize' | translate }}</span>
+          <span class="preview-value">{{ preview?.estimated_file_size_bytes | number }} bytes</span>
+        </div>
+
+        <div *ngIf="preview?.warnings?.length" class="preview-warnings">
+          <h4>{{ 'adminExport.warnings' | translate }}</h4>
+          <ul>
+            <li *ngFor="let warning of preview?.warnings">{{ warning }}</li>
+          </ul>
+        </div>
+
+        <div *ngIf="isOversized" class="oversized-warning">
+          <mat-icon>warning</mat-icon>
+          <span>{{ 'adminExport.oversized' | translate }}</span>
+        </div>
+
+        <div *ngIf="preview?.rejection_reason" class="rejection-message">
+          <mat-icon>error</mat-icon>
+          <span>{{ preview?.rejection_reason }}</span>
+        </div>
+
+        <div class="preview-actions">
+          <button class="fc-btn primary" (click)="downloadExport()" [disabled]="!canDownload || state === 'downloading'">
+            <mat-icon>download</mat-icon>
+            <span *ngIf="state !== 'downloading'">{{ 'adminExport.download' | translate }}</span>
+            <span *ngIf="state === 'downloading'">{{ 'common.loading' | translate }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- History -->
+  <section class="fc-card history-card">
+    <div class="card-header">
+      <div class="card-header-info">
+        <h3>{{ 'adminExport.history' | translate }}</h3>
+      </div>
+    </div>
+    <div class="card-body">
+      <div *ngIf="history.length === 0 && !historyError" class="empty-state">
+        <mat-icon>history</mat-icon>
+        <p>{{ 'export.noRecords' | translate }}</p>
+      </div>
+
+      <div *ngIf="historyError" class="widget-error">
+        <p>{{ 'errors.generic' | translate }}</p>
+        <button class="fc-btn outline" (click)="loadHistory()">
+          <mat-icon>refresh</mat-icon>
+          {{ 'common.retry' | translate }}
+        </button>
+      </div>
+
+      <table mat-table [dataSource]="history" class="fc-table" *ngIf="history.length > 0">
+        <ng-container matColumnDef="format">
+          <th mat-header-cell *matHeaderCellDef>{{ 'adminExport.format' | translate }}</th>
+          <td mat-cell *matCellDef="let row">{{ row.format | uppercase }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="scope">
+          <th mat-header-cell *matHeaderCellDef>{{ 'adminExport.scope' | translate }}</th>
+          <td mat-cell *matCellDef="let row">{{ row.scope }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="matching_count">
+          <th mat-header-cell *matHeaderCellDef>{{ 'adminExport.matchingCount' | translate }}</th>
+          <td mat-cell *matCellDef="let row">{{ row.matching_count | number }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>{{ 'common.status' | translate }}</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="status-badge" [class]="row.status">{{ row.status }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="created_at">
+          <th mat-header-cell *matHeaderCellDef>{{ 'adminExport.createdAt' | translate }}</th>
+          <td mat-cell *matCellDef="let row">{{ row.created_at | date:'medium' }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  </section>
+</div>

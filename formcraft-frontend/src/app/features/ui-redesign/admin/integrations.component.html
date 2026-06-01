@@ -1,0 +1,135 @@
+<div class="page-body">
+  <h2 class="page-title">{{ 'integrations.title' | translate }}</h2>
+
+  <mat-tab-group [(selectedIndex)]="activeTab" class="fc-tabs">
+    <!-- Credentials -->
+    <mat-tab [label]="'integrations.credentials.title' | translate">
+      <div class="tab-panel">
+        <div *ngIf="loading" class="loading-state">
+          <mat-spinner diameter="32"></mat-spinner>
+          <span>{{ 'common.loading' | translate }}</span>
+        </div>
+
+        <div *ngIf="error && !loading" class="widget-error">
+          <p>{{ 'errors.generic' | translate }}</p>
+          <button class="fc-btn outline" (click)="loadCredentials()">
+            <mat-icon>refresh</mat-icon>
+            {{ 'common.retry' | translate }}
+          </button>
+        </div>
+
+        <div *ngIf="!loading && credentials.length === 0" class="empty-state">
+          <mat-icon>vpn_key</mat-icon>
+          <p>{{ 'errors.not_found' | translate }}</p>
+        </div>
+
+        <table mat-table [dataSource]="credentials" class="fc-table" *ngIf="!loading && credentials.length > 0">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>{{ 'common.name' | translate }}</th>
+            <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="key_prefix">
+            <th mat-header-cell *matHeaderCellDef>{{ 'integrations.credentials.scopes' | translate }}</th>
+            <td mat-cell *matCellDef="let row">{{ row.key_prefix }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="scopes">
+            <th mat-header-cell *matHeaderCellDef>{{ 'integrations.credentials.scopes' | translate }}</th>
+            <td mat-cell *matCellDef="let row">
+              <mat-chip-set>
+                <mat-chip *ngFor="let scope of row.scopes">{{ scope }}</mat-chip>
+              </mat-chip-set>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>{{ 'common.status' | translate }}</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="status-badge" [class]="row.status">{{ row.status }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="expires_at">
+            <th mat-header-cell *matHeaderCellDef>{{ 'common.date' | translate }}</th>
+            <td mat-cell *matCellDef="let row">{{ row.expires_at ? (row.expires_at | date:'medium') : '-' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>{{ 'common.actions' | translate }}</th>
+            <td mat-cell *matCellDef="let row">
+              <button class="fc-btn ghost sm" (click)="revokeCredential(row.id)" [disabled]="!canRevoke(row)">
+                {{ 'integrations.credentials.revoke' | translate }}
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="credentialColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: credentialColumns;"></tr>
+        </table>
+      </div>
+    </mat-tab>
+
+    <!-- Webhooks -->
+    <mat-tab [label]="'integrations.webhooks.title' | translate">
+      <div class="tab-panel">
+        <div *ngIf="loading" class="loading-state">
+          <mat-spinner diameter="32"></mat-spinner>
+          <span>{{ 'common.loading' | translate }}</span>
+        </div>
+
+        <div *ngIf="error && !loading" class="widget-error">
+          <p>{{ 'errors.generic' | translate }}</p>
+          <button class="fc-btn outline" (click)="loadWebhooks()">
+            <mat-icon>refresh</mat-icon>
+            {{ 'common.retry' | translate }}
+          </button>
+        </div>
+
+        <div *ngIf="!loading && webhooks.length === 0" class="empty-state">
+          <mat-icon>webhook</mat-icon>
+          <p>{{ 'errors.not_found' | translate }}</p>
+        </div>
+
+        <table mat-table [dataSource]="webhooks" class="fc-table" *ngIf="!loading && webhooks.length > 0">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>{{ 'common.name' | translate }}</th>
+            <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="event_type">
+            <th mat-header-cell *matHeaderCellDef>{{ 'integrations.webhooks.events' | translate }}</th>
+            <td mat-cell *matCellDef="let row">{{ row.event_type }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="target_url">
+            <th mat-header-cell *matHeaderCellDef>{{ 'integrations.webhooks.url' | translate }}</th>
+            <td mat-cell *matCellDef="let row">{{ row.target_url }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>{{ 'common.status' | translate }}</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="status-badge" [class]="row.status">{{ row.status }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>{{ 'common.actions' | translate }}</th>
+            <td mat-cell *matCellDef="let row">
+              <mat-slide-toggle
+                [checked]="row.status === 'active'"
+                (change)="toggleWebhook(row)"
+                [disabled]="!canToggle(row)">
+                {{ row.status === 'active' ? ('common.yes' | translate) : ('common.no' | translate) }}
+              </mat-slide-toggle>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="webhookColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: webhookColumns;"></tr>
+        </table>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

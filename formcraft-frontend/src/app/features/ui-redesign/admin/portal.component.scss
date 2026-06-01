@@ -1,0 +1,251 @@
+@use '../../../../styles/responsive' as responsive;
+
+.page-body {
+  padding: 20px 24px;
+  flex: 1;
+  overflow: auto;
+}
+
+.page-title {
+  margin: 0 0 18px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--fc-text);
+}
+
+.fc-card {
+  background: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: 8px;
+  box-shadow: var(--fc-elev-1);
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--fc-divider);
+}
+
+.card-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+  }
+}
+
+.card-body {
+  padding: 16px;
+}
+
+.config-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.url-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--fc-surface-2);
+  border-radius: 6px;
+}
+
+.url-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fc-text-3);
+  text-transform: uppercase;
+}
+
+.url-value {
+  flex: 1;
+  font-size: 13px;
+  color: var(--fc-text);
+  word-break: break-all;
+}
+
+.qr-row {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.actions-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.fc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--fc-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s;
+
+  mat-icon { font-size: 17px; width: 17px; height: 17px; }
+
+  &.primary {
+    background: var(--fc-primary);
+    color: #fff;
+    &:hover { background: var(--fc-primary-dark); }
+    &[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+  &.outline {
+    border-color: var(--fc-border-strong);
+    color: var(--fc-text-2);
+    background: var(--fc-surface);
+    &:hover { background: var(--fc-surface-2); }
+  }
+}
+
+.fc-icon-btn {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--fc-text-2);
+  cursor: pointer;
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+  &:hover { background: var(--fc-surface-3); color: var(--fc-text); }
+}
+
+.enabled-icon {
+  color: var(--fc-success);
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  color: var(--fc-text-2);
+  font-size: 13px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px;
+  color: var(--fc-text-3);
+  font-size: 13px;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    opacity: 0.5;
+  }
+}
+
+.widget-error {
+  padding: 16px;
+  text-align: center;
+  color: var(--fc-text-2);
+  font-size: 13px;
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--fc-success-50);
+  color: var(--fc-success);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.inline-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--fc-error-50);
+  color: var(--fc-error);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.kpi-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+  background: var(--fc-surface-2);
+  border-radius: 8px;
+}
+
+.kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fc-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.kpi-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--fc-text);
+}
+
+@include responsive.fc-tablet {
+  .analytics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@include responsive.fc-phone {
+  .page-body {
+    padding: 12px;
+  }
+
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+}

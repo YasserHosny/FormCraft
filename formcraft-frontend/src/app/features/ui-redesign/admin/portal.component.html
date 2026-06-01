@@ -1,0 +1,159 @@
+<div class="page-body">
+  <h2 class="page-title">{{ 'portalAdmin.title' | translate }}</h2>
+
+  <!-- Template List -->
+  <section class="fc-card">
+    <div class="card-header">
+      <div class="card-header-info">
+        <h3>{{ 'common.select' | translate }}</h3>
+      </div>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="loading-state">
+        <mat-spinner diameter="32"></mat-spinner>
+        <span>{{ 'common.loading' | translate }}</span>
+      </div>
+
+      <div *ngIf="!loading && templates.length === 0" class="empty-state">
+        <mat-icon>public</mat-icon>
+        <p>{{ 'errors.not_found' | translate }}</p>
+      </div>
+
+      <div *ngIf="error && !loading" class="widget-error">
+        <p>{{ error }}</p>
+        <button class="fc-btn outline" (click)="loadTemplates()">
+          <mat-icon>refresh</mat-icon>
+          {{ 'common.retry' | translate }}
+        </button>
+      </div>
+
+      <mat-selection-list *ngIf="!loading && templates.length > 0" [multiple]="false">
+        <mat-list-option
+          *ngFor="let t of templates"
+          [selected]="selectedTemplate?.template_id === t.template_id"
+          (click)="selectTemplate(t)">
+          <span matListItemTitle>{{ t.public_slug }}</span>
+          <span matListItemLine>
+            <mat-icon *ngIf="t.enabled" class="enabled-icon">check_circle</mat-icon>
+            {{ t.enabled ? ('common.yes' | translate) : ('common.no' | translate) }}
+          </span>
+        </mat-list-option>
+      </mat-selection-list>
+    </div>
+  </section>
+
+  <!-- Configuration -->
+  <section class="fc-card" *ngIf="selectedTemplate">
+    <div class="card-header">
+      <div class="card-header-info">
+        <h3>{{ 'common.actions' | translate }}</h3>
+      </div>
+    </div>
+    <div class="card-body config-grid">
+      <mat-slide-toggle [(ngModel)]="selectedTemplate.enabled">
+        {{ 'portalAdmin.enable' | translate }}
+      </mat-slide-toggle>
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'portalAdmin.publicSlug' | translate }}</mat-label>
+        <input matInput [(ngModel)]="selectedTemplate.public_slug" />
+      </mat-form-field>
+
+      <mat-slide-toggle [(ngModel)]="selectedTemplate.verification_required">
+        {{ 'portalAdmin.otpRequired' | translate }}
+      </mat-slide-toggle>
+
+      <mat-form-field appearance="outline" *ngIf="selectedTemplate.verification_required">
+        <mat-label>{{ 'portalAdmin.allowedOtpModes' | translate }}</mat-label>
+        <mat-select [(ngModel)]="selectedTemplate.allowed_otp_modes" multiple>
+          <mat-option value="sms">{{ 'portalAdmin.sms' | translate }}</mat-option>
+          <mat-option value="email">{{ 'portalAdmin.email' | translate }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-slide-toggle [(ngModel)]="selectedTemplate.captcha_enabled">
+        {{ 'portalAdmin.captchaEnabled' | translate }}
+      </mat-slide-toggle>
+
+      <mat-form-field appearance="outline" *ngIf="selectedTemplate.captcha_enabled">
+        <mat-label>{{ 'portalAdmin.captchaProvider' | translate }}</mat-label>
+        <mat-select [(ngModel)]="selectedTemplate.captcha_provider">
+          <mat-option value="hcaptcha">hCaptcha</mat-option>
+          <mat-option value="recaptcha">reCAPTCHA</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-slide-toggle [(ngModel)]="selectedTemplate.allow_pdf_download">
+        {{ 'portalAdmin.allowPdfDownload' | translate }}
+      </mat-slide-toggle>
+
+      <mat-slide-toggle [(ngModel)]="selectedTemplate.send_email_confirmation">
+        {{ 'portalAdmin.sendEmailConfirmation' | translate }}
+      </mat-slide-toggle>
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'portalAdmin.rateLimitMax' | translate }}</mat-label>
+        <input matInput type="number" [(ngModel)]="selectedTemplate.rate_limit_max" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'portalAdmin.rateLimitWindowMinutes' | translate }}</mat-label>
+        <input matInput type="number" [(ngModel)]="selectedTemplate.rate_limit_window_minutes" />
+      </mat-form-field>
+
+      <div class="url-row" *ngIf="selectedTemplate.public_url">
+        <span class="url-label">{{ 'portalAdmin.publicUrl' | translate }}</span>
+        <span class="url-value">{{ selectedTemplate.public_url }}</span>
+        <button class="fc-icon-btn" (click)="copyUrl()" [attr.aria-label]="'common.copy' | translate">
+          <mat-icon>content_copy</mat-icon>
+        </button>
+      </div>
+
+      <div *ngIf="selectedTemplate.public_qr_svg" class="qr-row" [innerHTML]="selectedTemplate.public_qr_svg"></div>
+
+      <div class="actions-row">
+        <button class="fc-btn primary" (click)="save()" [disabled]="saving">
+          <span *ngIf="!saving">{{ 'common.save' | translate }}</span>
+          <span *ngIf="saving">{{ 'common.loading' | translate }}</span>
+        </button>
+      </div>
+
+      <div *ngIf="success" class="success-message">
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ 'common.saved' | translate }}</span>
+      </div>
+
+      <div *ngIf="error && !saving" class="inline-error">
+        <mat-icon>error</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Analytics -->
+  <section class="fc-card" *ngIf="analytics">
+    <div class="card-header">
+      <div class="card-header-info">
+        <h3>{{ 'portalAdmin.analytics.title' | translate }}</h3>
+      </div>
+    </div>
+    <div class="card-body analytics-grid">
+      <div class="kpi-item">
+        <span class="kpi-label">{{ 'portalAdmin.analytics.submissionCount' | translate }}</span>
+        <span class="kpi-value">{{ analytics.submission_count | number }}</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">{{ 'portalAdmin.analytics.otpSentCount' | translate }}</span>
+        <span class="kpi-value">{{ analytics.otp_sent_count | number }}</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">{{ 'portalAdmin.analytics.otpFailureCount' | translate }}</span>
+        <span class="kpi-value">{{ analytics.otp_failure_count | number }}</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-label">{{ 'portalAdmin.analytics.rateLimitedCount' | translate }}</span>
+        <span class="kpi-value">{{ analytics.rate_limited_count | number }}</span>
+      </div>
+    </div>
+  </section>
+</div>
