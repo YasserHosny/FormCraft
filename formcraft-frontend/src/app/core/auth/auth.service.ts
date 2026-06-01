@@ -120,6 +120,15 @@ export class AuthService {
       });
   }
 
+  /**
+   * Immediately clears the local session without making an HTTP call.
+   * Used by the auth interceptor when the server returns 401 so we don't
+   * trigger another HTTP request (which would also 401 and loop).
+   */
+  forceLogout(): void {
+    this.clearSession();
+  }
+
   private clearSession(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
