@@ -43,7 +43,13 @@
     "all": "الكل",
     "view": "عرض",
     "clear": "مسح",
-    "help": "المساعدة"
+    "help": "المساعدة",
+    "select": "اختيار",
+    "saved": "تم الحفظ",
+    "copy": "نسخ",
+    "status": "الحالة",
+    "date": "التاريخ",
+    "name": "الاسم"
   },
   "adminExport": {
     "title": "تصدير البيانات",
@@ -57,6 +63,7 @@
     "flattened": "مسطح",
     "structured": "منظم",
     "matchingCount": "السجلات المطابقة",
+    "estimatedSize": "الحجم التقديري للملف",
     "oversized": "التصدير كبير جداً للتنزيل المباشر.",
     "warnings": "تحذيرات",
     "schedule": "جدولة",

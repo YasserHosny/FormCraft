@@ -43,7 +43,13 @@
     "all": "All",
     "view": "View",
     "clear": "Clear",
-    "help": "Help"
+    "help": "Help",
+    "select": "Select",
+    "saved": "Saved",
+    "copy": "Copy",
+    "status": "Status",
+    "date": "Date",
+    "name": "Name"
   },
   "adminExport": {
     "title": "Data Export",
@@ -57,6 +63,7 @@
     "flattened": "Flattened",
     "structured": "Structured",
     "matchingCount": "Matching records",
+    "estimatedSize": "Estimated file size",
     "oversized": "Export is too large to download directly.",
     "warnings": "Warnings",
     "schedule": "Schedule",

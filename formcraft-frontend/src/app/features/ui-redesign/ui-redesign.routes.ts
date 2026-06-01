@@ -97,6 +97,27 @@ export const UI_REDESIGN_ROUTES: Routes = [
           import('./admin/analytics.component').then(m => m.AnalyticsComponent),
       },
       {
+        path: 'admin/export',
+        canActivate: [RoleGuard],
+        data: { roles: ['admin'] },
+        loadComponent: () =>
+          import('./admin/export.component').then(m => m.ExportComponent),
+      },
+      {
+        path: 'admin/portal',
+        canActivate: [RoleGuard],
+        data: { roles: ['admin'] },
+        loadComponent: () =>
+          import('./admin/portal.component').then(m => m.PortalComponent),
+      },
+      {
+        path: 'admin/integrations',
+        canActivate: [RoleGuard],
+        data: { roles: ['admin'] },
+        loadComponent: () =>
+          import('./admin/integrations.component').then(m => m.IntegrationsComponent),
+      },
+      {
         path: 'admin/reviews',
         canActivate: [RoleGuard],
         data: { roles: ['admin'], classicRoute: '/admin/reviews' },
