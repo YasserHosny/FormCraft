@@ -7,8 +7,6 @@ Phase 1 surface:
 Pre-built connector CRUD (DMS/Email/CRM/Banking) lives in Phase 4 per tasks.md.
 """
 
-from __future__ import annotations
-
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 from uuid import UUID

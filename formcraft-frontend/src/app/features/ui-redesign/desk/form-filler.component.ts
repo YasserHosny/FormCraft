@@ -6,8 +6,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 
-import { AvatarComponent } from '../shared/components/avatar.component';
-import { StatusChipComponent } from '../shared/components/status-chip.component';
 import { FormFillerService, FillTemplate, TemplateElement } from '../../../features/desk/services/form-filler.service';
 import { ConditionEngineService, ConditionalElement } from '../../../features/desk/services/condition-engine.service';
 import { AutoFillService } from '../../../features/desk/services/auto-fill.service';
@@ -30,7 +28,7 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'fc-form-filler',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatSnackBarModule, TranslateModule, AvatarComponent, StatusChipComponent, SignaturePadComponent],
+  imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatSnackBarModule, TranslateModule, SignaturePadComponent],
   templateUrl: './form-filler.component.html',
   styleUrl: './form-filler.component.scss',
 })

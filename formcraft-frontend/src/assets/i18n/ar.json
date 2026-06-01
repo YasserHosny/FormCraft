@@ -197,7 +197,7 @@
     "pageCount": "{{count}} صفحات",
     "list_title": "النماذج",
     "subtitle": "إدارة قوالب النماذج المؤسسية وإصداراتها · {{total}} قالباً · {{published}} منشوراً · {{review}} قيد المراجعة",
-    "search_placeholder": "ابحث في النماذج بالاسم أو الرمز أو الإدارة...",
+    "search_placeholder": "ابحث في النماذج والعملاء...",
     "status_label": "الحالة:",
     "dept_label": "الإدارة:",
     "btn_export": "تصدير",

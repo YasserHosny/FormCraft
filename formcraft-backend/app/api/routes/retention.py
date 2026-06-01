@@ -1,7 +1,5 @@
 """Retention API routes (F044)."""
 
-from __future__ import annotations
-
 from typing import Annotated
 from uuid import UUID
 
