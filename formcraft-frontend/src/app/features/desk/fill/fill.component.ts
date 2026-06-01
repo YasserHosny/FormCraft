@@ -380,11 +380,7 @@ export class FillComponent implements OnInit, OnDestroy {
   }
 
   onPrint(): void {
-    if (!this.formValid || this.submitting) {
-      this.form?.markAllAsTouched();
-      this.scrollFirstInvalidFieldIntoView();
-      return;
-    }
+    if (!this.formValid || this.submitting) return;
     this.submitting = true;
 
     const fieldValues = this.form.value;
@@ -442,11 +438,7 @@ export class FillComponent implements OnInit, OnDestroy {
   }
 
   onPrintAndNext(): void {
-    if (!this.formValid || this.submitting) {
-      this.form?.markAllAsTouched();
-      this.scrollFirstInvalidFieldIntoView();
-      return;
-    }
+    if (!this.formValid || this.submitting) return;
     this.submitting = true;
 
     const fieldValues = this.form.value;
@@ -547,11 +539,7 @@ export class FillComponent implements OnInit, OnDestroy {
   }
 
   onQueueOfflineSubmission(): void {
-    if (!this.template || !this.formValid || this.submitting) {
-      this.form?.markAllAsTouched();
-      this.scrollFirstInvalidFieldIntoView();
-      return;
-    }
+    if (!this.template || !this.formValid || this.submitting) return;
     this.submitting = true;
     this.offlineSync.queueSubmission(this.template.id, this.template.version, this.form.value)
       .then(() => {
@@ -589,25 +577,9 @@ export class FillComponent implements OnInit, OnDestroy {
     );
   }
 
-  private scrollFirstInvalidFieldIntoView(): void {
-    setTimeout(() => {
-      const firstInvalidKey = Object.keys(this.form.controls).find((key) => this.form.get(key)?.invalid);
-      if (!firstInvalidKey) return;
-
-      const target = document.querySelector(
-        `[formcontrolname="${firstInvalidKey}"], [name="${firstInvalidKey}"], .ng-invalid`,
-      );
-      target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-  }
-
   openPrintDialog(fieldValues: Record<string, any>): void {
-    const isPhone = window.matchMedia('(max-width: 599px)').matches;
     this.dialog.open(PrintDialogComponent, {
-      width: isPhone ? '100vw' : '520px',
-      maxWidth: isPhone ? '100vw' : undefined,
-      height: isPhone ? '100vh' : undefined,
-      maxHeight: isPhone ? '100vh' : undefined,
+      width: '520px',
       data: {
         templateId: this.template!.id,
         templateName: this.template!.name,

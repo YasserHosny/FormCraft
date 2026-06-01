@@ -1,5 +1,3 @@
-@use '../../../../../styles/responsive' as responsive;
-
 .batch-list-container {
   padding: 1rem;
 }
@@ -13,31 +11,4 @@
 
 table {
   width: 100%;
-}
-
-@include responsive.fc-tablet {
-  .batch-list-container {
-    overflow-x: auto;
-  }
-
-  table {
-    min-width: 760px;
-  }
-}
-
-@include responsive.fc-phone {
-  .batch-list-container {
-    padding: 12px;
-    overflow-x: auto;
-  }
-
-  .header {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  table {
-    min-width: 680px;
-  }
 }

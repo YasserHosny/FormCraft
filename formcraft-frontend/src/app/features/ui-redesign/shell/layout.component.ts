@@ -12,16 +12,9 @@ import { DirectionService, Dir } from '../../../core/i18n/direction.service';
   imports: [CommonModule, RouterModule, ToolbarComponent, SidebarComponent],
   template: `
     <div class="layout-wrapper" [attr.dir]="currentDir">
-      <fc-redesign-toolbar
-        [activeMode]="activeMode"
-        (menuRequested)="sidebarOpen = true">
-      </fc-redesign-toolbar>
+      <fc-redesign-toolbar [activeMode]="activeMode"></fc-redesign-toolbar>
       <div class="layout-body">
-        <fc-redesign-sidebar
-          [mode]="activeMode"
-          [open]="sidebarOpen"
-          (closed)="sidebarOpen = false">
-        </fc-redesign-sidebar>
+        <fc-redesign-sidebar [mode]="activeMode"></fc-redesign-sidebar>
         <main class="layout-content">
           <router-outlet></router-outlet>
         </main>
@@ -51,7 +44,6 @@ import { DirectionService, Dir } from '../../../core/i18n/direction.service';
 export class LayoutComponent implements OnDestroy {
   activeMode: 'studio' | 'desk' | 'admin' = 'studio';
   currentDir: 'rtl' | 'ltr' = 'rtl';
-  sidebarOpen = false;
 
   private destroy$ = new Subject<void>();
 
@@ -69,7 +61,6 @@ export class LayoutComponent implements OnDestroy {
       takeUntil(this.destroy$),
     ).subscribe(e => {
       this.detectMode(e.urlAfterRedirects);
-      this.sidebarOpen = false;
     });
     this.detectMode(this.router.url);
   }

@@ -1,5 +1,3 @@
-@use '../../../../styles/responsive' as responsive;
-
 .profile-container {
   display: flex;
   justify-content: center;
@@ -14,16 +12,4 @@
 }
 mat-form-field {
   margin-bottom: 16px;
-}
-
-@include responsive.fc-phone {
-  .profile-container {
-    align-items: stretch;
-    padding: 16px 12px;
-  }
-
-  .profile-card {
-    width: auto;
-    padding: 16px;
-  }
 }

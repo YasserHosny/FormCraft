@@ -1,5 +1,3 @@
-@use '../../../../styles/responsive' as responsive;
-
 .customer-detail-container {
   padding: 24px;
   max-width: 800px;
@@ -40,21 +38,4 @@
 
 mat-card-actions {
   padding: 16px;
-}
-
-@include responsive.fc-phone {
-  .customer-detail-container {
-    padding: 12px;
-  }
-
-  .header {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .form-row,
-  .form-row.two-col {
-    flex-direction: column;
-  }
 }

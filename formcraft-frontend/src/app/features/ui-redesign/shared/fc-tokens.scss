@@ -55,14 +55,6 @@
   --fc-elev-3: 0 6px 16px rgba(20, 22, 40, 0.10), 0 2px 4px rgba(20, 22, 40, 0.06);
 }
 
-@media (max-width: 599px) {
-  :root {
-    --fc-toolbar-h: 48px;
-    --fc-sidebar-w: 0px;
-    --fc-action-bar-h: 56px;
-  }
-}
-
 // Utility classes
 .fc-num {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;

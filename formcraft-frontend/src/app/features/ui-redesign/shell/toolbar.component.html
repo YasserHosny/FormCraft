@@ -1,11 +1,4 @@
 <header class="fc-toolbar">
-  <button class="fc-toolbar-btn fc-menu-btn"
-          type="button"
-          (click)="menuRequested.emit()"
-          matTooltip="القائمة">
-    <mat-icon>menu</mat-icon>
-  </button>
-
   <!-- Org logo -->
   <img *ngIf="orgLogoUrl" [src]="orgLogoUrl" alt="Org logo" class="org-logo" />
 
@@ -19,8 +12,7 @@
     <a *ngFor="let tab of tabs"
        class="fc-mode-tab"
        [class.active]="activeMode === tab.key"
-       [routerLink]="tab.route"
-       [title]="tab.label">
+       [routerLink]="tab.route">
       <mat-icon>{{ tab.icon }}</mat-icon>
       <span>{{ tab.label }}</span>
     </a>
@@ -34,7 +26,7 @@
   <!-- Theme Switch -->
   <a class="fc-theme-switch" (click)="switchToClassic()">
     <mat-icon>compare_arrows</mat-icon>
-    <span title="الثيم الكلاسيكي">الثيم الكلاسيكي</span>
+    <span>الثيم الكلاسيكي</span>
   </a>
 
   <!-- Help -->

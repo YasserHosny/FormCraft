@@ -1,6 +1,5 @@
 @use 'styles/direction-mixins';
 @use 'styles/rtl';
-@use 'styles/responsive';
 
 // UI Redesign design tokens
 @use 'app/features/ui-redesign/shared/fc-tokens';
@@ -91,15 +90,4 @@ html, body {
 ::-webkit-scrollbar-thumb {
   background: #888;
   border-radius: 4px;
-}
-
-@include responsive.fc-phone {
-  .cdk-overlay-pane {
-    max-width: 95vw !important;
-  }
-
-  .mat-mdc-dialog-container {
-    max-height: 90vh;
-    overflow-y: auto;
-  }
 }

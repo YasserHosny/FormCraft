@@ -1,6 +1,5 @@
-import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { BreakpointObserver } from '@angular/cdk/layout';
 import { Subject, takeUntil, filter } from 'rxjs';
 import { AuthService, User } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
@@ -47,16 +46,6 @@ export function getDefaultRouteForRole(role: string): string {
   standalone: false,
   template: `
     <mat-toolbar color="primary" class="app-toolbar">
-      <button
-        mat-icon-button
-        class="mobile-menu-button"
-        *ngIf="user"
-        (click)="showMobileMenu = true"
-        [attr.aria-expanded]="showMobileMenu"
-      >
-        <mat-icon>menu</mat-icon>
-      </button>
-
       <!-- T046: Org logo in nav bar -->
       <img *ngIf="orgLogoUrl" [src]="orgLogoUrl" alt="Org logo" class="org-nav-logo" />
       <span class="app-title" (click)="navigateHome()">FormCraft</span>
@@ -69,7 +58,6 @@ export function getDefaultRouteForRole(role: string): string {
             class="mode-tab"
             [class.active]="activeMode === tab.key"
             [routerLink]="tab.route"
-            [title]="tab.labelKey | translate"
           >
             <mat-icon class="mode-tab-icon">{{ tab.icon }}</mat-icon>
             <span class="mode-tab-label">{{ tab.labelKey | translate }}</span>
@@ -134,25 +122,6 @@ export function getDefaultRouteForRole(role: string): string {
       </ng-container>
     </mat-toolbar>
 
-    <div class="mobile-drawer-backdrop" [class.open]="showMobileMenu" (click)="showMobileMenu = false"></div>
-    <aside class="mobile-mode-drawer" [class.open]="showMobileMenu">
-      <a
-        *ngFor="let tab of visibleTabs"
-        class="mode-tab drawer-mode-tab"
-        [class.active]="activeMode === tab.key"
-        [routerLink]="tab.route"
-        [title]="tab.labelKey | translate"
-        (click)="showMobileMenu = false"
-      >
-        <mat-icon class="mode-tab-icon">{{ tab.icon }}</mat-icon>
-        <span class="mode-tab-label">{{ tab.labelKey | translate }}</span>
-      </a>
-      <button mat-button class="drawer-theme-switch" *ngIf="user" (click)="switchToNewTheme(); showMobileMenu = false">
-        <mat-icon>compare_arrows</mat-icon>
-        الثيم الجديد
-      </button>
-    </aside>
-
     <div class="shell-content">
       <router-outlet></router-outlet>
     </div>
@@ -164,14 +133,11 @@ export function getDefaultRouteForRole(role: string): string {
       z-index: 100;
       gap: 4px;
     }
-    .mobile-menu-button {
-      display: none;
-    }
     .org-nav-logo {
       max-height: 32px;
       max-width: 80px;
       object-fit: contain;
-      margin-inline-end: 8px;
+      margin-right: 8px;
       border-radius: 4px;
     }
     .app-title {
@@ -237,100 +203,6 @@ export function getDefaultRouteForRole(role: string): string {
       line-height: 1.4;
       opacity: 0.9;
     }
-    .mobile-drawer-backdrop,
-    .mobile-mode-drawer {
-      display: none;
-    }
-
-    @media (min-width: 600px) and (max-width: 959px) {
-      .mobile-menu-button {
-        display: inline-flex;
-      }
-      .mode-tab {
-        padding-inline: 10px;
-      }
-      .mode-tab-label,
-      .global-search-bar {
-        display: none;
-      }
-    }
-
-    @media (max-width: 599px) {
-      .app-toolbar {
-        min-height: 48px;
-        height: 48px;
-        padding-inline: 4px;
-      }
-      .mobile-menu-button {
-        display: inline-flex;
-      }
-      .org-nav-logo {
-        max-width: 44px;
-        max-height: 28px;
-        margin-inline-end: 4px;
-      }
-      .app-title {
-        font-size: 16px;
-        margin-inline-end: 4px;
-      }
-      .mode-tabs,
-      .global-search-bar,
-      .theme-switch-link {
-        display: none;
-      }
-      .mobile-drawer-backdrop {
-        display: block;
-        position: fixed;
-        inset: 48px 0 0;
-        z-index: 90;
-        background: rgba(0, 0, 0, 0.38);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s ease;
-      }
-      .mobile-drawer-backdrop.open {
-        opacity: 1;
-        pointer-events: auto;
-      }
-      .mobile-mode-drawer {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        position: fixed;
-        top: 48px;
-        bottom: 0;
-        inset-inline-start: 0;
-        z-index: 101;
-        width: min(280px, 84vw);
-        padding: 12px;
-        background: #fff;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
-        transform: translateX(-100%);
-        transition: transform 0.25s ease;
-      }
-      :host-context([dir="rtl"]) .mobile-mode-drawer {
-        transform: translateX(100%);
-      }
-      .mobile-mode-drawer.open,
-      :host-context([dir="rtl"]) .mobile-mode-drawer.open {
-        transform: translateX(0);
-      }
-      .drawer-mode-tab {
-        color: rgba(0, 0, 0, 0.78);
-        min-height: 44px;
-      }
-      .drawer-mode-tab.active {
-        background: rgba(63, 81, 181, 0.12);
-        color: #26358c;
-      }
-      .drawer-theme-switch {
-        justify-content: flex-start;
-        min-height: 44px;
-      }
-      .shell-content {
-        height: calc(100vh - 48px);
-      }
-    }
   `],
 })
 export class AppShellComponent implements OnInit, OnDestroy {
@@ -346,9 +218,6 @@ export class AppShellComponent implements OnInit, OnDestroy {
   activeMode = '';
   /** F037: Show global search bar for desk and studio modes */
   showSearchBar = false;
-  isMobile = false;
-  isTablet = false;
-  showMobileMenu = false;
 
   private destroy$ = new Subject<void>();
 
@@ -360,21 +229,9 @@ export class AppShellComponent implements OnInit, OnDestroy {
     private myFeedbackService: MyFeedbackService,
     private orgAdminService: OrgAdminService,
     private themePreference: ThemePreferenceService,
-    private breakpointObserver: BreakpointObserver,
   ) {}
 
   ngOnInit(): void {
-    this.breakpointObserver.observe([
-      '(max-width: 599px)',
-      '(min-width: 600px) and (max-width: 959px)',
-    ]).pipe(takeUntil(this.destroy$)).subscribe((state) => {
-      this.isMobile = state.breakpoints['(max-width: 599px)'] || false;
-      this.isTablet = state.breakpoints['(min-width: 600px) and (max-width: 959px)'] || false;
-      if (!this.isMobile) {
-        this.showMobileMenu = false;
-      }
-    });
-
     // F15: Track active mode from route changes
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
@@ -382,7 +239,6 @@ export class AppShellComponent implements OnInit, OnDestroy {
     ).subscribe((e) => {
       this.activeMode = this.detectModeFromUrl(e.urlAfterRedirects || e.url);
       this.showSearchBar = this.activeMode === 'desk' || this.activeMode === 'studio';
-      this.showMobileMenu = false;
     });
     // Set initial active mode
     this.activeMode = this.detectModeFromUrl(this.router.url);
@@ -454,7 +310,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
 
   switchToNewTheme(): void {
     this.themePreference.setPreference('new');
-    const target = this.themePreference.mapRouteToTheme(this.router.url, 'new', this.user?.role || 'admin', this.isMobile);
+    const target = this.themePreference.mapRouteToTheme(this.router.url, 'new', this.user?.role || 'admin');
     this.router.navigate([target]);
   }
 
@@ -463,11 +319,6 @@ export class AppShellComponent implements OnInit, OnDestroy {
     this.unreadCount = 0;
     this.authService.logout();
     this.router.navigate(['/auth/login']);
-  }
-
-  @HostListener('document:keydown.escape')
-  closeMobileMenu(): void {
-    this.showMobileMenu = false;
   }
 
   /** F15: Detect which mode tab is active based on the current URL. */

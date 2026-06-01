@@ -1,5 +1,3 @@
-@use '../../../../styles/responsive' as responsive;
-
 .page-body {
   padding: 20px 24px;
   flex: 1;
@@ -396,32 +394,4 @@
 // Responsive
 @media (max-width: 1200px) {
   .chart-row-1, .chart-row-2 { grid-template-columns: 1fr; }
-}
-
-@include responsive.fc-tablet {
-  .chart-row-1,
-  .chart-row-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@include responsive.fc-phone {
-  .page-body {
-    padding: 12px;
-  }
-
-  .kpi-grid,
-  .chart-row-1,
-  .chart-row-2 {
-    grid-template-columns: 1fr;
-  }
-
-  .fc-card {
-    overflow-x: auto;
-  }
-
-  .fc-filter-pill {
-    width: 100%;
-    box-sizing: border-box;
-  }
 }

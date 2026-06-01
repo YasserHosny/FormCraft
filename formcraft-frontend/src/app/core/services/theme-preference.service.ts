@@ -129,7 +129,7 @@ export class ThemePreferenceService {
     localStorage.setItem(STORAGE_KEY, theme);
   }
 
-  mapRouteToTheme(currentUrl: string, target: ThemeName, userRole: string, preferMobileReady = false): string {
+  mapRouteToTheme(currentUrl: string, target: ThemeName, userRole: string): string {
     const urlPath = currentUrl.split('?')[0];
 
     for (const mapping of ROUTE_MAPPINGS) {
@@ -144,9 +144,6 @@ export class ThemePreferenceService {
       } else {
         const match = urlPath.match(mapping.newPattern);
         if (match) {
-          if (preferMobileReady && !mapping.productionReady) {
-            return mapping.fallbackClassic;
-          }
           return this.buildUrl(mapping.classicTemplate, mapping.params, match.slice(1));
         }
       }
