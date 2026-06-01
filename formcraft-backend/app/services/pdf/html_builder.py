@@ -9,6 +9,7 @@ def build_html(
     overlay_mode: bool = False,
     x_offset_mm: float = 0.0,
     y_offset_mm: float = 0.0,
+    field_values: dict | None = None,
 ) -> str:
     """Build a complete HTML document from template data.
 
@@ -36,7 +37,7 @@ def build_html(
                 element["x_mm"] = element.get("x_mm", 0) + x_offset_mm
                 element["y_mm"] = element.get("y_mm", 0) + y_offset_mm
             renderer = get_renderer(element.get("type", "text"))
-            elements_html.append(renderer.render(element))
+            elements_html.append(renderer.render(element, data=field_values))
 
         bg_html = ""
         if not overlay_mode and page.get("background_asset"):
