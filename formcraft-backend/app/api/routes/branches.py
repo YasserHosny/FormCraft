@@ -4,8 +4,6 @@ Provides org-wide branch listing and individual branch operations
 independent of the department nesting.
 """
 
-from __future__ import annotations
-
 from typing import Annotated
 from uuid import UUID
 

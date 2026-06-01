@@ -1,7 +1,5 @@
 """Authentication routes (T030-T033) — enhanced for multi-tenancy."""
 
-from __future__ import annotations
-
 import logging
 from typing import Annotated
 

@@ -3,8 +3,6 @@
 These endpoints are scoped to the caller's own org_id.
 """
 
-from __future__ import annotations
-
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, UploadFile

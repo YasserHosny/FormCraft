@@ -8,8 +8,6 @@ Endpoints:
 See: formcraft-specs/specs/048-custom-locale-validators/spec.md
 """
 
-from __future__ import annotations
-
 from typing import Annotated
 from uuid import UUID
 

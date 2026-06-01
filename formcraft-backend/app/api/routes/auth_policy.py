@@ -1,7 +1,5 @@
 """Auth policy routes: org-level MFA, session, and fallback settings."""
 
-from __future__ import annotations
-
 import logging
 from typing import Annotated
 
