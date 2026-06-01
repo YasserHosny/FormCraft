@@ -3,8 +3,25 @@
     "studio": "Design Studio",
     "desk": "Form Desk",
     "admin": "Admin Console",
+    "adminExport": "Export",
+    "portal": "Portal",
+    "integrations": "Integrations",
     "platform": "Platform Admin",
-    "unauthorized": "Unauthorized section"
+    "unauthorized": "Unauthorized section",
+    "menu": "Menu",
+    "new_theme": "New Theme",
+    "classic_theme": "Classic Theme",
+    "open_classic": "Open Classic Theme",
+    "keyboard_shortcuts": "Keyboard Shortcuts",
+    "my_feedback": "My Feedback",
+    "notifications": "Notifications",
+    "profile": "My Profile",
+    "logout": "Sign Out",
+    "role_admin": "Admin",
+    "role_designer": "Designer",
+    "role_operator": "Operator",
+    "role_viewer": "Viewer",
+    "role_branch_manager": "Branch Manager"
   },
   "common": {
     "save": "Save",
@@ -25,7 +42,8 @@
     "none": "None",
     "all": "All",
     "view": "View",
-    "clear": "Clear"
+    "clear": "Clear",
+    "help": "Help"
   },
   "adminExport": {
     "title": "Data Export",

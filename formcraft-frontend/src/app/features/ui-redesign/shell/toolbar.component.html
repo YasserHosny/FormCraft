@@ -2,7 +2,7 @@
   <button class="fc-toolbar-btn fc-menu-btn"
           type="button"
           (click)="menuRequested.emit()"
-          matTooltip="القائمة">
+          [matTooltip]="'nav.menu' | translate">
     <mat-icon>menu</mat-icon>
   </button>
 
@@ -20,9 +20,9 @@
        class="fc-mode-tab"
        [class.active]="activeMode === tab.key"
        [routerLink]="tab.route"
-       [title]="tab.label">
+       [title]="tab.labelKey | translate">
       <mat-icon>{{ tab.icon }}</mat-icon>
-      <span>{{ tab.label }}</span>
+      <span>{{ tab.labelKey | translate }}</span>
     </a>
   </nav>
 
@@ -34,36 +34,36 @@
   <!-- Theme Switch -->
   <a class="fc-theme-switch" (click)="switchToClassic()">
     <mat-icon>compare_arrows</mat-icon>
-    <span title="الثيم الكلاسيكي">الثيم الكلاسيكي</span>
+    <span [title]="'nav.classic_theme' | translate">{{ 'nav.classic_theme' | translate }}</span>
   </a>
 
   <!-- Help -->
   <button class="fc-toolbar-btn" type="button" [matMenuTriggerFor]="helpMenu"
-          matTooltip="المساعدة">
+          [matTooltip]="'common.help' | translate">
     <mat-icon>help_outline</mat-icon>
   </button>
   <mat-menu #helpMenu="matMenu">
     <button mat-menu-item (click)="switchToClassic()">
       <mat-icon>compare_arrows</mat-icon>
-      فتح الثيم الكلاسيكي
+      {{ 'nav.open_classic' | translate }}
     </button>
     <button mat-menu-item disabled>
       <mat-icon>keyboard</mat-icon>
-      اختصارات لوحة المفاتيح
+      {{ 'nav.keyboard_shortcuts' | translate }}
     </button>
   </mat-menu>
 
   <!-- My Feedback (non-admin only) -->
   <a class="fc-toolbar-btn" routerLink="/my-feedback"
      *ngIf="userRole && userRole !== 'admin'"
-     matTooltip="ملاحظاتي">
+     [matTooltip]="'nav.my_feedback' | translate">
     <mat-icon>feedback</mat-icon>
     <span class="fc-badge-dot" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
   </a>
 
   <!-- Notifications -->
   <button class="fc-toolbar-btn" type="button"
-          matTooltip="الإشعارات">
+          [matTooltip]="'nav.notifications' | translate">
     <mat-icon>notifications</mat-icon>
   </button>
 
@@ -72,7 +72,7 @@
     <div class="avatar">{{ user.initials }}</div>
     <div class="user-info">
       <span class="name">{{ user.name }}</span>
-      <span class="role">{{ user.role }}</span>
+      <span class="role">{{ user.role | translate }}</span>
     </div>
     <mat-icon class="expand">expand_more</mat-icon>
   </button>
@@ -80,7 +80,7 @@
   <mat-menu #userMenu="matMenu">
     <button mat-menu-item routerLink="/ui/profile">
       <mat-icon>person</mat-icon>
-      الملف الشخصي
+      {{ 'nav.profile' | translate }}
     </button>
     <button mat-menu-item (click)="toggleLanguage()">
       <mat-icon>language</mat-icon>
@@ -89,11 +89,11 @@
     <mat-divider></mat-divider>
     <button mat-menu-item (click)="switchToClassic()">
       <mat-icon>compare_arrows</mat-icon>
-      الثيم الكلاسيكي
+      {{ 'nav.classic_theme' | translate }}
     </button>
     <button mat-menu-item (click)="logout()">
       <mat-icon>logout</mat-icon>
-      تسجيل الخروج
+      {{ 'nav.logout' | translate }}
     </button>
   </mat-menu>
 </header>

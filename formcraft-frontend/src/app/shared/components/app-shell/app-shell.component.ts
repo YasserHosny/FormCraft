@@ -89,7 +89,7 @@ export function getDefaultRouteForRole(role: string): string {
         (click)="switchToNewTheme()"
       >
         <mat-icon>compare_arrows</mat-icon>
-        الثيم الجديد
+        {{ 'nav.new_theme' | translate }}
       </a>
 
       <span class="spacer"></span>
@@ -149,7 +149,7 @@ export function getDefaultRouteForRole(role: string): string {
       </a>
       <button mat-button class="drawer-theme-switch" *ngIf="user" (click)="switchToNewTheme(); showMobileMenu = false">
         <mat-icon>compare_arrows</mat-icon>
-        الثيم الجديد
+        {{ 'nav.new_theme' | translate }}
       </button>
     </aside>
 

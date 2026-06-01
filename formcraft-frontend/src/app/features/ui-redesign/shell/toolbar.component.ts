@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
+import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService, User } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
@@ -18,25 +19,25 @@ import { GlobalSearchBarComponent } from '../../../shared/components/global-sear
 interface ModeTab {
   key: string;
   icon: string;
-  label: string;
+  labelKey: string;
   route: string;
   roles: string[];
 }
 
 const ALL_TABS: ModeTab[] = [
-  { key: 'studio', icon: 'brush', label: 'استوديو التصميم', route: '/ui/studio/templates', roles: ['admin', 'designer'] },
-  { key: 'desk', icon: 'assignment', label: 'مكتب النماذج', route: '/ui/desk', roles: ['admin', 'branch_manager', 'operator'] },
-  { key: 'admin', icon: 'admin_panel_settings', label: 'لوحة الإدارة', route: '/ui/admin/analytics', roles: ['admin'] },
-  { key: 'adminExport', icon: 'file_download', label: 'التصدير', route: '/admin/export', roles: ['admin'] },
-  { key: 'portal', icon: 'public', label: 'البوابة', route: '/admin/portal', roles: ['admin'] },
-  { key: 'integrations', icon: 'hub', label: 'التكاملات', route: '/admin/integrations', roles: ['admin'] },
-  { key: 'platform', icon: 'cloud', label: 'المنصة', route: '/platform', roles: ['admin'] },
+  { key: 'studio', icon: 'brush', labelKey: 'nav.studio', route: '/ui/studio/templates', roles: ['admin', 'designer'] },
+  { key: 'desk', icon: 'assignment', labelKey: 'nav.desk', route: '/ui/desk', roles: ['admin', 'branch_manager', 'operator'] },
+  { key: 'admin', icon: 'admin_panel_settings', labelKey: 'nav.admin', route: '/ui/admin/analytics', roles: ['admin'] },
+  { key: 'adminExport', icon: 'file_download', labelKey: 'nav.adminExport', route: '/admin/export', roles: ['admin'] },
+  { key: 'portal', icon: 'public', labelKey: 'nav.portal', route: '/admin/portal', roles: ['admin'] },
+  { key: 'integrations', icon: 'hub', labelKey: 'nav.integrations', route: '/admin/integrations', roles: ['admin'] },
+  { key: 'platform', icon: 'cloud', labelKey: 'nav.platform', route: '/platform', roles: ['admin'] },
 ];
 
 @Component({
   selector: 'fc-redesign-toolbar',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, MatMenuModule, MatTooltipModule, MatDividerModule, GlobalSearchBarComponent],
+  imports: [CommonModule, RouterModule, MatIconModule, MatMenuModule, MatTooltipModule, MatDividerModule, TranslateModule, GlobalSearchBarComponent],
   templateUrl: './toolbar.component.html',
   styleUrl: './toolbar.component.scss',
 })
@@ -145,14 +146,14 @@ export class ToolbarComponent implements OnInit, OnDestroy {
   }
 
   private roleLabel(role: User['role']): string {
-    const labels: Record<User['role'], string> = {
-      admin: 'مسؤول',
-      designer: 'مصمم',
-      operator: 'مشغل',
-      viewer: 'مشاهد',
-      branch_manager: 'مدير فرع',
+    const keys: Record<User['role'], string> = {
+      admin: 'nav.role_admin',
+      designer: 'nav.role_designer',
+      operator: 'nav.role_operator',
+      viewer: 'nav.role_viewer',
+      branch_manager: 'nav.role_branch_manager',
     };
-    return labels[role] || role;
+    return keys[role] || role;
   }
 
   private initials(name: string): string {
