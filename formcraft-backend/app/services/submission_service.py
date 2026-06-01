@@ -150,7 +150,6 @@ class SubmissionService:
         self, field_values: dict, elements: list[dict], country: str
     ) -> list[dict]:
         errors = []
-        country_validators = _validator_registry.list_all_for_country(country)
 
         for elem in elements:
             key = elem.get("key", "")
@@ -211,7 +210,7 @@ class SubmissionService:
                         "message": f"Field '{key}' must be at most {validation['max']}",
                     })
 
-            country_validator = country_validators.get(elem_type)
+            country_validator = _validator_registry.get(country, elem_type)
             if country_validator and isinstance(value, str):
                 result = country_validator.validate(value)
                 if not result.valid:
