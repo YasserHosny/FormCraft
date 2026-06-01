@@ -42,6 +42,17 @@ import { CommonModule } from '@angular/common';
       align-items: center;
       gap: 8px;
     }
+    .header-actions ::ng-deep [actions] {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .header-actions ::ng-deep [actions] > .fc-btn.primary:not(:first-child),
+    .header-actions ::ng-deep [actions] > .fc-btn.accent:not(:first-child) {
+      margin-inline-start: 8px;
+    }
   `],
 })
 export class PageHeaderComponent {
