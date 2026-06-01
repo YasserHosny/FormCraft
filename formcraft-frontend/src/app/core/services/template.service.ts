@@ -38,6 +38,7 @@ export class TemplateService {
     name: string;
     description?: string;
     category?: string;
+    thumbnail_asset?: string | null;
     language?: string;
     country?: string;
   }): Observable<unknown> {

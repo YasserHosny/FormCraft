@@ -18,6 +18,7 @@ describe('Redesign TemplateListComponent', () => {
         {
           id: 'tpl-1',
           name: 'نموذج فعلي',
+          thumbnail_asset: 'template-thumbnails/tpl-1/cover.webp',
           status: 'submitted_for_review',
           version: 2,
           category: 'accounts',
@@ -49,6 +50,7 @@ describe('Redesign TemplateListComponent', () => {
       name: 'نموذج فعلي',
       status: 'in-review',
       version: 'v2',
+      thumbnailAsset: 'http://localhost:54321/storage/v1/object/public/assets/template-thumbnails/tpl-1/cover.webp',
       pages: 1,
       fields: 2,
     }));
@@ -60,7 +62,18 @@ describe('Redesign TemplateListComponent', () => {
     fixture.componentInstance.createTemplate();
     fixture.componentInstance.openTemplate(fixture.componentInstance.templates[0]);
 
-    expect(router.navigate).toHaveBeenCalledWith(['/templates/new']);
-    expect(router.navigate).toHaveBeenCalledWith(['/designer', 'tpl-1']);
+    expect(router.navigate).toHaveBeenCalledWith(['/ui/studio/wizard']);
+    expect(router.navigate).toHaveBeenCalledWith(['/ui/studio/designer', 'tpl-1']);
+  });
+
+  it('renders the saved template thumbnail image on Spark cards', () => {
+    const image = fixture.nativeElement.querySelector('.template-thumbnail') as HTMLImageElement | null;
+
+    expect(image).not.toBeNull();
+    expect(image?.getAttribute('src')).toBe(
+      'http://localhost:54321/storage/v1/object/public/assets/template-thumbnails/tpl-1/cover.webp',
+    );
+    expect(image?.getAttribute('alt')).toBe('نموذج فعلي');
+    expect(fixture.nativeElement.querySelector('.preview-svg')).toBeNull();
   });
 });

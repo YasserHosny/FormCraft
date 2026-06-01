@@ -10,6 +10,7 @@ export interface Template {
   name: string;
   description: string;
   category: string;
+  thumbnail_asset?: string | null;
   status: TemplateStatus;
   version: number;
   lineage_id: string;

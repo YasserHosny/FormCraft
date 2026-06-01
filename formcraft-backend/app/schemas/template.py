@@ -24,6 +24,7 @@ class CreateTemplateRequest(BaseModel):
     name: str = Field(..., max_length=100)
     description: str = Field("", max_length=500)
     category: str = Field("general", max_length=100)
+    thumbnail_asset: str | None = Field(None, max_length=1000)
     language: Language = Language.AR
     country: Country = Country.EG
     currency: str = Field("EGP", max_length=10)
@@ -35,6 +36,7 @@ class UpdateTemplateRequest(BaseModel):
     name: str | None = None
     description: str | None = None
     category: str | None = None
+    thumbnail_asset: str | None = Field(None, max_length=1000)
     language: Language | None = None
     country: Country | None = None
     updated_at: str
@@ -124,6 +126,7 @@ class TemplateListResponse(BaseModel):
     name: str
     description: str
     category: str
+    thumbnail_asset: str | None = None
     status: TemplateStatus
     version: int
     lineage_id: UUID | None = None

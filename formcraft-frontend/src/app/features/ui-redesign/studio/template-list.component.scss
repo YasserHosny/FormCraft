@@ -256,6 +256,14 @@
   border-radius: 0; // card overflow:hidden provides rounding
 }
 
+.template-thumbnail {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #F8F9FB;
+}
+
 .paper-mock {
   background: var(--fc-surface);
   height: 100%;

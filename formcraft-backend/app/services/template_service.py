@@ -40,7 +40,7 @@ EDITABLE_STATUSES = {"draft", "rejected"}
 class TemplateService:
     """Template domain model CRUD with optimistic concurrency."""
 
-    OPTIONAL_TEMPLATE_COLUMNS = {"currency", "tags"}
+    OPTIONAL_TEMPLATE_COLUMNS = {"currency", "tags", "thumbnail_asset"}
     OPTIONAL_PAGE_COLUMNS = {
         "orientation",
         "margin_top_mm",
@@ -331,7 +331,8 @@ class TemplateService:
     ) -> tuple[list[dict], int]:
         offset = (page - 1) * limit
         query = self.client.table("templates").select(
-            "*, pages(id, elements(id))", count="exact"
+            "*, pages(id, background_asset, width_mm, height_mm, elements(id, type, x_mm, y_mm, width_mm, height_mm))",
+            count="exact",
         )
 
         if status_filter:

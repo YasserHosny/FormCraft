@@ -14,6 +14,7 @@ import { StatusChipComponent } from '../shared/components/status-chip.component'
 import { AvatarComponent } from '../shared/components/avatar.component';
 import { TemplateService } from '../../../core/services/template.service';
 import { RedesignCloneDialogComponent } from './clone-dialog.component';
+import { environment } from '../../../../environments/environment';
 
 interface PreviewElement {
   x_mm: number;
@@ -27,6 +28,7 @@ interface RedesignTemplate {
   id: string;
   name: string;
   code: string;
+  thumbnailAsset?: string | null;
   status: string;
   version: string;
   dept: string;       // stores i18n key, displayed with | translate
@@ -36,13 +38,14 @@ interface RedesignTemplate {
   submissions: number;
   pages: number;
   fields: number;
-  previewElements: PreviewElement[];
+  previewElements?: PreviewElement[];
 }
 
 interface TemplateRow {
   id?: string;
   name?: string;
   status?: string;
+  thumbnail_asset?: string | null;
   version?: number | string;
   category?: string;
   updated_at?: string;
@@ -293,6 +296,7 @@ export class TemplateListComponent implements OnInit, OnDestroy {
       id: row.id || '',
       name: row.name || this.translate.instant('templates.untitled'),
       code: this.codeFrom(row, index),
+      thumbnailAsset: this.resolveThumbnailAsset(row.thumbnail_asset),
       status: this.mapStatus(row.status),
       version: `v${row.version || 1}`,
       dept: this.categoryKey(category),   // i18n key — displayed via | translate
@@ -334,6 +338,15 @@ export class TemplateListComponent implements OnInit, OnDestroy {
   private codeFrom(row: TemplateRow, index: number): string {
     const prefix = (row.category || 'TMP').slice(0, 3).toUpperCase();
     return `${prefix}-${String(index + 1).padStart(3, '0')}`;
+  }
+
+  private resolveThumbnailAsset(asset?: string | null): string | null {
+    if (!asset) return null;
+    if (/^(https?:|data:|blob:|\/)/.test(asset)) return asset;
+    const baseUrl = environment.supabaseUrl.replace(/\/$/, '');
+    return baseUrl
+      ? `${baseUrl}/storage/v1/object/public/assets/${asset.replace(/^\/+/, '')}`
+      : asset;
   }
 
   private relativeDate(value?: string): string {

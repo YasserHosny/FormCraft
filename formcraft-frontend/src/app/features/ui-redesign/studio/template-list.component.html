@@ -67,6 +67,15 @@
         from the first page in a 210 × 130 mm viewBox (natural A4 coordinates, top portion).
         Falls back to a generic paper skeleton when the template has no positional data.
       -->
+      <img
+        *ngIf="t.thumbnailAsset; else generatedPreview"
+        class="template-thumbnail"
+        [src]="t.thumbnailAsset"
+        [alt]="t.name"
+        loading="lazy"
+      />
+
+      <ng-template #generatedPreview>
       <svg class="preview-svg"
            viewBox="0 0 210 130"
            xmlns="http://www.w3.org/2000/svg"
@@ -78,7 +87,7 @@
         <line x1="18" y1="0" x2="18" y2="130" stroke="#E4E7F0" stroke-width="0.4"/>
 
         <!-- Real layout: element rects from pages[0].elements -->
-        <ng-container *ngIf="t.previewElements.length > 0; else genericPaper">
+        <ng-container *ngIf="(t.previewElements?.length ?? 0) > 0; else genericPaper">
           <rect *ngFor="let el of t.previewElements"
                 [attr.x]="el.x_mm"
                 [attr.y]="el.y_mm"
@@ -104,6 +113,7 @@
           <rect x="20" y="101" width="168" height="9"  fill="#DDE1F0" rx="1.5" opacity="0.65"/>
         </ng-template>
       </svg>
+      </ng-template>
 
       <div class="preview-status">
         <fc-status-chip [status]="t.status"></fc-status-chip>

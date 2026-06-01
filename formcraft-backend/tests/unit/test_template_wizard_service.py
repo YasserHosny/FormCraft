@@ -53,6 +53,37 @@ class FakeClient:
         return FakeResponse([dict(row)])
 
 
+class FakeListQuery:
+    def __init__(self, response):
+        self.response = response
+        self.selected_columns = None
+        self.count = None
+
+    def select(self, columns, count=None):
+        self.selected_columns = columns
+        self.count = count
+        return self
+
+    def range(self, *_args):
+        return self
+
+    def order(self, *_args, **_kwargs):
+        return self
+
+    def execute(self):
+        return self.response
+
+
+class FakeListClient:
+    def __init__(self):
+        self.query = FakeListQuery(FakeResponse([]))
+        self.query.response.count = 0
+
+    def table(self, table_name):
+        assert table_name == "templates"
+        return self.query
+
+
 async def fake_get_created_template(service, _template_id):
     template = dict(service.client.inserts["templates"][0])
     template["pages"] = [dict(service.client.inserts["pages"][0])]
@@ -165,3 +196,17 @@ async def test_preview_clone(mock_supabase_client):
     assert preview["template_id"] == str(source_id)
     assert "page_count" in preview
     assert "element_count" in preview
+
+
+@pytest.mark.asyncio
+async def test_list_templates_selects_thumbnail_and_preview_shape():
+    client = FakeListClient()
+    service = TemplateService(client)
+
+    await service.list_templates()
+
+    assert client.query.count == "exact"
+    assert client.query.selected_columns == (
+        "*, pages(id, background_asset, width_mm, height_mm, "
+        "elements(id, type, x_mm, y_mm, width_mm, height_mm))"
+    )
