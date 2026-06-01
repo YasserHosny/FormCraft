@@ -21,7 +21,8 @@
     "role_designer": "Designer",
     "role_operator": "Operator",
     "role_viewer": "Viewer",
-    "role_branch_manager": "Branch Manager"
+    "role_branch_manager": "Branch Manager",
+    "more": "More"
   },
   "common": {
     "save": "Save",
