@@ -333,7 +333,7 @@ describe('FormCraft feature validation automation', () => {
       expect(component.pinnedTemplates).toBeDefined();
       expect(component.activities.length).toBeGreaterThan(-1);
       expect(router.navigate).toHaveBeenCalledWith(['/ui/desk/customers']);
-      expect(router.navigate).toHaveBeenCalledWith(['/desk/history']);
+      expect(router.navigate).toHaveBeenCalledWith(['/ui/desk/history']);
     });
 
     it('validates form filler groups, save, print, submit, and customer picker actions', () => {

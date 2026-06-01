@@ -1,0 +1,128 @@
+<fc-page-header title="سجل الإرسالات" subtitle="جميع النماذج المكتملة والمُرسَلة"></fc-page-header>
+
+<div class="page-body">
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <button class="fc-btn ghost sm" (click)="onClearFilters()">
+      <mat-icon>filter_alt_off</mat-icon>
+      مسح التصفية
+    </button>
+
+    <input
+      class="fc-date-input"
+      type="date"
+      [(ngModel)]="dateTo"
+      (change)="onSearch()"
+      title="إلى تاريخ"
+    />
+
+    <input
+      class="fc-date-input"
+      type="date"
+      [(ngModel)]="dateFrom"
+      (change)="onSearch()"
+      title="من تاريخ"
+    />
+
+    <select class="fc-select" [(ngModel)]="selectedStatus" (change)="onSearch()">
+      <option value="">كل الحالات</option>
+      <option value="submitted">مُرسَل</option>
+      <option value="printed">مطبوع</option>
+    </select>
+
+    <div class="search-wrap">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        class="fc-search-input"
+        type="text"
+        placeholder="ابحث برقم المرجع أو اسم النموذج…"
+        [(ngModel)]="search"
+        (keyup.enter)="onSearch()"
+      />
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (loading) {
+    <div class="state-block">
+      <div class="fc-spinner"></div>
+      <p>جارٍ التحميل…</p>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (!loading && error) {
+    <div class="state-block error">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error }}</p>
+      <button class="fc-btn primary sm" (click)="loadSubmissions()">إعادة المحاولة</button>
+    </div>
+  }
+
+  <!-- Empty -->
+  @if (!loading && !error && submissions.length === 0) {
+    <div class="state-block">
+      <mat-icon class="empty-icon">inbox</mat-icon>
+      <p>لا توجد إرسالات بعد.</p>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!loading && !error && submissions.length > 0) {
+    <div class="table-card">
+      <table class="fc-table">
+        <thead>
+          <tr>
+            <th>رقم المرجع</th>
+            <th>النموذج</th>
+            <th>التاريخ</th>
+            <th>الحالة</th>
+            <th>ملخص</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of submissions; track row.id) {
+            <tr class="table-row">
+              <td class="ref-cell">{{ row.reference_number }}</td>
+              <td>{{ row.template_name }}</td>
+              <td class="date-cell">{{ row.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusClass(row.status)">
+                  {{ getStatusLabel(row.status) }}
+                </span>
+              </td>
+              <td class="summary-cell">{{ row.key_summary.join(' · ') }}</td>
+              <td class="actions-cell">
+                <button class="icon-btn" (click)="onReprint(row, $event)" title="إعادة طباعة">
+                  <mat-icon>print</mat-icon>
+                </button>
+                <button class="icon-btn" (click)="onCloneAsNew(row, $event)" title="تعبئة نسخة جديدة">
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="pagination-bar">
+        <span class="pagination-info">
+          {{ pageStart }}–{{ pageEnd }} من {{ total }}
+        </span>
+        <div class="pagination-controls">
+          <button class="icon-btn" [disabled]="page <= 1" (click)="prevPage()">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+          <span class="page-num">{{ page }} / {{ totalPages }}</span>
+          <button class="icon-btn" [disabled]="page >= totalPages" (click)="nextPage()">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

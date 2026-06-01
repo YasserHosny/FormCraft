@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { RoleGuard } from '../../core/auth/role.guard';
 import { LayoutComponent } from './shell/layout.component';
 import { ClassicRedirectComponent } from './shared/classic-redirect.component';
+import { HistoryComponent } from './desk/history.component';
 
 export const UI_REDESIGN_ROUTES: Routes = [
   {
@@ -77,8 +78,8 @@ export const UI_REDESIGN_ROUTES: Routes = [
       {
         path: 'desk/history',
         canActivate: [RoleGuard],
-        data: { roles: ['admin', 'branch_manager', 'operator'], classicRoute: '/desk/history' },
-        component: ClassicRedirectComponent,
+        data: { roles: ['admin', 'branch_manager', 'operator'] },
+        component: HistoryComponent,
       },
       {
         path: 'desk/queue',
