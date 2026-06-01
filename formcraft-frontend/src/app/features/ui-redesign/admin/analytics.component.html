@@ -1,8 +1,37 @@
 <fc-page-header title="التحليلات والتقارير" subtitle="نظرة شاملة على نشاط النماذج والعمليات عبر المؤسسة">
   <div actions>
-    <div class="fc-filter-pill"><span class="label-key">الفترة:</span><span>آخر ٣٠ يوماً</span><mat-icon>expand_more</mat-icon></div>
-    <div class="fc-filter-pill"><span class="label-key">الإدارة:</span><span>جميع الإدارات</span><mat-icon>expand_more</mat-icon></div>
-    <div class="fc-filter-pill"><span class="label-key">الفرع:</span><span>جميع الفروع</span><mat-icon>expand_more</mat-icon></div>
+    <div class="fc-filter-pill" [matMenuTriggerFor]="periodMenu">
+      <span class="label-key">{{ 'analytics.dashboard.filter.period' | translate }}:</span>
+      <span>{{ activePeriod === '7d' ? ('analytics.dashboard.periods.7d' | translate) : activePeriod === '30d' ? ('analytics.dashboard.periods.30d' | translate) : activePeriod === '90d' ? ('analytics.dashboard.periods.90d' | translate) : ('analytics.dashboard.periods.yearly' | translate) }}</span>
+      <mat-icon>expand_more</mat-icon>
+    </div>
+    <mat-menu #periodMenu="matMenu">
+      <button mat-menu-item (click)="setPeriod('7d')">{{ 'analytics.dashboard.periods.7d' | translate }}</button>
+      <button mat-menu-item (click)="setPeriod('30d')">{{ 'analytics.dashboard.periods.30d' | translate }}</button>
+      <button mat-menu-item (click)="setPeriod('90d')">{{ 'analytics.dashboard.periods.90d' | translate }}</button>
+      <button mat-menu-item (click)="setPeriod('yearly')">{{ 'analytics.dashboard.periods.yearly' | translate }}</button>
+    </mat-menu>
+
+    <div class="fc-filter-pill" [matMenuTriggerFor]="deptMenu">
+      <span class="label-key">{{ 'analytics.dashboard.filter.department' | translate }}:</span>
+      <span>{{ selectedDeptLabel }}</span>
+      <mat-icon>expand_more</mat-icon>
+    </div>
+    <mat-menu #deptMenu="matMenu">
+      <button mat-menu-item (click)="setDepartment(undefined)">{{ 'analytics.dashboard.filter.all_departments' | translate }}</button>
+      <button mat-menu-item *ngFor="let dept of departments" (click)="setDepartment(dept.id)">{{ dept.name }}</button>
+    </mat-menu>
+
+    <div class="fc-filter-pill" [matMenuTriggerFor]="branchMenu">
+      <span class="label-key">{{ 'analytics.dashboard.filter.branch' | translate }}:</span>
+      <span>{{ selectedBranchLabel }}</span>
+      <mat-icon>expand_more</mat-icon>
+    </div>
+    <mat-menu #branchMenu="matMenu">
+      <button mat-menu-item (click)="setBranch(undefined)">{{ 'analytics.dashboard.filter.all_branches' | translate }}</button>
+      <button mat-menu-item *ngFor="let branch of branches" (click)="setBranch(branch.id)">{{ branch.name }}</button>
+    </mat-menu>
+
     <button class="fc-btn outline" (click)="exportPdf()"><mat-icon>file_download</mat-icon>تصدير PDF</button>
     <button class="fc-btn primary"><mat-icon>auto_graph</mat-icon>جدولة تقرير</button>
   </div>
@@ -10,11 +39,18 @@
 
 <div class="page-body">
   <!-- KPIs -->
-  <div class="kpi-grid">
-    <fc-kpi-card label="إجمالي النماذج المعبأة" value="٧,٢٨٤" delta="+18.4% عن الشهر السابق" deltaDir="up" icon="task_alt"></fc-kpi-card>
-    <fc-kpi-card label="نماذج منشورة" value="١٢ / ٤٧" delta="٢٥٫٥% من القوالب" icon="description"></fc-kpi-card>
-    <fc-kpi-card label="متوسط زمن المعالجة" value="٣:٤٢" delta="-22% (تحسّن)" deltaDir="up" icon="schedule"></fc-kpi-card>
-    <fc-kpi-card label="عملاء فريدون" value="٢,٨٤١" delta="+47 هذا الأسبوع" deltaDir="up" icon="groups"></fc-kpi-card>
+  <div *ngIf="loadingStates.summary" class="kpi-grid skeleton-grid">
+    <div class="skeleton-box kpi-skeleton" *ngFor="let _ of [1,2,3,4]"></div>
+  </div>
+  <div *ngIf="errorStates.summary" class="widget-error">
+    {{ 'analytics.dashboard.error' | translate }}
+    <button class="fc-btn ghost sm" (click)="retryWidget('summary')">{{ 'analytics.dashboard.retry' | translate }}</button>
+  </div>
+  <div class="kpi-grid" *ngIf="!loadingStates.summary && !errorStates.summary">
+    <fc-kpi-card label="إجمالي النماذج المعبأة" [value]="formatValue(summary?.totalFormsFilled)" [delta]="(summary?.deltaPct != null ? (summary?.deltaPct! >= 0 ? '+' : '') + summary?.deltaPct + '%' : '–') + ' عن الفترة السابقة'" deltaDir="up" icon="task_alt"></fc-kpi-card>
+    <fc-kpi-card label="نماذج منشورة" [value]="(summary?.activeTemplates ?? 0) + ' / ' + (summary?.totalTemplates ?? 0)" delta="من القوالب" icon="description"></fc-kpi-card>
+    <fc-kpi-card label="متوسط زمن المعالجة" [value]="formatMsToTime(summary?.avgFillTimeMs)" [delta]="(summary?.fillTimeDeltaPct != null ? summary?.fillTimeDeltaPct + '%' : '–') + ' (تحسّن)'" deltaDir="up" icon="schedule"></fc-kpi-card>
+    <fc-kpi-card label="عملاء فريدون" [value]="formatValue(summary?.uniqueCustomers)" [delta]="'+' + formatValue(summary?.newCustomersThisWeek) + ' هذا الأسبوع'" deltaDir="up" icon="groups"></fc-kpi-card>
   </div>
 
   <!-- Chart Row 1 -->
@@ -27,21 +63,25 @@
           <span>آخر ٣٠ يوماً · تحديث كل ساعة</span>
         </div>
         <div class="time-btns">
-          <button class="fc-btn ghost sm">٧ أيام</button>
-          <button class="fc-btn outline sm active">٣٠ يوماً</button>
-          <button class="fc-btn ghost sm">٩٠ يوماً</button>
-          <button class="fc-btn ghost sm">سنوي</button>
+          <button class="fc-btn ghost sm" [class.active]="activePeriod === '7d'" (click)="setPeriod('7d')">٧ أيام</button>
+          <button class="fc-btn outline sm" [class.active]="activePeriod === '30d'" (click)="setPeriod('30d')">٣٠ يوماً</button>
+          <button class="fc-btn ghost sm" [class.active]="activePeriod === '90d'" (click)="setPeriod('90d')">٩٠ يوماً</button>
+          <button class="fc-btn ghost sm" [class.active]="activePeriod === 'yearly'" (click)="setPeriod('yearly')">سنوي</button>
         </div>
       </div>
       <div class="chart-body">
-        <div class="line-chart-placeholder">
-          <!-- Simplified bar representation of line chart data -->
+        <div *ngIf="loadingStates.timeSeries" class="skeleton-box chart-skeleton"></div>
+        <div *ngIf="errorStates.timeSeries" class="widget-error">
+          {{ 'analytics.dashboard.error' | translate }}
+          <button class="fc-btn ghost sm" (click)="retryWidget('timeSeries')">{{ 'analytics.dashboard.retry' | translate }}</button>
+        </div>
+        <div class="line-chart-placeholder" *ngIf="!loadingStates.timeSeries && !errorStates.timeSeries">
           <div class="mini-bars">
             <div class="mini-bar" *ngFor="let v of lineData" [style.height.%]="(v / lineMax) * 100"></div>
           </div>
           <div class="chart-overlay">
-            <span class="chart-highlight fc-num">١٢٤</span>
-            <span class="chart-date">٢٥ مايو</span>
+            <span class="chart-highlight fc-num">{{ formatValue(timeSeries?.peakCount) }}</span>
+            <span class="chart-date">{{ peakLabel }}</span>
           </div>
         </div>
       </div>
@@ -56,19 +96,26 @@
         <button class="fc-icon-btn"><mat-icon>more_horiz</mat-icon></button>
       </div>
       <div class="chart-body donut-body">
-        <div class="donut-placeholder">
-          <div class="donut-center">
-            <span class="donut-label">إجمالي</span>
-            <span class="donut-value fc-num">7,284</span>
-          </div>
+        <div *ngIf="loadingStates.distribution" class="skeleton-box donut-skeleton"></div>
+        <div *ngIf="errorStates.distribution" class="widget-error">
+          {{ 'analytics.dashboard.error' | translate }}
+          <button class="fc-btn ghost sm" (click)="retryWidget('distribution')">{{ 'analytics.dashboard.retry' | translate }}</button>
         </div>
-        <div class="donut-legend">
-          <div class="legend-item" *ngFor="let d of donutData">
-            <span class="legend-dot" [style.background]="d.color"></span>
-            <span class="legend-label">{{ d.label }}</span>
-            <span class="legend-value fc-num">{{ d.value }}%</span>
+        <ng-container *ngIf="!loadingStates.distribution && !errorStates.distribution">
+          <div class="donut-placeholder">
+            <div class="donut-center">
+              <span class="donut-label">إجمالي</span>
+              <span class="donut-value fc-num">{{ formatValue(donutTotal) }}</span>
+            </div>
           </div>
-        </div>
+          <div class="donut-legend">
+            <div class="legend-item" *ngFor="let d of donutData">
+              <span class="legend-dot" [style.background]="d.color"></span>
+              <span class="legend-label">{{ d.label }}</span>
+              <span class="legend-value fc-num">{{ d.value }}%</span>
+            </div>
+          </div>
+        </ng-container>
       </div>
     </div>
   </div>
@@ -85,7 +132,12 @@
         <button class="fc-btn ghost sm">الكل<mat-icon>chevron_left</mat-icon></button>
       </div>
       <div class="chart-body">
-        <div class="bar-list">
+        <div *ngIf="loadingStates.topTemplates" class="skeleton-box bar-skeleton"></div>
+        <div *ngIf="errorStates.topTemplates" class="widget-error">
+          {{ 'analytics.dashboard.error' | translate }}
+          <button class="fc-btn ghost sm" (click)="retryWidget('topTemplates')">{{ 'analytics.dashboard.retry' | translate }}</button>
+        </div>
+        <div class="bar-list" *ngIf="!loadingStates.topTemplates && !errorStates.topTemplates">
           <div class="bar-item" *ngFor="let b of barData">
             <div class="bar-label-row">
               <span class="bar-name">{{ b.label }} <span class="bar-code fc-num">· {{ b.code }}</span></span>
@@ -108,7 +160,12 @@
         </div>
         <button class="fc-btn ghost sm">عرض الكل</button>
       </div>
-      <table class="fc-table">
+      <div *ngIf="loadingStates.operators" class="skeleton-box table-skeleton"></div>
+      <div *ngIf="errorStates.operators" class="widget-error">
+        {{ 'analytics.dashboard.error' | translate }}
+        <button class="fc-btn ghost sm" (click)="retryWidget('operators')">{{ 'analytics.dashboard.retry' | translate }}</button>
+      </div>
+      <table class="fc-table" *ngIf="!loadingStates.operators && !errorStates.operators">
         <thead>
           <tr>
             <th>الموظف</th>
@@ -118,7 +175,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let o of operators">
+          <tr *ngFor="let o of operatorRows">
             <td>
               <div class="operator-cell">
                 <fc-avatar [name]="o.name" size="sm" [color]="o.color"></fc-avatar>

@@ -134,3 +134,61 @@ class ExportRequest(BaseModel):
 class ExportResponse(BaseModel):
     download_url: str
     expires_at: datetime
+
+
+# ───────────────────────────────────────────────────────────────
+# 054-analytics-real-data — Dashboard Analytics Schemas
+# ───────────────────────────────────────────────────────────────
+
+
+class DashboardSummaryResponse(BaseModel):
+    total_forms_filled: int
+    total_forms_filled_prev: int
+    delta_pct: float | None
+    active_templates: int
+    total_templates: int
+    avg_fill_time_ms: int | None
+    avg_fill_time_prev_ms: int | None
+    fill_time_delta_pct: float | None
+    unique_customers: int
+    new_customers_this_week: int
+    period: str
+    cache_expires_at: datetime
+
+
+class TimeSeriesPoint(BaseModel):
+    date: date
+    count: int
+
+
+class SubmissionsOverTimeResponse(BaseModel):
+    points: list[TimeSeriesPoint]
+    peak_date: date | None
+    peak_count: int
+    granularity: str = Field(..., pattern="^(daily|monthly)$")
+    cache_expires_at: datetime
+
+
+class DepartmentShareItem(BaseModel):
+    department_id: UUID
+    department_name: str
+    count: int
+    percentage: float
+
+
+class DepartmentDistributionResponse(BaseModel):
+    departments: list[DepartmentShareItem]
+    total: int
+    cache_expires_at: datetime
+
+
+class TopTemplateItem(BaseModel):
+    template_id: UUID
+    template_name: str
+    template_code: str
+    count: int
+
+
+class TopTemplatesResponse(BaseModel):
+    templates: list[TopTemplateItem]
+    cache_expires_at: datetime
