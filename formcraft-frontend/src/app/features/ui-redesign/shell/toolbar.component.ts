@@ -25,13 +25,13 @@ interface ModeTab {
 }
 
 const ALL_TABS: ModeTab[] = [
-  { key: 'studio', icon: 'brush', labelKey: 'nav.studio', route: '/ui/studio/templates', roles: ['admin', 'designer'] },
-  { key: 'desk', icon: 'assignment', labelKey: 'nav.desk', route: '/ui/desk', roles: ['admin', 'branch_manager', 'operator'] },
-  { key: 'admin', icon: 'admin_panel_settings', labelKey: 'nav.admin', route: '/ui/admin/analytics', roles: ['admin'] },
-  { key: 'adminExport', icon: 'file_download', labelKey: 'nav.adminExport', route: '/admin/export', roles: ['admin'] },
-  { key: 'portal', icon: 'public', labelKey: 'nav.portal', route: '/admin/portal', roles: ['admin'] },
-  { key: 'integrations', icon: 'hub', labelKey: 'nav.integrations', route: '/admin/integrations', roles: ['admin'] },
-  { key: 'platform', icon: 'cloud', labelKey: 'nav.platform', route: '/platform', roles: ['admin'] },
+  { key: 'studio',       icon: 'brush',              labelKey: 'nav.studio',       route: '/ui/studio/templates',    roles: ['admin', 'designer'] },
+  { key: 'desk',         icon: 'assignment',          labelKey: 'nav.desk',         route: '/ui/desk',                roles: ['admin', 'branch_manager', 'operator'] },
+  { key: 'admin',        icon: 'admin_panel_settings',labelKey: 'nav.admin',        route: '/ui/admin/analytics',     roles: ['admin'] },
+  { key: 'adminExport',  icon: 'file_download',       labelKey: 'nav.adminExport',  route: '/ui/admin/export',        roles: ['admin'] },
+  { key: 'portal',       icon: 'public',              labelKey: 'nav.portal',       route: '/ui/admin/portal',        roles: ['admin'] },
+  { key: 'integrations', icon: 'hub',                 labelKey: 'nav.integrations', route: '/ui/admin/integrations',  roles: ['admin'] },
+  { key: 'platform',     icon: 'cloud',               labelKey: 'nav.platform',     route: '/ui/admin/platform',      roles: ['admin'] },
 ];
 
 @Component({

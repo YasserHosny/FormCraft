@@ -45,3 +45,7 @@ class PrinterProfileResponse(BaseModel):
 class PdfGenerationRequest(BaseModel):
     printer_profile_id: UUID | None = None
     print_mode_override: str | None = Field(default=None, pattern=r"^(full|overlay|both)$")
+    field_values: dict | None = None
+    # Preview flags sent by the form-filler UI — accepted but not used server-side
+    overlay_preview: bool | None = None
+    composite_preview: bool | None = None

@@ -575,7 +575,15 @@
       "error_title": "An error occurred",
       "empty_title": "No data",
       "empty_sub": "Start by filling a new form"
-    }
+    },
+    "pick_title": "Choose a Form to Fill",
+    "pick_sub": "Browse all available forms",
+    "pick_back": "Back",
+    "pick_error": "An error occurred",
+    "pick_empty_title": "No forms available",
+    "pick_empty_sub": "No forms found to fill",
+    "pick_no_desc": "No description",
+    "pick_load_error": "Failed to load forms"
   },
   "history": {
     "title": "Submission History",
@@ -598,7 +606,49 @@
     "action_view": "View",
     "action_reprint": "Reprint",
     "action_clone": "Clone as New",
-    "clone_notice": "Cloned from {{ref}}"
+    "clone_notice": "Cloned from {{ref}}",
+    "subtitle": "All completed and submitted forms",
+    "status_all": "All Statuses",
+    "loading": "Loading...",
+    "error_load": "Failed to load history",
+    "retry": "Retry"
+  },
+  "customers": {
+    "title": "Customer Directory",
+    "subtitle": "{{total}} customers · {{active}} active · {{inactive}} inactive · {{duplicates}} potential duplicates",
+    "export_csv": "Export CSV",
+    "merge_dups": "Merge Duplicates",
+    "add_customer": "Add Customer",
+    "search_placeholder": "Search by ID, phone, name or email...",
+    "filter_status": "Status:",
+    "filter_id_type": "ID Type:",
+    "filter_branch": "Branch:",
+    "filter_last": "Last Activity:",
+    "more_filters": "More",
+    "sort_last": "Last Activity ↓",
+    "status_active": "Active",
+    "status_all": "All",
+    "id_type_all": "All",
+    "branch_all": "All Branches",
+    "last_this_month": "This Month",
+    "col_customer": "Customer",
+    "col_id_type": "ID Type",
+    "col_id_num": "ID Number",
+    "col_phone": "Phone",
+    "col_branch": "Branch",
+    "col_forms": "Forms",
+    "col_last": "Last Activity",
+    "col_status": "Status",
+    "tag_premium": "Premium",
+    "id_type_national": "National ID",
+    "action_view": "View",
+    "action_fill": "Fill Form",
+    "empty": "No customer data available",
+    "error_load": "Failed to load customer list",
+    "error_search": "Failed to search customers",
+    "error_title": "An error occurred",
+    "page_rows": "Rows per page:",
+    "page_of": "Page {{page}} of {{total}}"
   },
   "filler": {
     "cancel": "Cancel",
@@ -1407,5 +1457,17 @@
       "printer_profiles": "Printer Profiles"
     },
     "coming_soon": "Coming soon"
+  },
+  "status": {
+    "draft": "Draft",
+    "in_review": "In Review",
+    "submitted_for_review": "Submitted for Review",
+    "approved": "Approved",
+    "published": "Published",
+    "archived": "Archived",
+    "rejected": "Rejected",
+    "active": "Active",
+    "inactive": "Inactive",
+    "deprecated": "Deprecated"
   }
 }

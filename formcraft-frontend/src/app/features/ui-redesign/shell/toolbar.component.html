@@ -55,7 +55,7 @@
   </mat-menu>
 
   <!-- My Feedback (non-admin only) -->
-  <a class="fc-toolbar-btn" routerLink="/my-feedback"
+  <a class="fc-toolbar-btn" routerLink="/ui/my-feedback"
      *ngIf="userRole && userRole !== 'admin'"
      [matTooltip]="'nav.my_feedback' | translate">
     <mat-icon>feedback</mat-icon>
