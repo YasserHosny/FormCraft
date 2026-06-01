@@ -575,7 +575,15 @@
       "error_title": "حدث خطأ",
       "empty_title": "لا توجد بيانات",
       "empty_sub": "ابدأ بتعبئة نموذج جديد"
-    }
+    },
+    "pick_title": "اختر نموذجاً لتعبئته",
+    "pick_sub": "تصفح جميع النماذج المتاحة",
+    "pick_back": "رجوع",
+    "pick_error": "حدث خطأ",
+    "pick_empty_title": "لا توجد نماذج متاحة",
+    "pick_empty_sub": "لم يتم العثور على أي نماذج للتعبئة",
+    "pick_no_desc": "بدون وصف",
+    "pick_load_error": "فشل تحميل النماذج"
   },
   "history": {
     "title": "سجل الإرسالات",
@@ -598,7 +606,49 @@
     "action_view": "عرض",
     "action_reprint": "إعادة الطباعة",
     "action_clone": "استنساخ كنموذج جديد",
-    "clone_notice": "مستنسخ من {{ref}}"
+    "clone_notice": "مستنسخ من {{ref}}",
+    "subtitle": "جميع النماذج المكتملة والمُرسَلة",
+    "status_all": "كل الحالات",
+    "loading": "جارٍ التحميل...",
+    "error_load": "تعذّر تحميل سجل الإرسالات",
+    "retry": "إعادة المحاولة"
+  },
+  "customers": {
+    "title": "دليل العملاء",
+    "subtitle": "{{total}} ملف عميل · {{active}} نشط · {{inactive}} موقوف · {{duplicates}} تكرارات محتملة",
+    "export_csv": "تصدير CSV",
+    "merge_dups": "دمج التكرارات",
+    "add_customer": "إضافة عميل",
+    "search_placeholder": "ابحث برقم الهوية، الجوال، الاسم، أو البريد...",
+    "filter_status": "الحالة:",
+    "filter_id_type": "نوع الهوية:",
+    "filter_branch": "الفرع:",
+    "filter_last": "آخر تعامل:",
+    "more_filters": "المزيد",
+    "sort_last": "آخر تعامل ↓",
+    "status_active": "نشط",
+    "status_all": "الكل",
+    "id_type_all": "الكل",
+    "branch_all": "جميع الفروع",
+    "last_this_month": "هذا الشهر",
+    "col_customer": "العميل",
+    "col_id_type": "نوع الهوية",
+    "col_id_num": "رقم الهوية",
+    "col_phone": "الجوال",
+    "col_branch": "الفرع",
+    "col_forms": "نماذج",
+    "col_last": "آخر تعامل",
+    "col_status": "الحالة",
+    "tag_premium": "متميز",
+    "id_type_national": "هوية وطنية",
+    "action_view": "عرض",
+    "action_fill": "تعبئة نموذج",
+    "empty": "لا توجد بيانات عملاء متاحة",
+    "error_load": "فشل تحميل قائمة العملاء",
+    "error_search": "فشل البحث عن العملاء",
+    "error_title": "حدث خطأ",
+    "page_rows": "السطور بالصفحة:",
+    "page_of": "صفحة {{page}} من {{total}}"
   },
   "filler": {
     "cancel": "إلغاء",
@@ -1401,5 +1451,17 @@
       "printer_profiles": "ملفات تعريف الطابعات"
     },
     "coming_soon": "قريباً"
+  },
+  "status": {
+    "draft": "مسوّدة",
+    "in_review": "قيد المراجعة",
+    "submitted_for_review": "مُقدَّم للمراجعة",
+    "approved": "معتمد",
+    "published": "منشور",
+    "archived": "مؤرشف",
+    "rejected": "مرفوض",
+    "active": "نشط",
+    "inactive": "موقوف",
+    "deprecated": "قديم"
   }
 }

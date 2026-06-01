@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { DeskService } from '../../../features/desk/services/desk.service';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
@@ -9,11 +10,11 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
 @Component({
   selector: 'fc-desk-templates',
   standalone: true,
-  imports: [CommonModule, MatIconModule, PageHeaderComponent],
+  imports: [CommonModule, MatIconModule, TranslateModule, PageHeaderComponent],
   template: `
-    <fc-page-header [title]="'اختر نموذجاً لتعبئته'" [subtitle]="'تصفح جميع النماذج المتاحة'">
+    <fc-page-header [title]="'desk.pick_title' | translate" [subtitle]="'desk.pick_sub' | translate">
       <div actions>
-        <button class="fc-btn outline" (click)="goBack()"><mat-icon>arrow_back</mat-icon>رجوع</button>
+        <button class="fc-btn outline" (click)="goBack()"><mat-icon>arrow_back</mat-icon>{{ 'desk.pick_back' | translate }}</button>
       </div>
     </fc-page-header>
 
@@ -28,7 +29,7 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       <!-- Error State -->
       <div *ngIf="error && !loading" class="error-state">
         <mat-icon>error_outline</mat-icon>
-        <h3>حدث خطأ</h3>
+        <h3>{{ 'desk.pick_error' | translate }}</h3>
         <p>{{ error }}</p>
       </div>
 
@@ -36,8 +37,8 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
       <div *ngIf="!loading && !error" class="templates-grid">
         <div *ngIf="templates.length === 0" class="empty-state">
           <mat-icon>folder_open</mat-icon>
-          <h3>لا توجد نماذج متاحة</h3>
-          <p>لم يتم العثور على أي نماذج للتعبئة</p>
+          <h3>{{ 'desk.pick_empty_title' | translate }}</h3>
+          <p>{{ 'desk.pick_empty_sub' | translate }}</p>
         </div>
 
         <div class="template-card"
@@ -49,7 +50,7 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
           <div class="card-content">
             <h3>{{ template.name }}</h3>
             <p class="template-id">{{ template.id?.slice(0, 12) }}</p>
-            <p class="template-desc">{{ template.description || 'بدون وصف' }}</p>
+            <p class="template-desc">{{ template.description || ('desk.pick_no_desc' | translate) }}</p>
           </div>
           <div class="card-meta">
             <span class="version">{{ template.version || 'v1' }}</span>
@@ -60,143 +61,41 @@ import { PageHeaderComponent } from '../shared/components/page-header.component'
     </div>
   `,
   styles: [`
-    .page-body {
-      padding: 24px;
-    }
+    .page-body { padding: 24px; }
     .loading-state, .error-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      padding: 48px 24px;
-      text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 16px; padding: 48px 24px; text-align: center;
     }
-    .error-state mat-icon {
-      font-size: 48px;
-      width: 48px;
-      height: 48px;
-      color: var(--fc-error);
-    }
-    .skeleton-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
-    }
-    .skeleton-card {
-      height: 180px;
-      background: var(--fc-surface-hover);
-      border-radius: 8px;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    .templates-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
-    }
+    .error-state mat-icon { font-size: 48px; width: 48px; height: 48px; color: var(--fc-error); }
+    .skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .skeleton-card { height: 180px; background: var(--fc-surface-hover); border-radius: 8px; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
     .empty-state {
-      grid-column: 1 / -1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 48px 24px;
-      text-align: center;
+      grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 12px; padding: 48px 24px; text-align: center;
     }
-    .empty-state mat-icon {
-      font-size: 48px;
-      width: 48px;
-      height: 48px;
-      color: var(--fc-text-3);
-    }
-    .empty-state h3 {
-      margin: 0;
-      color: var(--fc-text);
-    }
-    .empty-state p {
-      margin: 0;
-      color: var(--fc-text-2);
-    }
+    .empty-state mat-icon { font-size: 48px; width: 48px; height: 48px; color: var(--fc-text-3); }
+    .empty-state h3 { margin: 0; color: var(--fc-text); }
+    .empty-state p { margin: 0; color: var(--fc-text-2); }
     .template-card {
-      background: var(--fc-surface);
-      border: 1px solid var(--fc-border);
-      border-radius: 8px;
-      padding: 16px;
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      background: var(--fc-surface); border: 1px solid var(--fc-border); border-radius: 8px;
+      padding: 16px; display: flex; gap: 12px; align-items: flex-start;
+      cursor: pointer; transition: all 0.2s ease;
     }
     .template-card:hover {
-      border-color: var(--fc-primary);
-      background: var(--fc-surface-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-color: var(--fc-primary); background: var(--fc-surface-hover);
+      transform: translateY(-2px); box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .card-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      flex-shrink: 0;
-    }
-    .card-icon mat-icon {
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
-    }
-    .card-content {
-      flex: 1;
-      min-width: 0;
-    }
-    .card-content h3 {
-      margin: 0 0 4px;
-      color: var(--fc-text);
-      font-size: 14px;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .template-id {
-      margin: 0 0 4px;
-      color: var(--fc-text-3);
-      font-size: 11px;
-      font-weight: 500;
-      font-family: monospace;
-    }
-    .template-desc {
-      margin: 0;
-      color: var(--fc-text-2);
-      font-size: 12px;
-      display: -webkit-box;
-      -webkit-line-clamp: 1;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .card-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-    .version {
-      color: var(--fc-text-3);
-      font-size: 11px;
-      font-weight: 500;
-    }
-    .arrow {
-      color: var(--fc-text-3);
-    }
+    .card-icon { width: 56px; height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
+    .card-icon mat-icon { font-size: 28px; width: 28px; height: 28px; }
+    .card-content { flex: 1; min-width: 0; }
+    .card-content h3 { margin: 0 0 4px; color: var(--fc-text); font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .template-id { margin: 0 0 4px; color: var(--fc-text-3); font-size: 11px; font-weight: 500; font-family: monospace; }
+    .template-desc { margin: 0; color: var(--fc-text-2); font-size: 12px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .version { color: var(--fc-text-3); font-size: 11px; font-weight: 500; }
+    .arrow { color: var(--fc-text-3); }
   `],
 })
 export class TemplatesComponent implements OnInit, OnDestroy {
@@ -206,11 +105,11 @@ export class TemplatesComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private colors = ['#3F51B5', '#1E88E5', '#00897B', '#E91E63', '#F57C00', '#5E35B1', '#00695C', '#C62828'];
-  private colorIndex = 0;
 
   constructor(
     private deskService: DeskService,
     private router: Router,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit(): void {
@@ -234,7 +133,7 @@ export class TemplatesComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Failed to load templates:', err);
           this.loading = false;
-          this.error = 'فشل تحميل النماذج';
+          this.error = this.translate.instant('desk.pick_load_error');
         },
       });
   }

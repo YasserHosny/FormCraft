@@ -1,4 +1,4 @@
-<fc-page-header title="سجل الإرسالات" subtitle="جميع النماذج المكتملة والمُرسَلة"></fc-page-header>
+<fc-page-header [title]="'history.title' | translate" [subtitle]="'history.subtitle' | translate"></fc-page-header>
 
 <div class="page-body">
 
@@ -6,7 +6,7 @@
   <div class="filters-bar">
     <button class="fc-btn ghost sm" (click)="onClearFilters()">
       <mat-icon>filter_alt_off</mat-icon>
-      مسح التصفية
+      {{ 'history.clear_filters' | translate }}
     </button>
 
     <input
@@ -14,7 +14,7 @@
       type="date"
       [(ngModel)]="dateTo"
       (change)="onSearch()"
-      title="إلى تاريخ"
+      [title]="'history.filter_date_to' | translate"
     />
 
     <input
@@ -22,13 +22,13 @@
       type="date"
       [(ngModel)]="dateFrom"
       (change)="onSearch()"
-      title="من تاريخ"
+      [title]="'history.filter_date_from' | translate"
     />
 
     <select class="fc-select" [(ngModel)]="selectedStatus" (change)="onSearch()">
-      <option value="">كل الحالات</option>
-      <option value="submitted">مُرسَل</option>
-      <option value="printed">مطبوع</option>
+      <option value="">{{ 'history.status_all' | translate }}</option>
+      <option value="submitted">{{ 'history.status_submitted' | translate }}</option>
+      <option value="printed">{{ 'history.status_printed' | translate }}</option>
     </select>
 
     <div class="search-wrap">
@@ -36,7 +36,7 @@
       <input
         class="fc-search-input"
         type="text"
-        placeholder="ابحث برقم المرجع أو اسم النموذج…"
+        [placeholder]="'history.search_placeholder' | translate"
         [(ngModel)]="search"
         (keyup.enter)="onSearch()"
       />
@@ -47,7 +47,7 @@
   @if (loading) {
     <div class="state-block">
       <div class="fc-spinner"></div>
-      <p>جارٍ التحميل…</p>
+      <p>{{ 'history.loading' | translate }}</p>
     </div>
   }
 
@@ -56,7 +56,7 @@
     <div class="state-block error">
       <mat-icon>error_outline</mat-icon>
       <p>{{ error }}</p>
-      <button class="fc-btn primary sm" (click)="loadSubmissions()">إعادة المحاولة</button>
+      <button class="fc-btn primary sm" (click)="loadSubmissions()">{{ 'history.retry' | translate }}</button>
     </div>
   }
 
@@ -64,7 +64,7 @@
   @if (!loading && !error && submissions.length === 0) {
     <div class="state-block">
       <mat-icon class="empty-icon">inbox</mat-icon>
-      <p>لا توجد إرسالات بعد.</p>
+      <p>{{ 'history.empty_state' | translate }}</p>
     </div>
   }
 
@@ -74,11 +74,11 @@
       <table class="fc-table">
         <thead>
           <tr>
-            <th>رقم المرجع</th>
-            <th>النموذج</th>
-            <th>التاريخ</th>
-            <th>الحالة</th>
-            <th>ملخص</th>
+            <th>{{ 'history.col_ref' | translate }}</th>
+            <th>{{ 'history.col_template' | translate }}</th>
+            <th>{{ 'history.col_date' | translate }}</th>
+            <th>{{ 'history.col_status' | translate }}</th>
+            <th>{{ 'history.col_summary' | translate }}</th>
             <th></th>
           </tr>
         </thead>
@@ -95,10 +95,10 @@
               </td>
               <td class="summary-cell">{{ row.key_summary.join(' · ') }}</td>
               <td class="actions-cell">
-                <button class="icon-btn" (click)="onReprint(row, $event)" title="إعادة طباعة">
+                <button class="icon-btn" (click)="onReprint(row, $event)" [title]="'history.action_reprint' | translate">
                   <mat-icon>print</mat-icon>
                 </button>
-                <button class="icon-btn" (click)="onCloneAsNew(row, $event)" title="تعبئة نسخة جديدة">
+                <button class="icon-btn" (click)="onCloneAsNew(row, $event)" [title]="'history.action_clone' | translate">
                   <mat-icon>content_copy</mat-icon>
                 </button>
               </td>
@@ -110,7 +110,7 @@
       <!-- Pagination -->
       <div class="pagination-bar">
         <span class="pagination-info">
-          {{ pageStart }}–{{ pageEnd }} من {{ total }}
+          {{ pageStart }}–{{ pageEnd }} {{ 'common.all' | translate }} {{ total }}
         </span>
         <div class="pagination-controls">
           <button class="icon-btn" [disabled]="page <= 1" (click)="prevPage()">

@@ -2,25 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
 import { StatusChipComponent } from '../shared/components/status-chip.component';
 import { AvatarComponent } from '../shared/components/avatar.component';
 import { CustomerService } from '../../../features/desk/services/customer.service';
 import { FormsModule } from '@angular/forms';
 
-interface Stat {
-  label: string;
-  value: string;
-  sub?: string;
-  delta?: string;
-  up?: boolean;
-  warn?: boolean;
-}
-
 @Component({
   selector: 'fc-customers',
   standalone: true,
-  imports: [CommonModule, MatIconModule, PageHeaderComponent, StatusChipComponent, AvatarComponent, FormsModule],
+  imports: [CommonModule, MatIconModule, TranslateModule, PageHeaderComponent, StatusChipComponent, AvatarComponent, FormsModule],
   templateUrl: './customers.component.html',
   styleUrl: './customers.component.scss',
 })
@@ -34,7 +26,17 @@ export class CustomersComponent implements OnInit {
   totalCustomers = 0;
   Math = Math;
 
-  constructor(private router: Router, private customerService: CustomerService) {}
+  // Stats are dynamic once data loads; shown as placeholders until then
+  totalStat = 0;
+  activeStat = 0;
+  inactiveStat = 0;
+  duplicatesStat = 0;
+
+  constructor(
+    private router: Router,
+    private customerService: CustomerService,
+    private translate: TranslateService,
+  ) {}
 
   ngOnInit(): void {
     this.loadCustomers();
@@ -46,13 +48,14 @@ export class CustomersComponent implements OnInit {
       next: (response) => {
         this.customers = response.items || [];
         this.totalCustomers = response.total || 0;
+        this.totalStat = this.totalCustomers;
         this.loading = false;
         this.error = null;
       },
       error: (err) => {
         console.error('Failed to load customers:', err);
         this.loading = false;
-        this.error = 'Failed to load customer list';
+        this.error = this.translate.instant('customers.error_load');
         this.customers = [];
       },
     });
@@ -83,7 +86,7 @@ export class CustomersComponent implements OnInit {
         },
         error: (err) => {
           console.error('Search failed:', err);
-          this.error = 'Failed to search customers';
+          this.error = this.translate.instant('customers.error_search');
           this.loading = false;
         },
       });
@@ -104,12 +107,4 @@ export class CustomersComponent implements OnInit {
     this.currentPage = 1;
     this.loadCustomers();
   }
-
-  stats: Stat[] = [
-    { label: 'إجمالي العملاء', value: '٢٨٤١', delta: '+47 هذا الأسبوع', up: true },
-    { label: 'عملاء نشطون', value: '٢٧٩٢', sub: '٩٨٫٣%' },
-    { label: 'إضافات اليوم', value: '٧', sub: 'من ٣ فروع' },
-    { label: 'تكرارات محتملة', value: '٤', sub: 'تحتاج مراجعة', warn: true },
-    { label: 'متوسط النماذج/عميل', value: '٧٫٢', sub: '+0.8 عن الربع السابق' },
-  ];
 }

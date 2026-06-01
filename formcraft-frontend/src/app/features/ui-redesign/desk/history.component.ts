@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
 import { HistoryService, SubmissionListItem, HistoryFilterParams } from '../../../features/desk/services/history.service';
@@ -10,7 +11,7 @@ import { HistoryService, SubmissionListItem, HistoryFilterParams } from '../../.
 @Component({
   selector: 'fc-desk-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, PageHeaderComponent],
+  imports: [CommonModule, FormsModule, MatIconModule, TranslateModule, PageHeaderComponent],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss',
 })
@@ -32,6 +33,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
   constructor(
     private historyService: HistoryService,
     private router: Router,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit(): void {
@@ -61,7 +63,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.loading = false;
-        this.error = 'تعذّر تحميل سجل الإرسالات';
+        this.error = this.translate.instant('history.error_load');
       },
     });
   }
@@ -125,11 +127,9 @@ export class HistoryComponent implements OnInit, OnDestroy {
   }
 
   getStatusLabel(status: string): string {
-    const map: Record<string, string> = {
-      printed: 'مطبوع',
-      submitted: 'مُرسَل',
-    };
-    return map[status] ?? status;
+    const key = `history.status_${status}`;
+    const translated = this.translate.instant(key);
+    return translated !== key ? translated : status;
   }
 
   getStatusClass(status: string): string {
