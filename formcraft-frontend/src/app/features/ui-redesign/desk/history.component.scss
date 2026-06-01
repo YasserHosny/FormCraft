@@ -1,0 +1,282 @@
+@use '../../../../styles/responsive' as responsive;
+
+.page-body {
+  padding: 20px 24px;
+  flex: 1;
+  overflow: auto;
+}
+
+// ── Filters ────────────────────────────────────────────────────────────────
+.filters-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1 1 240px;      // grows but starts at 240px, never steals all space
+  min-width: 180px;
+  max-width: 420px;
+
+  .search-icon {
+    position: absolute;
+    inset-inline-end: 10px;  // magnifier on the END side (left in RTL)
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: var(--fc-text-3);
+    pointer-events: none;
+  }
+}
+
+.fc-search-input {
+  width: 100%;
+  height: 38px;
+  padding-block: 0;
+  padding-inline: 12px 36px;  // 36px gap on end side for the icon
+  border: 1px solid var(--fc-border);
+  border-radius: 8px;
+  background: var(--fc-surface);
+  color: var(--fc-text-1);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: var(--fc-primary);
+  }
+}
+
+.fc-select {
+  flex: 0 0 auto;
+  width: 140px;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--fc-border);
+  border-radius: 8px;
+  background: var(--fc-surface);
+  color: var(--fc-text-1);
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:focus {
+    border-color: var(--fc-primary);
+  }
+}
+
+.fc-date-input {
+  flex: 0 0 auto;
+  width: 150px;
+  height: 38px;
+  padding: 0 8px;
+  border: 1px solid var(--fc-border);
+  border-radius: 8px;
+  background: var(--fc-surface);
+  color: var(--fc-text-1);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+
+  &:focus {
+    border-color: var(--fc-primary);
+  }
+}
+
+// Clear-filter button should never shrink
+.fc-btn.ghost.sm {
+  flex-shrink: 0;
+}
+
+// ── State blocks ───────────────────────────────────────────────────────────
+.state-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 24px;
+  color: var(--fc-text-3);
+  text-align: center;
+
+  &.error {
+    color: var(--fc-error, #d32f2f);
+  }
+
+  .empty-icon {
+    font-size: 48px;
+    opacity: 0.4;
+  }
+
+  p {
+    margin: 0;
+    font-size: 15px;
+  }
+}
+
+.fc-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--fc-border);
+  border-top-color: var(--fc-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Table ──────────────────────────────────────────────────────────────────
+.table-card {
+  background: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.fc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  th {
+    padding: 12px 16px;
+    text-align: start;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--fc-text-3);
+    background: var(--fc-bg);
+    border-bottom: 1px solid var(--fc-border);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 13px 16px;
+    color: var(--fc-text-1);
+    border-bottom: 1px solid var(--fc-border);
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.table-row {
+  transition: background 0.1s;
+
+  &:hover {
+    background: var(--fc-hover, rgba(0,0,0,.03));
+  }
+}
+
+.ref-cell {
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--fc-text-2);
+}
+
+.date-cell {
+  white-space: nowrap;
+  color: var(--fc-text-2);
+  font-size: 13px;
+}
+
+.summary-cell {
+  color: var(--fc-text-3);
+  font-size: 13px;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions-cell {
+  text-align: end;
+  white-space: nowrap;
+}
+
+// ── Status badges ──────────────────────────────────────────────────────────
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.status-submitted {
+    background: rgba(21, 128, 61, .1);
+    color: #15803d;
+  }
+
+  &.status-printed {
+    background: rgba(37, 99, 235, .1);
+    color: #2563eb;
+  }
+}
+
+// ── Icon buttons ───────────────────────────────────────────────────────────
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: var(--fc-text-3);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: var(--fc-border);
+    color: var(--fc-text-1);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// ── Pagination ─────────────────────────────────────────────────────────────
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid var(--fc-border);
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: var(--fc-text-3);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-num {
+  font-size: 13px;
+  color: var(--fc-text-2);
+  min-width: 48px;
+  text-align: center;
+}
