@@ -127,6 +127,39 @@ export const UI_REDESIGN_ROUTES: Routes = [
         component: ClassicRedirectComponent,
       },
 
+      // Admin Console sub-pages (no Spark page yet — redirect to classic)
+      {
+        path: 'admin/export',
+        canActivate: [RoleGuard],
+        data: { roles: ['admin'], classicRoute: '/admin/export' },
+        component: ClassicRedirectComponent,
+      },
+      {
+        path: 'admin/portal',
+        canActivate: [RoleGuard],
+        data: { roles: ['admin'], classicRoute: '/admin/portal' },
+        component: ClassicRedirectComponent,
+      },
+      {
+        path: 'admin/integrations',
+        canActivate: [RoleGuard],
+        data: { roles: ['admin'], classicRoute: '/admin/integrations' },
+        component: ClassicRedirectComponent,
+      },
+      {
+        path: 'admin/platform',
+        canActivate: [RoleGuard],
+        data: { roles: ['admin'], classicRoute: '/platform' },
+        component: ClassicRedirectComponent,
+      },
+
+      // My Feedback (non-admin users)
+      {
+        path: 'my-feedback',
+        data: { classicRoute: '/my-feedback' },
+        component: ClassicRedirectComponent,
+      },
+
       // Profile
       {
         path: 'profile',
