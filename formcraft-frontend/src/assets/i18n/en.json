@@ -71,21 +71,23 @@
   },
   "integrations": {
     "title": "Integrations",
-    "credentials": "API credentials",
-    "createCredential": "Create credential",
-    "revokeCredential": "Revoke credential",
-    "rotateCredential": "Rotate credential",
-    "secretShownOnce": "Secret is shown once.",
-    "scopes": "Scopes",
-    "webhooks": "Webhooks",
-    "createWebhook": "Create webhook",
-    "targetUrl": "Target URL",
-    "signingSecret": "Signing secret",
-    "eventType": "Event type",
-    "testDelivery": "Test delivery",
-    "deliveryLogs": "Delivery logs",
-    "payloadPreview": "Payload preview",
-    "responseSummary": "Response summary"
+    "credentials": {
+      "title": "API Credentials",
+      "create": "Create Credential",
+      "rotate": "Rotate",
+      "revoke": "Revoke",
+      "secretShownOnce": "Secret shown only once. Copy it now.",
+      "scopes": "Scopes"
+    },
+    "webhooks": {
+      "title": "Webhook Subscriptions",
+      "create": "Create Webhook",
+      "url": "URL",
+      "events": "Events",
+      "signingSecret": "Signing Secret",
+      "testDelivery": "Test Delivery",
+      "deliveries": "Delivery Log"
+    }
   },
   "marketplace": {
     "title": "Template Marketplace",
@@ -135,10 +137,7 @@
     "role": "Role"
   },
   "roles": {
-    "admin": "Admin",
-    "designer": "Designer",
-    "operator": "Operator",
-    "viewer": "Viewer"
+    "branch_manager": "Branch Manager"
   },
   "templates": {
     "title": "Templates",
@@ -600,36 +599,53 @@
     }
   },
   "signature": {
-    "title": "Signature",
-    "draw": "Draw Signature",
-    "clear": "Clear",
-    "confirm": "Confirm",
-    "required": "Signature is required",
-    "placeholder": "Sign here",
-    "penColor": "Pen Color"
+    "WORKFLOW_CONFIG": "Signature Workflow",
+    "WORKFLOW_NAME": "Workflow Name",
+    "ORDERED_SIGNING": "Ordered Signing",
+    "EXPIRATION_DAYS": "Expiration (Days)",
+    "DECLINE_POLICY": "Decline Policy",
+    "POLICY_STOP": "Stop Workflow",
+    "POLICY_CONTINUE": "Continue to Next",
+    "POLICY_ROUTE_ADMIN": "Route to Admin",
+    "REQUIRE_ALL": "Require All Signers",
+    "REQUEST_LIST": "Signature Requests",
+    "REQUEST_DETAIL": "Request Detail",
+    "STATUS": "Status",
+    "EXPIRES_AT": "Expires At",
+    "RECIPIENTS": "Recipients",
+    "EVENTS": "Events",
+    "RESEND": "Resend",
+    "CANCEL": "Cancel",
+    "SIGNER_NAME": "Signer Name",
+    "SEND_OTP": "Send OTP",
+    "OTP_CODE": "OTP Code",
+    "VERIFY": "Verify",
+    "PASSWORD": "Password",
+    "AUTHENTICATE": "Authenticate",
+    "SIGN": "Sign",
+    "DECLINE": "Decline",
+    "EVIDENCE": "Evidence",
+    "DOCUMENT_HASH": "Document Hash",
+    "INTEGRITY": "Integrity",
+    "VERIFY_INTEGRITY": "Verify Integrity",
+    "SIGNERS": "Signers"
   },
   "table": {
-    "title": "Table",
-    "addColumn": "Add Column",
-    "removeColumn": "Remove Column",
-    "addRow": "Add Row",
-    "removeRow": "Remove Row",
-    "headerAr": "Header (Arabic)",
-    "headerEn": "Header (English)",
-    "columnKey": "Column Key",
-    "columnType": "Column Type",
-    "columnWidth": "Width (mm)",
-    "autoSum": "Auto Sum",
-    "showHeader": "Show Header",
-    "showBorders": "Show Borders",
-    "showFooter": "Show Footer",
-    "minRows": "Min Rows",
-    "maxRows": "Max Rows",
-    "noColumns": "Add at least one column",
-    "duplicateKey": "Column keys must be unique",
-    "invalidColumnType": "Invalid column type",
-    "requiredRows": "Minimum {{min}} rows required",
-    "cellInvalid": "Invalid value"
+    "title": "Table Settings",
+    "show_total_row": "Show Total Row",
+    "default_rows": "Default Rows",
+    "columns": "Columns",
+    "column_key": "Key",
+    "column_label_en": "Label (EN)",
+    "column_label_ar": "Label (AR)",
+    "column_type": "Type",
+    "type_text": "Text",
+    "type_number": "Number",
+    "type_date": "Date",
+    "sum": "Sum",
+    "add_column": "Add Column",
+    "add_row": "Add Row",
+    "validation_error": "Please fill in all required cells"
   },
   "conditions": {
     "title": "Conditions",
@@ -803,36 +819,6 @@
     "search_placeholder": "Type to search...",
     "no_results": "No results found"
   },
-  "signature": {
-    "title": "Signature Settings",
-    "pen_color": "Pen Color",
-    "pen_width": "Pen Width",
-    "black": "Black",
-    "blue": "Blue",
-    "red": "Red",
-    "require_timestamp": "Show Timestamp",
-    "require_label": "Show Label",
-    "clear": "Clear Signature",
-    "undo": "Undo",
-    "validation_error": "Signature is required"
-  },
-  "table": {
-    "title": "Table Settings",
-    "show_total_row": "Show Total Row",
-    "default_rows": "Default Rows",
-    "columns": "Columns",
-    "column_key": "Key",
-    "column_label_en": "Label (EN)",
-    "column_label_ar": "Label (AR)",
-    "column_type": "Type",
-    "type_text": "Text",
-    "type_number": "Number",
-    "type_date": "Date",
-    "sum": "Sum",
-    "add_column": "Add Column",
-    "add_row": "Add Row",
-    "validation_error": "Please fill in all required cells"
-  },
   "org": {
     "title": "Organization Settings",
     "name_ar": "Arabic Name",
@@ -920,9 +906,6 @@
     "activate": "Activate",
     "last_login": "Last Login",
     "never_logged_in": "Never logged in"
-  },
-  "roles": {
-    "branch_manager": "Branch Manager"
   },
   "platform": {
     "title": "Platform Management",
@@ -1073,26 +1056,6 @@
     "expiredCode": "Code expired.",
     "minutes": "minutes"
   },
-  "integrations": {
-    "title": "Integrations",
-    "credentials": {
-      "title": "API Credentials",
-      "create": "Create Credential",
-      "rotate": "Rotate",
-      "revoke": "Revoke",
-      "secretShownOnce": "Secret shown only once. Copy it now.",
-      "scopes": "Scopes"
-    },
-    "webhooks": {
-      "title": "Webhook Subscriptions",
-      "create": "Create Webhook",
-      "url": "URL",
-      "events": "Events",
-      "signingSecret": "Signing Secret",
-      "testDelivery": "Test Delivery",
-      "deliveries": "Delivery Log"
-    }
-  },
   "templateWizard": {
     "title": "New Template",
     "stepBasicInfo": "Basic Info",
@@ -1205,7 +1168,6 @@
     "SUBSCRIPTION_INFO": "Subscription details and limits are shown here.",
     "USERS_READ_ONLY": "User overview is read-only.",
     "STORAGE_USAGE": "Storage Usage",
-    "TOTAL_SUBMISSIONS": "Total Submissions",
     "CONTEXT_LABEL": "Context",
     "CONTEXT_PLATFORM": "Platform",
     "CONTEXT_ORG": "Organization"
@@ -1321,36 +1283,41 @@
       "CONFIRM_SELECTION": "Confirm selection"
     }
   },
-  "signature": {
-    "WORKFLOW_CONFIG": "Signature Workflow",
-    "WORKFLOW_NAME": "Workflow Name",
-    "ORDERED_SIGNING": "Ordered Signing",
-    "EXPIRATION_DAYS": "Expiration (Days)",
-    "DECLINE_POLICY": "Decline Policy",
-    "POLICY_STOP": "Stop Workflow",
-    "POLICY_CONTINUE": "Continue to Next",
-    "POLICY_ROUTE_ADMIN": "Route to Admin",
-    "REQUIRE_ALL": "Require All Signers",
-    "REQUEST_LIST": "Signature Requests",
-    "REQUEST_DETAIL": "Request Detail",
-    "STATUS": "Status",
-    "EXPIRES_AT": "Expires At",
-    "RECIPIENTS": "Recipients",
-    "EVENTS": "Events",
-    "RESEND": "Resend",
-    "CANCEL": "Cancel",
-    "SIGNER_NAME": "Signer Name",
-    "SEND_OTP": "Send OTP",
-    "OTP_CODE": "OTP Code",
-    "VERIFY": "Verify",
-    "PASSWORD": "Password",
-    "AUTHENTICATE": "Authenticate",
-    "SIGN": "Sign",
-    "DECLINE": "Decline",
-    "EVIDENCE": "Evidence",
-    "DOCUMENT_HASH": "Document Hash",
-    "INTEGRITY": "Integrity",
-    "VERIFY_INTEGRITY": "Verify Integrity",
-    "SIGNERS": "Signers"
+  "sidebar": {
+    "studio": {
+      "group_design": "Design Studio",
+      "group_ai": "AI Tools",
+      "templates": "Templates",
+      "version_history": "Version History",
+      "starter_templates": "Starter Templates",
+      "reusable_components": "Reusable Components",
+      "ai_suggestions": "Field Suggestions",
+      "ai_quality": "Quality Check"
+    },
+    "desk": {
+      "group_desk": "Form Desk",
+      "group_customers": "Customers",
+      "home": "Home",
+      "fill_new": "Fill New Form",
+      "inbound": "Inbound",
+      "drafts": "Drafts",
+      "history": "Transaction Log",
+      "customers": "Customer Directory",
+      "add_customer": "Add Customer",
+      "merge_duplicates": "Merge Duplicates"
+    },
+    "admin": {
+      "group_admin": "Admin Console",
+      "group_org": "Organization",
+      "analytics": "Analytics & Reports",
+      "review_queue": "Review Queue",
+      "activity_log": "Activity Log",
+      "users": "Users",
+      "departments": "Departments & Branches",
+      "org_settings": "Organization Settings",
+      "ref_data": "Reference Data",
+      "printer_profiles": "Printer Profiles"
+    },
+    "coming_soon": "Coming soon"
   }
 }

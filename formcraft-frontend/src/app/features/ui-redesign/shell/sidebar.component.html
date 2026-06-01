@@ -2,18 +2,18 @@
 
 <aside class="fc-sidebar" [class.open]="open">
   <ng-container *ngFor="let group of groups">
-    <div class="group-label" *ngIf="group.label">{{ group.label }}</div>
+    <div class="group-label">{{ group.labelKey | translate }}</div>
     <a *ngFor="let item of group.items"
        class="fc-side-link"
        [class.disabled]="!item.route"
        [routerLink]="item.route || null"
        routerLinkActive="active"
        [routerLinkActiveOptions]="{ exact: true }"
-       [matTooltip]="!item.route ? 'قريباً' : ''"
-       [title]="item.label"
+       [matTooltip]="!item.route ? ('sidebar.coming_soon' | translate) : ''"
+       [title]="item.labelKey | translate"
        (click)="!item.route ? $event.preventDefault() : close()">
       <mat-icon>{{ item.icon }}</mat-icon>
-      <span>{{ item.label }}</span>
+      <span>{{ item.labelKey | translate }}</span>
     </a>
   </ng-container>
 

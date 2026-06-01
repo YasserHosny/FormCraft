@@ -3,58 +3,59 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/i18n/language.service';
 
 interface SidebarItem {
   icon: string;
-  label: string;
+  labelKey: string;
   route: string;
 }
 
 interface SidebarGroup {
-  label: string;
+  labelKey: string;
   items: SidebarItem[];
 }
 
 const NAV_CONFIG: Record<string, SidebarGroup[]> = {
   studio: [
-    { label: 'استوديو التصميم', items: [
-      { icon: 'description', label: 'النماذج', route: '/ui/studio/templates' },
-      { icon: 'history', label: 'سجل الإصدارات', route: '' },
-      { icon: 'folder_special', label: 'القوالب الجاهزة', route: '' },
-      { icon: 'palette', label: 'مكوّنات قابلة للاستخدام', route: '' },
+    { labelKey: 'sidebar.studio.group_design', items: [
+      { icon: 'description',    labelKey: 'sidebar.studio.templates',           route: '/ui/studio/templates' },
+      { icon: 'history',        labelKey: 'sidebar.studio.version_history',     route: '' },
+      { icon: 'folder_special', labelKey: 'sidebar.studio.starter_templates',   route: '' },
+      { icon: 'palette',        labelKey: 'sidebar.studio.reusable_components', route: '' },
     ]},
-    { label: 'الذكاء الاصطناعي', items: [
-      { icon: 'auto_awesome', label: 'اقتراحات الحقول', route: '' },
-      { icon: 'fact_check', label: 'فحص جودة النموذج', route: '' },
+    { labelKey: 'sidebar.studio.group_ai', items: [
+      { icon: 'auto_awesome', labelKey: 'sidebar.studio.ai_suggestions', route: '' },
+      { icon: 'fact_check',   labelKey: 'sidebar.studio.ai_quality',     route: '' },
     ]},
   ],
   desk: [
-    { label: 'مكتب النماذج', items: [
-      { icon: 'home', label: 'الرئيسية', route: '/ui/desk' },
-      { icon: 'edit_document', label: 'تعبئة نموذج جديد', route: '' },
-      { icon: 'inbox', label: 'الواردات', route: '' },
-      { icon: 'pending_actions', label: 'المسوّدات', route: '' },
-      { icon: 'history', label: 'سجل المعاملات', route: '' },
+    { labelKey: 'sidebar.desk.group_desk', items: [
+      { icon: 'home',            labelKey: 'sidebar.desk.home',      route: '/ui/desk' },
+      { icon: 'edit_document',   labelKey: 'sidebar.desk.fill_new',  route: '/ui/desk/templates' },
+      { icon: 'inbox',           labelKey: 'sidebar.desk.inbound',   route: '' },
+      { icon: 'pending_actions', labelKey: 'sidebar.desk.drafts',    route: '/ui/desk' },
+      { icon: 'history',         labelKey: 'sidebar.desk.history',   route: '/ui/desk/history' },
     ]},
-    { label: 'العملاء', items: [
-      { icon: 'groups', label: 'دليل العملاء', route: '/ui/desk/customers' },
-      { icon: 'person_add', label: 'إضافة عميل', route: '' },
-      { icon: 'merge_type', label: 'دمج التكرارات', route: '' },
+    { labelKey: 'sidebar.desk.group_customers', items: [
+      { icon: 'groups',      labelKey: 'sidebar.desk.customers',        route: '/ui/desk/customers' },
+      { icon: 'person_add',  labelKey: 'sidebar.desk.add_customer',     route: '' },
+      { icon: 'merge_type',  labelKey: 'sidebar.desk.merge_duplicates', route: '' },
     ]},
   ],
   admin: [
-    { label: 'لوحة الإدارة', items: [
-      { icon: 'analytics', label: 'التحليلات والتقارير', route: '/ui/admin/analytics' },
-      { icon: 'rule', label: 'قائمة المراجعة', route: '' },
-      { icon: 'history_edu', label: 'سجل النشاط', route: '' },
+    { labelKey: 'sidebar.admin.group_admin', items: [
+      { icon: 'analytics',    labelKey: 'sidebar.admin.analytics',    route: '/ui/admin/analytics' },
+      { icon: 'rule',         labelKey: 'sidebar.admin.review_queue', route: '' },
+      { icon: 'history_edu',  labelKey: 'sidebar.admin.activity_log', route: '' },
     ]},
-    { label: 'المؤسسة', items: [
-      { icon: 'people', label: 'المستخدمون', route: '' },
-      { icon: 'account_tree', label: 'الإدارات والفروع', route: '' },
-      { icon: 'business', label: 'إعدادات المؤسسة', route: '' },
-      { icon: 'list_alt', label: 'البيانات المرجعية', route: '' },
-      { icon: 'print', label: 'ملفات تعريف الطابعات', route: '' },
+    { labelKey: 'sidebar.admin.group_org', items: [
+      { icon: 'people',       labelKey: 'sidebar.admin.users',            route: '' },
+      { icon: 'account_tree', labelKey: 'sidebar.admin.departments',      route: '' },
+      { icon: 'business',     labelKey: 'sidebar.admin.org_settings',     route: '' },
+      { icon: 'list_alt',     labelKey: 'sidebar.admin.ref_data',         route: '' },
+      { icon: 'print',        labelKey: 'sidebar.admin.printer_profiles', route: '' },
     ]},
   ],
 };
@@ -62,7 +63,7 @@ const NAV_CONFIG: Record<string, SidebarGroup[]> = {
 @Component({
   selector: 'fc-redesign-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, MatTooltipModule],
+  imports: [CommonModule, RouterModule, MatIconModule, MatTooltipModule, TranslateModule],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
 })
