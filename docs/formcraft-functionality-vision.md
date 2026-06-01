@@ -1,9 +1,9 @@
 # FormCraft — Complete Platform Functionality & Business Value
 
 > A user-centric view of every function, its business value, and the closed-cycle flows that connect them.
-> Date: 2026-05-16 | Last validated: 2026-05-25
+> Date: 2026-05-16 | Last validated: 2026-06-01
 
-Validated against `formcraft-specs/specs/001-auth-users` through `formcraft-specs/specs/040-enhanced-analytics`, with later roadmap items represented as vision-level capabilities when they do not yet have full plan/task artifacts.
+Validated against `formcraft-specs/specs/001-auth-users` through `formcraft-specs/specs/053-form-filler-cross-theme`. Specs 041–053 have been reviewed and new functions are documented below; items that are specified but not yet implementation-verified are noted.
 
 ---
 
@@ -28,6 +28,7 @@ Validated against `formcraft-specs/specs/001-auth-users` through `formcraft-spec
      - F-GOVERNANCE: Template Governance
      - F-PDF: PDF Rendering Engine
      - F-REFDATA: Reference Data Manager
+     - F-CUSTOM-VALIDATORS: Custom Locale Validators
    - [Stage 3: OPERATE — Fill, Print, Archive](#stage-3-operate--fill-print-archive)
      - F-DESK: Operator Dashboard
      - F-FILL: Form Filler
@@ -39,6 +40,8 @@ Validated against `formcraft-specs/specs/001-auth-users` through `formcraft-spec
      - F-BATCH: Batch Operations & Print Queue
      - F-SEARCH: Form Desk Search & Quick Fill
      - F-FEEDBACK: Template Feedback
+     - F-MOBILE-OFFLINE: Mobile-Responsive & Offline Desk
+     - F-CROSS-FILLER: Cross-Theme Form Filler
    - [Stage 4: ANALYZE — Measure & Optimize](#stage-4-analyze--measure--optimize)
      - F-ANALYTICS-TEMPLATE: Template Analytics
      - F-ANALYTICS-OPERATOR: Operator Performance
@@ -50,6 +53,7 @@ Validated against `formcraft-specs/specs/001-auth-users` through `formcraft-spec
      - F-PLATFORM: Platform Admin Console
      - F-ORG: Organization & Tenant Management
      - F-USERS: User & Access Management
+     - F-GRANULAR-PERMS: Granular Template Permissions
      - F-AUDIT: Audit Trail & Compliance
      - F-NOTIFY: Notification System
      - F-USER-FEEDBACK: Product Feedback & Support Loop
@@ -59,6 +63,8 @@ Validated against `formcraft-specs/specs/001-auth-users` through `formcraft-spec
      - F-PORTAL: External Form Portal
      - F-EXPORT: Data Export & Portability
      - F-MARKETPLACE: Template Marketplace
+     - F-CONNECTORS: Enterprise Connector Framework
+     - F-UI-REDESIGN: Dual-Theme UI Shell
 5. [Complete User Journeys](#complete-user-journeys-end-to-end-closed-cycles)
 6. [Closed Cycle Summary](#closed-cycle-summary)
 7. [Business Value Summary by Stakeholder](#business-value-summary-by-stakeholder)
@@ -471,6 +477,38 @@ Business value:
     - Central management: one update to a list entry propagates to all templates using it
 ```
 
+#### F-CUSTOM-VALIDATORS: Custom Locale Validators *(spec 048)*
+
+```
+User flow:
+    Admin opens /admin/validators -> "New Validator"
+    -> Enters: name, regex pattern, Arabic error message, English error message
+    -> Org-scoped: saved as a reusable rule (max 500 per org)
+    -> Validators added to the platform's deterministic library take priority;
+       custom rules run after all built-in checks pass
+
+    Designer uses custom validator in canvas:
+    -> Selects a field element -> Properties panel -> Validation section
+    -> Picks from dropdown: built-in validators + org custom validators (up to 10 per field)
+    -> Preview: test pattern against sample input inline
+
+    At fill time (Form Desk):
+    -> Custom validators fire on each keystroke alongside built-in validators
+    -> Bilingual error message displayed immediately on failure
+
+Business value:
+    - Covers org-specific formats: internal reference codes, policy numbers, custom ID schemes
+    - Bilingual errors maintain Arabic-first UX regardless of rule origin
+    - Keeps compliance in-house: no code change needed when a local format rule changes
+    - Audit trail: validator usage logged per field per submission
+```
+
+| Business Value | Metric |
+|----------------|--------|
+| Zero-code rule updates | Admin changes a regex; no deployment required |
+| Org-specific compliance | Internal codes, policy numbers, custom IDs enforced at input |
+| Consistency | Same validator reused across 100+ templates without copy-paste |
+
 ---
 
 ### Stage 3: OPERATE — Fill, Print, Archive
@@ -794,6 +832,72 @@ Business value:
     - Operator engagement: "my feedback matters" improves morale and adoption
 ```
 
+#### F-MOBILE-OFFLINE: Mobile-Responsive & Offline Desk *(spec 047)*
+
+```
+User flow (mobile):
+    Operator opens /desk or /desk/fill on a 360px phone or 768px tablet
+    -> Form Desk dashboard renders in single-column, touch-optimized layout
+    -> Form Filler runs in Flow Layout with large tap targets (Arabic RTL default)
+    -> Language toggle (AR/EN) persists across all mobile routes
+
+    Offline fill:
+    -> Operator fills form with no network connection
+    -> Draft auto-saved to IndexedDB with WebCrypto encryption (AES-GCM)
+    -> Toast: "You're offline — your work is saved locally"
+    -> On reconnect:
+        -> Queued drafts and submissions sync with idempotency keys (no duplicate submissions)
+        -> Conflict detection: server version wins unless draft is newer
+    -> Device revocation: admin revokes offline access per device from Admin Console
+
+    Configuration:
+    -> Admin sets offline age limit (default: 7 days) and storage cap (default: 250 MB)
+    -> Design Studio remains desktop-only (canvas editing requires mouse precision)
+
+Business value:
+    - Field agents in low-connectivity zones serve customers without interruption
+    - Government inspectors, loan officers, and branch staff work from tablets
+    - Data integrity: idempotency keys prevent double submissions on flaky networks
+    - Security: IndexedDB data encrypted at rest, wiped on device revocation
+```
+
+#### F-CROSS-FILLER: Cross-Theme Form Filler *(specs 052–053)*
+
+```
+User flow:
+    Both routes share identical core behavior:
+        Classic theme: /desk/fill/:templateId
+        New theme:     /ui/desk/fill/:templateId
+
+    Identical capabilities in both themes:
+    -> Template load (structure + all element types)
+    -> 7+ field types: text, number, date, currency, checkbox, dropdown, tafqeet, signature
+    -> Live validation (Arabic validators + custom validators)
+    -> Conditional field logic (visible_when, required_when, computed_value)
+    -> Draft management (save, resume, auto-save)
+    -> Submission creation with reference number
+
+    New-theme-specific:
+    -> Auto-saves on navigation (no explicit Save Draft button press needed)
+    -> Submission-confirmed screen shows reference number inline
+    -> Draft resumption via slide-out list panel discovery
+
+    Classic-theme-only (advanced):
+    -> Offline draft storage (IndexedDB)
+    -> Clone as New from submission history
+    -> Print & Next high-throughput mode
+    -> Overlay print with printer profile selection
+
+    Signature fields (both themes):
+    -> Canvas-drawn signature pad (touch + mouse)
+    -> SHA-256 audit log entry on each signature recorded
+
+Business value:
+    - Zero training friction: operators switch themes without re-learning the fill flow
+    - New theme delivers modern UX without sacrificing any core filling capability
+    - Theme parity: bugs fixed in one theme are validated against both
+```
+
 ---
 
 ### Stage 4: ANALYZE — Measure & Optimize
@@ -1104,6 +1208,45 @@ Business value:
     - Deactivation: employee leaves = instant access revocation
 ```
 
+#### F-GRANULAR-PERMS: Granular Template Permissions *(spec 043)*
+
+```
+User flow:
+    Admin opens a template -> Permissions tab
+    -> Adds access rules (grants):
+        Grant: role=operator, department=Retail Banking -> capabilities: [fill, print]
+        Grant: role=designer, user=alice@bank.eg      -> capabilities: [edit, clone]
+        Grant: branch=Cairo HQ                        -> capabilities: [view, fill, print, export]
+    -> Adds deny rules (override grants):
+        Deny: role=operator, department=Corporate     -> capabilities: [fill] (explicit block)
+
+    Capabilities available per rule:
+    view | edit | clone | review | publish | fill | print | export
+
+    Access diagnostic:
+    -> Admin searches "What can operator X do with template Y?"
+    -> System traces all matching grants and denies
+    -> Returns final decision with rationale: "Granted via department rule; not overridden"
+
+    Inheritance logic:
+    -> User-level rules override role-level rules
+    -> Explicit deny overrides any matching grant (regardless of specificity)
+    -> No rule = no access (default deny)
+
+Business value:
+    - "Cheque template" accessible only to Retail Banking operators, not Corporate
+    - "HR Contract" editable only by designated HR designers
+    - Deny rules enable precise exceptions: senior manager blocked from a sensitive form
+    - Access diagnostics eliminate "why can't I see this template?" support tickets
+    - Audit trail: every permission change logged with who made it and when
+```
+
+| Business Value | Metric |
+|----------------|--------|
+| Regulatory isolation | Sensitive templates restricted to authorized departments only |
+| Reduced over-permissioning | Default deny means templates are hidden until explicitly granted |
+| Explainability | Access diagnostic answers "why" in one lookup |
+
 #### F-AUDIT: Audit Trail & Compliance
 
 ```
@@ -1358,6 +1501,81 @@ Business value:
     - Network effects: more templates attract more users attract more templates
 ```
 
+#### F-CONNECTORS: Enterprise Connector Framework *(spec 049)*
+
+```
+User flow:
+    Admin opens /admin/connectors -> "Add Connector"
+    -> Selects connector type:
+        DMS (Document Management System)  — auto-archive PDFs on submission
+        CRM                               — sync customer profiles bidirectionally
+        Email                             — send filled PDF as email attachment
+        Banking Core                      — push submission data to core banking system
+    -> Configures: API endpoint, authentication (API key / OAuth), field mapping
+    -> Activates: connector receives events on one or more triggers:
+        form_submitted | form_printed | template_published | batch_completed
+
+    Event delivery:
+    -> FormCraft POSTs event payload to connector endpoint
+    -> Includes: event type, timestamp, submission data, mapped fields, org context
+    -> Retry with exponential backoff (3 attempts: 1s, 5s, 30s)
+    -> Delivery log: admin sees each event's status, response code, payload preview
+    -> Field mapping: map FormCraft field keys to connector's expected field names
+
+Business value:
+    - DMS archival: every printed form lands in the document management system automatically
+    - CRM sync: customer profile created in FormCraft auto-updates the CRM record
+    - Email connector: send completed form PDF to customer without manual export
+    - Banking connector: form data flows into core banking without re-keying
+    - Delivery logs: integration failures visible and actionable without developer access
+```
+
+| Business Value | Metric |
+|----------------|--------|
+| Zero manual data transfer | Form data flows to downstream systems on print, not by hand |
+| No-code integration | Non-technical admins configure connectors via UI, no code deployments |
+| Reliability | Exponential backoff + delivery logs ensure no silent failures |
+
+#### F-UI-REDESIGN: Dual-Theme UI Shell *(specs 041, 050, 051, 052–053)*
+
+```
+User flow:
+    Any authenticated user can switch between Classic and New theme:
+    -> Profile settings: "UI Theme" = Classic | New
+    -> Preference persisted server-side (not lost on browser refresh)
+
+    New theme shell (/ui/*):
+    -> Redesigned navigation bar with org branding, language toggle, notification bell
+    -> All routes have documented Classic equivalents + fallback paths
+    -> Real API data — no mocks or hardcoded placeholders anywhere
+    -> KPI cards: live submission count, draft count, template count (from /api/desk/dashboard)
+    -> Recent activity feed: 10 items with "View All" link (from /api/desk/activity)
+    -> Drafts panel: actual operator drafts from /api/desk/drafts
+    -> Pinned/frequent templates: from /api/desk/favorites and usage data
+
+    Form filler (new theme):
+    -> /ui/desk/fill/:templateId — full parity with classic fill except Print & Next
+    -> Auto-saves on navigation (no explicit button press)
+    -> Submission-confirmed screen with reference number inline
+    -> Signature fields: canvas-drawn with touch + mouse support
+
+    Theme equivalence table:
+    | Classic route | New theme route |
+    |:---|:---|
+    | /desk | /ui/desk |
+    | /desk/fill/:id | /ui/desk/fill/:id |
+    | /desk/customers | /ui/desk/customers |
+    | /templates | /ui/studio/templates |
+    | /designer/:id | /ui/studio/designer |
+    | /admin/analytics | /ui/admin/analytics |
+
+Business value:
+    - Modern UX without disruption: operators can try the new theme at their own pace
+    - Theme parity: both themes call the same API endpoints = consistent data, consistent bugs fixed once
+    - Real data validation: new theme was rebuilt to use real APIs (no mock data divergence)
+    - Incremental migration path: organization switches theme per user, not all-at-once
+```
+
 ---
 
 ## Complete User Journeys (End-to-End Closed Cycles)
@@ -1592,6 +1810,14 @@ Every function feeds back into the system, creating a self-improving loop:
 | External Systems | API | External data feeds form generation |
 | Marketplace | Design Studio | Shared templates reduce design effort for new orgs |
 | Audit Trail | Compliance | Complete history satisfies regulatory audits |
+| Custom Validators | Form Desk | Org-specific regex enforced at fill time, bilingual errors |
+| Custom Validators | Design Studio | Validators appear in element properties alongside built-in rules |
+| Granular Permissions | Form Desk | Operators see only templates they are authorized to fill |
+| Granular Permissions | Design Studio | Designers see only templates within their access scope |
+| Mobile Offline Desk | Form Desk | Field agents fill and sync without continuous connectivity |
+| Connector Framework | External Systems | Events (submitted, printed, published) push to DMS, CRM, banking |
+| New Theme Shell | Form Desk | Modern UX layer calling same APIs, same data, zero divergence |
+| Cross-Theme Filler | Form Desk | Fill flow identical across Classic and New theme routes |
 
 ---
 

@@ -1,7 +1,7 @@
 # FormCraft — Playwright Test Scenarios (Step-by-Step)
 
 > Each feature described as a sequential test flow with capture points for screenshot evidence.
-> Generated: 2026-05-30
+> Generated: 2026-06-01 (updated for specs 041–053)
 
 ---
 
@@ -1208,6 +1208,199 @@
 
 ---
 
+## 25. CUSTOM LOCALE VALIDATORS (spec 048)
+
+### Feature 25.1: Create a Custom Validator
+
+1. Log in as an Admin.
+2. Navigate to `/admin/validators`.
+3. Verify the validators list loads with any existing custom validators.
+4. Click "New Validator".
+5. Enter a name (e.g., "Egyptian National ID"), select locale `ar-EG`, choose field type `text`.
+6. Write a regex pattern `^\d{14}$` and an error message in Arabic.
+7. Click Save.
+8. Verify the new validator appears in the list with its name and locale.
+9. Capture evidence: validator form, list after creation.
+
+### Feature 25.2: Use a Custom Validator in the Canvas
+
+1. Log in as a Designer.
+2. Open any template in the Canvas Editor.
+3. Select a text field element.
+4. In the field properties panel, locate the "Validation" section.
+5. Choose the custom validator created in 25.1 from the dropdown.
+6. Save the template.
+7. Verify the field panel shows the custom validator name.
+8. Capture evidence: field properties panel with validator selected.
+
+### Feature 25.3: Fill-Time Validation with Custom Validator
+
+1. Log in as an Operator.
+2. Open the Desk and start filling the template updated in 25.2.
+3. Enter an invalid value in the validated field (e.g., fewer than 14 digits).
+4. Attempt to proceed to the next page or submit.
+5. Verify the custom error message appears in Arabic (or locale-appropriate language).
+6. Enter a valid 14-digit number and verify the error clears.
+7. Capture evidence: field with error, field without error.
+
+---
+
+## 26. GRANULAR TEMPLATE PERMISSIONS (spec 043)
+
+### Feature 26.1: Restrict Template to a Department
+
+1. Log in as an Admin.
+2. Navigate to the Template Management list.
+3. Select a template and open its Settings / Permissions panel.
+4. Under "Access Control", restrict the template to a specific department.
+5. Save the permissions.
+6. Capture evidence: permissions panel with department restriction saved.
+
+### Feature 26.2: Restrict Template to a Branch
+
+1. Log in as an Admin.
+2. Repeat 26.1 but restrict by branch instead of department.
+3. Save and verify the branch restriction appears.
+4. Capture evidence: permissions panel showing branch filter.
+
+### Feature 26.3: Access Diagnostic
+
+1. Log in as an Operator who belongs to a different department/branch than the one allowed.
+2. Navigate to the Form Desk.
+3. Verify the restricted template does NOT appear in the template picker.
+4. Log in as an Operator in the allowed department/branch.
+5. Verify the template IS visible in the picker.
+6. Capture evidence: template picker for disallowed user (template absent), for allowed user (template present).
+
+---
+
+## 27. MOBILE OFFLINE DESK (spec 047)
+
+### Feature 27.1: Open and Fill a Form Offline
+
+1. Open a Chromium browser with a mobile viewport (`375×812`).
+2. Log in as an Operator and navigate to `/ui/desk`.
+3. Open a template to start a new draft.
+4. Using Chrome DevTools (or Playwright's `context.setOffline(true)`), simulate going offline.
+5. Verify the app shows an offline indicator but the form remains interactive.
+6. Fill in several fields and navigate between pages.
+7. Verify the data persists in the form without network access.
+8. Capture evidence: offline indicator visible, form still functional.
+
+### Feature 27.2: Sync After Reconnect
+
+1. Continue from 27.1 with the offline draft partially filled.
+2. Re-enable network (set offline to false).
+3. Verify the app detects reconnection and shows a "Syncing…" or "Draft saved" indicator.
+4. Refresh the page and reopen the draft.
+5. Verify all previously entered values are intact.
+6. Capture evidence: sync indicator, draft reloaded with all values.
+
+---
+
+## 28. CONNECTOR FRAMEWORK (spec 049)
+
+### Feature 28.1: Configure a Connector
+
+1. Log in as an Admin.
+2. Navigate to `/admin/connectors`.
+3. Verify the connector list loads.
+4. Click "New Connector" and select a connector type (e.g., HTTP Webhook).
+5. Fill in the endpoint URL, authentication method, and any header mappings.
+6. Click "Test Connection" and verify a success response.
+7. Save the connector.
+8. Capture evidence: connector form, test result, connector in list.
+
+### Feature 28.2: Attach a Connector to a Template
+
+1. Log in as an Admin or Designer.
+2. Open a template's Settings panel.
+3. Navigate to the "Integrations / Connectors" tab.
+4. Select the connector created in 28.1 and configure the trigger event (e.g., on submit).
+5. Map form fields to connector payload fields.
+6. Save the template.
+7. Capture evidence: connector mapping UI, saved state.
+
+### Feature 28.3: View Delivery Log
+
+1. Log in as an Operator and submit a form that has the connector attached.
+2. Navigate to the submission detail page.
+3. Open the "Delivery Log" or "Connector Events" tab.
+4. Verify the log shows a successful delivery event with timestamp and response code.
+5. Capture evidence: delivery log with a successful entry.
+
+---
+
+## 29. NEW THEME — REAL DATA (spec 050)
+
+### Feature 29.1: KPI Cards Show Live Data
+
+1. Log in as an Operator.
+2. Navigate to the new-theme Desk home at `/ui/desk`.
+3. Verify KPI cards (e.g., "Drafts In Progress", "Completed Today", "Pending Review") display non-zero or realistic counts that match the database state.
+4. Submit or complete a form from the classic theme.
+5. Return to `/ui/desk` and hard-refresh.
+6. Verify the relevant KPI count has incremented.
+7. Capture evidence: KPI cards before and after a form completion.
+
+### Feature 29.2: Draft List Shows Live Drafts
+
+1. Log in as an Operator.
+2. Navigate to `/ui/desk`.
+3. Verify the draft list shows the same drafts visible in the classic desk (`/desk`).
+4. Create a new draft via the classic desk.
+5. Return to `/ui/desk` and refresh.
+6. Verify the new draft appears in the new-theme draft list with the correct name and `completion_percent`.
+7. Capture evidence: draft list in new theme showing live items.
+
+### Feature 29.3: Activity Feed Shows Recent Events
+
+1. Log in as an Operator.
+2. Navigate to `/ui/desk`.
+3. Verify the activity feed shows recent actions (e.g., "Draft saved", "Form submitted") with correct timestamps.
+4. Perform an action (save a draft or submit a form).
+5. Refresh the activity feed.
+6. Verify the new event appears at the top.
+7. Capture evidence: activity feed with at least one real event.
+
+---
+
+## 30. CROSS-THEME FORM FILLER (specs 052–053)
+
+### Feature 30.1: Open Form Filler in New Theme
+
+1. Log in as an Operator.
+2. Navigate to `/ui/desk`.
+3. Click a draft or start a new form from a template.
+4. Verify the Form Filler opens at `/ui/desk/fill` (new-theme route) rather than the classic `/desk/fill`.
+5. Verify the page header, navigation controls, and field layout match the new-theme design.
+6. Capture evidence: form filler at `/ui/desk/fill` with new-theme styling.
+
+### Feature 30.2: All Field Types Render Correctly
+
+1. Open a template with diverse field types (text, number, date, dropdown, tafqeet, signature, attachment) in the new-theme filler.
+2. Verify each field type renders and is interactive.
+3. Fill each field with a valid value.
+4. Verify no console errors related to missing components or theme mismatches.
+5. Capture evidence: form with all field types filled, browser console showing no errors.
+
+### Feature 30.3: i18n Parity with Classic Filler
+
+1. In the new-theme filler, switch the UI language to Arabic.
+2. Verify all labels, placeholders, error messages, and button text are in Arabic (no untranslated keys visible as raw strings like `desk.fill_button`).
+3. Switch back to English and verify the same.
+4. Capture evidence: filler in Arabic and in English.
+
+### Feature 30.4: Submit and Verify Data Saved
+
+1. Fill all required fields in the new-theme filler.
+2. Click the submit/complete button.
+3. Verify the success screen or redirect matches the new-theme design.
+4. Navigate to the Admin submission list and verify the submission record was created with correct field values.
+5. Capture evidence: success state, submission record in admin.
+
+---
+
 ## Summary
 
 | Section | Scenario Count |
@@ -1236,4 +1429,10 @@
 | Digital Signatures | 5 |
 | Batch Schedules | 1 |
 | Notifications | 1 |
-| **Total** | **107** |
+| Custom Locale Validators | 3 |
+| Granular Template Permissions | 3 |
+| Mobile Offline Desk | 2 |
+| Connector Framework | 3 |
+| New Theme — Real Data | 3 |
+| Cross-Theme Form Filler | 4 |
+| **Total** | **119** |

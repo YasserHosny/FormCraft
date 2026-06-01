@@ -1,7 +1,7 @@
 # FormCraft — Critical Analysis & Strategic Vision
 
 > Complete system analysis, business value assessment, and full-platform vision.
-> Date: 2026-05-15 | Last updated: 2026-05-24
+> Date: 2026-05-15 | Last updated: 2026-06-01
 
 ---
 
@@ -29,7 +29,7 @@ FormCraft is an **enterprise Arabic-first form designer and print studio** targe
 
 **Architecture**: Angular 19 frontend + FastAPI backend + Supabase (PostgreSQL, Auth, Storage) + AWS Bedrock (AI) + Azure Document Intelligence (OCR) + WeasyPrint (PDF). Hosted on Bunny Magic Containers.
 
-**Current scope**: 26 features (F01-F26) across auth, i18n, template design, AI suggestion, PDF rendering, Arabic validation, tafqeet, security/audit, performance, customer feedback, mode switching, operator dashboard, form filler, submission history, template versioning, template feedback, new element types, advanced validation, overlay print mode, reference data manager, multi-tenancy, and form import/OCR detection. As of 2026-05-24, 22 of 26 features are fully working, 1 partial (performance caching), and 2 awaiting external credentials (AI suggestions, OCR import).
+**Current scope**: 53 feature spec directories (001–053) spanning the full platform lifecycle. Of the original 26 features (001–026), 22 are fully working, 1 partial (F09 — performance caching), and 2 awaiting external credentials (F05 — AWS Bedrock AI, F26 — Azure OCR). Specs 027–053 cover: analytics-reporting, approval-workflow, notification-center, customer-profiles, template-governance, data-export-integration, operational-reports, external-form-portal, template-marketplace, batch-operations, desk-search-quickfill, template-creation-wizard, platform-admin-console, enhanced-analytics, UI-redesign-prototype (041), enterprise-SSO-MFA (042), granular-template-permissions (043), data-retention-archival (044), batch-OCR-onboarding (045), digital-signatures (046), mobile-offline-desk (047), custom-locale-validators (048), connector-framework (049), new-theme-desk-data (050), responsive-themes-mobile (051), and cross-theme form filler (052–053). Specs 041/050/052–053 have frontend code in production (new theme routes live).
 
 ---
 
@@ -139,15 +139,18 @@ F26 significantly elevates OCR from a toolbar button to a first-class feature:
 | ~~White-labeling~~ | ✅ PARTIAL | F25: Custom domain + branding endpoint exists |
 | **Platform Admin Dashboard** | ⚠️ BACKEND ONLY | PC-01: 5 API endpoints exist (`require_platform_admin()`), **no frontend UI** — needs `/platform/*` routes, guard, components, Mode 4 tab |
 | Approval workflows | ❌ TODO | Template review/approve/reject not yet implemented |
-| Template permissions | ❌ TODO | No fine-grained per-template access control |
-| Digital signatures | ❌ TODO | e-signature integration not yet built |
-| Print queue / batch print | ❌ TODO | Phase 2 vision (FD-06) |
+| Template permissions | ⚠️ SPECIFIED | Spec 043: per-role/dept/branch grants + explicit deny, access diagnostics |
+| Digital signatures | ⚠️ SPECIFIED | Spec 046: ordered/parallel multi-signer, OTP for external, SHA-256 evidence |
+| Print queue / batch print | ⚠️ SPECIFIED | Spec 036-batch-operations |
 | Template import/export | ❌ TODO | .formcraft package format not yet implemented |
-| Customer data management | ❌ TODO | Phase 2 vision (FD-08) |
-| Data export | ❌ TODO | No bulk submission export |
-| Mobile support | ❌ TODO | Phase 2 vision |
-| SSO / enterprise auth | ❌ TODO | Phase 2 vision (SAML/OIDC) |
-| Data retention policies | ❌ TODO | Phase 2 vision |
+| Customer data management | ⚠️ SPECIFIED | Spec 030-customer-profiles |
+| Data export | ⚠️ SPECIFIED | Spec 032-data-export-integration |
+| Mobile support | ⚠️ SPECIFIED | Spec 047: 360px phone + tablet, IndexedDB offline, sync queue, WebCrypto |
+| SSO / enterprise auth | ⚠️ SPECIFIED | Spec 042: SAML/OIDC, TOTP, SMS OTP, domain routing, 8h session default |
+| Data retention policies | ⚠️ SPECIFIED | Spec 044: configurable periods, legal holds, SHA-256 purge, privacy requests |
+| Custom locale validators | ⚠️ SPECIFIED | Spec 048: org-scoped regex, bilingual errors, 500/org, 10/field limits |
+| Connector framework | ⚠️ SPECIFIED | Spec 049: DMS/CRM/email/banking connectors, delivery logs, retry backoff |
+| Dual-theme UI shell | ✅ PARTIAL | Specs 041/050/052–053: new-theme routes live, real API data, cross-theme filler |
 
 ---
 
@@ -2197,11 +2200,24 @@ The Studio is the **land** (sold once to the design team). The Desk is the **exp
 | 2.1b | **Platform Admin Dashboard (PC-01)** | ⚠️ BACKEND ONLY | Backend API exists (`/api/organizations` 5 endpoints, `require_platform_admin()`). **No frontend UI** — no routes, no components, no guard. Needs: `/platform/*` routes, `PlatformAdminGuard`, org list/create/detail components, Mode 4 tab in app-shell |
 | 2.2 | User management (AC-02) | ✅ PARTIAL | Invitations done; bulk import not yet |
 | 2.5 | Conditional fields & logic | ✅ DONE | F22 — 3 conditional columns on elements |
-| 2.3-2.4 | Approval workflow + Reviewer role | ❌ TODO | |
-| 2.6 | Customer profiles (FD-08) | ❌ TODO | |
-| 2.7 | Batch operations (FD-06) | ❌ TODO | |
-| 2.8-2.13 | Notifications, analytics, audit, export, validators, SSO | ❌ TODO | |
-| 2.14-2.25 | Remaining Phase 2 items | ❌ TODO | |
+| 2.3-2.4 | Approval workflow + Reviewer role | ⚠️ SPECIFIED | Spec 028-approval-workflow |
+| 2.6 | Customer profiles (FD-08) | ⚠️ SPECIFIED | Spec 030-customer-profiles |
+| 2.7 | Batch operations (FD-06) | ⚠️ SPECIFIED | Spec 036-batch-operations |
+| 2.8 | Notification center (AC-06) | ⚠️ SPECIFIED | Spec 029-notification-center |
+| 2.9 | Analytics (AC-05) | ⚠️ SPECIFIED | Spec 027-analytics-reporting |
+| 2.12 | Data export & import (AC-07) | ⚠️ SPECIFIED | Spec 032-data-export-integration |
+| 2.13 | Custom validators | ⚠️ SPECIFIED | Spec 048-custom-locale-validators |
+| 2.14-2.15 | SSO + MFA | ⚠️ SPECIFIED | Spec 042-enterprise-sso-mfa |
+| 2.17 | Mobile-responsive Form Desk | ⚠️ SPECIFIED | Spec 047-mobile-offline-desk |
+| 2.19 | Data retention policies | ⚠️ SPECIFIED | Spec 044-data-retention-archival |
+| 2.20-2.25 | Operational Report Engine | ⚠️ SPECIFIED | Spec 033-operational-reports |
+| 2.11 | Digital signatures | ⚠️ SPECIFIED | Spec 046-digital-signatures |
+| **Extra** | Granular template permissions | ⚠️ SPECIFIED | Spec 043-granular-template-permissions |
+| **Extra** | Connector framework | ⚠️ SPECIFIED | Spec 049-connector-framework |
+| **Extra** | External form portal | ⚠️ SPECIFIED | Spec 034-external-form-portal |
+| **Extra** | Platform admin console | ⚠️ SPECIFIED | Spec 039-platform-admin-console |
+| **Extra** | Batch OCR onboarding | ⚠️ SPECIFIED | Spec 045-batch-ocr-onboarding |
+| **Extra** | Dual-theme UI shell | ✅ PARTIAL | Specs 041/050/052–053: new-theme routes live, real data, cross-theme filler |
 
 ### Phase 3 Progress: Platform & Ecosystem
 
@@ -2214,12 +2230,13 @@ The Studio is the **land** (sold once to the design team). The Desk is the **exp
 
 | Metric | Count |
 |--------|-------|
-| Total features specified | 26 |
-| Fully working | 22 |
-| Partially working | 1 (F09 — performance caching) |
+| Total spec directories | 53 (001–053) |
+| Fully implemented (001–026) | 22 |
+| Partially implemented (001–026) | 1 (F09 — performance caching) |
 | Awaiting external credentials | 2 (F05 — AWS Bedrock, F26 — Azure OCR) |
-| Vision features not yet started | ~25 (Phase 2/3 items above) |
-| Database migrations applied | 28 (001–028) |
+| Specified, pending implementation | ~23 (specs 027–049, not all verified in code) |
+| Partially live (new theme + filler) | 4 (specs 041, 050, 052–053: frontend routes running) |
+| Database migrations applied | 28 (001–028, as of last full validation) |
 | RLS policies fixed | 10 (across migrations 025–027) |
 | Bugs fixed during validation | 9 |
 | Backend API routes | 25 route files |

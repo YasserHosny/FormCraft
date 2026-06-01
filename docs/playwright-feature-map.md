@@ -1,7 +1,7 @@
 # FormCraft — Playwright Screenshot Feature Map
 
 > Every navigable page/route with its features, organized for automated Playwright screenshot capture.
-> Generated: 2026-05-30
+> Generated: 2026-06-01 (updated for specs 041–053)
 
 ---
 
@@ -153,6 +153,7 @@
 - **Roles**: Admin, Branch Manager, Operator
 - **Features**:
   - Two layout modes: Flow Layout (keyboard-optimized) / Print Layout (WYSIWYG mm positions)
+  - **Mobile**: Flow Layout fully functional on 360px phones and 768px tablets (spec 047)
   - All field types rendered as Angular form controls
   - Live validation on keystroke (national ID, IBAN, phone, VAT, custom)
   - Tafqeet auto-compute from linked currency fields
@@ -495,6 +496,56 @@
   - Accept/reject/modify detections
   - Bulk approve high-confidence forms
 
+### 4.28 Custom Locale Validators *(spec 048)*
+- **Route**: `/admin/validators`
+- **Roles**: Admin
+- **Features**:
+  - Validator list (name, pattern preview, field usage count)
+  - Create/edit/delete org-scoped regex validators
+  - Arabic + English error message per validator
+  - Inline pattern tester (sample input → pass/fail preview)
+  - Usage count: how many elements reference each validator
+
+### 4.29 Granular Template Permissions *(spec 043)*
+- **Route**: `/admin/template-permissions` or per-template Permissions tab
+- **Roles**: Admin
+- **Features**:
+  - Permission rule list per template (grant + deny)
+  - Add rule: scope (role / department / branch / user) + capabilities
+  - Explicit deny rules that override any grant
+  - Access diagnostic: "What can user X do with template Y?"
+  - Decision trace: which rule granted or denied, in plain language
+
+### 4.30 Enterprise SSO Configuration *(spec 042)*
+- **Route**: `/admin/sso` (existing) — enhanced
+- **Roles**: Admin
+- **Features**:
+  - SAML 2.0 and OIDC provider configuration (entity ID, SSO URL, certificate)
+  - Domain-based sign-in routing (users on corp domain go directly to IdP)
+  - Session timeout configuration (8h default, 30min idle)
+  - Attribute → role / department / branch mapping
+
+### 4.31 MFA Management *(spec 042)*
+- **Route**: `/admin/sso/mfa`
+- **Roles**: Admin
+- **Features**:
+  - Org-wide MFA policy (required / optional / off)
+  - TOTP enrollment status per user
+  - SMS OTP channel configuration (provider + rate limits)
+  - Force-re-enroll action per user
+
+### 4.32 Connector Framework *(spec 049)*
+- **Route**: `/admin/connectors`
+- **Roles**: Admin
+- **Features**:
+  - Connector list (type, status, last delivery)
+  - Add connector: DMS / CRM / Email / Banking Core
+  - Configure: endpoint URL, auth (API key / OAuth), field mapping
+  - Event subscription: form_submitted / form_printed / template_published / batch_completed
+  - Delivery log: event history per connector (status, response code, payload preview)
+  - Test connector button (send sample event)
+  - Retry configuration (exponential backoff settings)
+
 ---
 
 ## 5. ANALYTICS — Admin/Designer Routes
@@ -750,35 +801,54 @@
 
 ---
 
-## 11. UI REDESIGN (Alternative Theme)
+## 11. UI REDESIGN — New Theme *(specs 041, 050, 051, 052–053)*
 
-### 11.1 Studio Templates (Redesigned)
+> All new-theme routes use **real API data** — no mocks. Spec 050 replaced all hardcoded placeholders with live backend calls.
+
+### 11.1 Studio Templates (New Theme)
 - **Route**: `/ui/studio/templates`
-- **Features**: Same as `/templates` with redesigned UI shell
+- **Features**: Same as `/templates` with new-theme shell; same real template data
 
-### 11.2 Studio Wizard (Redesigned)
+### 11.2 Studio Wizard (New Theme)
 - **Route**: `/ui/studio/wizard`
-- **Features**: Same as `/templates/new` with redesigned UI
+- **Features**: Same as `/templates/new` with new-theme shell
 
-### 11.3 Studio Designer (Redesigned)
+### 11.3 Studio Designer (New Theme)
 - **Route**: `/ui/studio/designer`
-- **Features**: Same as `/designer/:templateId` with redesigned UI
+- **Features**: Same as `/designer/:templateId` with new-theme shell
 
-### 11.4 Desk Dashboard (Redesigned)
+### 11.4 Desk Dashboard (New Theme) *(spec 050)*
 - **Route**: `/ui/desk`
-- **Features**: Same as `/desk` with redesigned UI
+- **Features**:
+  - Live KPI cards: submission count, draft count, template count (real API — no mocks)
+  - Recent activity feed: 10 real items with "View All" link
+  - Actual operator drafts from `/api/desk/drafts`
+  - Pinned and frequent templates from real API data
+  - Same filters, search, and navigation as classic `/desk`
+  - Data fetches on-load (no background polling)
 
-### 11.5 Desk Form Filler (Redesigned)
+### 11.5 Desk Form Filler (New Theme) *(specs 052–053)*
 - **Route**: `/ui/desk/fill/:templateId`
-- **Features**: Same as `/desk/fill/:templateId` with redesigned UI
+- **Features**:
+  - Full parity with classic filler: all field types, validation, conditional logic, drafts, submit
+  - Auto-save on navigation (no explicit Save Draft button needed)
+  - Submission-confirmed screen shows reference number inline
+  - Draft resumption via slide-out list panel discovery
+  - Canvas-drawn signature pad (touch + mouse)
+  - Audit log entry on each signature captured
+  - *Classic-only (not in new theme)*: Print & Next mode, offline sync, Clone as New
 
-### 11.6 Desk Customers (Redesigned)
+### 11.6 Desk Customers (New Theme)
 - **Route**: `/ui/desk/customers`
-- **Features**: Same as `/desk/customers` with redesigned UI
+- **Features**: Same as `/desk/customers` with new-theme shell
 
-### 11.7 Admin Analytics (Redesigned)
+### 11.7 Admin Analytics (New Theme)
 - **Route**: `/ui/admin/analytics`
-- **Features**: Same analytics with redesigned UI
+- **Features**: Same analytics with new-theme shell
+
+### 11.8 Custom Validators Admin (New Theme)
+- **Route**: `/ui/admin/validators`
+- **Features**: Same as `/admin/validators` with new-theme shell
 
 ---
 
