@@ -24,8 +24,9 @@ import { CommonModule } from '@angular/common';
       display: flex;
       align-items: center;
       gap: 16px;
+      flex-wrap: wrap;
     }
-    .header-text { flex: 1; }
+    .header-text { flex: 1; min-width: 200px; }
     .fc-page-title {
       font-size: 18px;
       font-weight: 700;

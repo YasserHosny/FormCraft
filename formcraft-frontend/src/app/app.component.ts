@@ -11,11 +11,11 @@ import { ThemePreferenceService } from './core/services/theme-preference.service
   template: `
     <ng-container *ngIf="isAuthenticated && !isRedesignRoute; else routeOnly">
       <fc-app-shell></fc-app-shell>
-      <fc-feedback-widget></fc-feedback-widget>
     </ng-container>
     <ng-template #routeOnly>
       <router-outlet></router-outlet>
     </ng-template>
+    <fc-feedback-widget *ngIf="isAuthenticated" [class.spark-mode]="isRedesignRoute"></fc-feedback-widget>
   `,
   styles: [`
     :host {

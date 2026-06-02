@@ -54,9 +54,12 @@ export class ToolbarComponent implements OnInit, OnDestroy {
   tabs: ModeTab[] = [];
   unreadCount = 0;
   orgLogoUrl: string | null = null;
-  currentLang = 'ar';
   userRole = '';
   user = { name: 'مستخدم', role: '', initials: '؟' };
+
+  get currentLang(): string {
+    return this.languageService.getLanguage();
+  }
 
   constructor(
     private authService: AuthService,
@@ -70,8 +73,6 @@ export class ToolbarComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.currentLang = this.languageService.getLanguage();
-
     this.breakpointObserver.observe('(max-width: 599px)')
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
@@ -110,7 +111,6 @@ export class ToolbarComponent implements OnInit, OnDestroy {
 
   toggleLanguage(): void {
     this.languageService.toggleLanguage();
-    this.currentLang = this.languageService.getLanguage();
   }
 
   logout(): void {

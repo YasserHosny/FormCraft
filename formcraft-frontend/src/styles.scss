@@ -8,6 +8,7 @@
 // Override ALL Angular Material MDC typography tokens to use Arabic font stack
 // (indigo-pink.css sets these to Roboto; we override since styles.scss loads after it)
 $arabic-font: 'Noto Naskh Arabic', 'Noto Sans', Roboto, sans-serif;
+$latin-font: 'Noto Sans', Roboto, sans-serif;
 
 :root {
   --mdc-typography-font-family: #{$arabic-font};
@@ -72,10 +73,64 @@ $arabic-font: 'Noto Naskh Arabic', 'Noto Sans', Roboto, sans-serif;
   --mat-tree-node-text-font: #{$arabic-font};
 }
 
+// Switch to Latin-first font stack in LTR (English) mode so tab labels and
+// other UI text use Noto Sans metrics instead of the wider Noto Naskh Arabic
+// Latin glyphs — prevents toolbar tab truncation in English mode.
+html[dir="ltr"] {
+  --mdc-typography-font-family: #{$latin-font};
+  --mat-option-label-text-font: #{$latin-font};
+  --mat-optgroup-label-text-font: #{$latin-font};
+  --mat-select-trigger-text-font: #{$latin-font};
+  --mat-card-title-text-font: #{$latin-font};
+  --mat-card-subtitle-text-font: #{$latin-font};
+  --mdc-plain-tooltip-supporting-text-font: #{$latin-font};
+  --mdc-filled-text-field-label-text-font: #{$latin-font};
+  --mdc-outlined-text-field-label-text-font: #{$latin-font};
+  --mat-form-field-container-text-font: #{$latin-font};
+  --mat-form-field-subscript-text-font: #{$latin-font};
+  --mdc-dialog-subhead-font: #{$latin-font};
+  --mdc-dialog-supporting-text-font: #{$latin-font};
+  --mdc-chip-label-text-font: #{$latin-font};
+  --mat-switch-label-text-font: #{$latin-font};
+  --mat-radio-label-text-font: #{$latin-font};
+  --mat-checkbox-label-text-font: #{$latin-font};
+  --mat-legacy-button-toggle-label-text-font: #{$latin-font};
+  --mat-standard-button-toggle-label-text-font: #{$latin-font};
+  --mdc-slider-label-label-text-font: #{$latin-font};
+  --mat-menu-item-label-text-font: #{$latin-font};
+  --mdc-list-list-item-label-text-font: #{$latin-font};
+  --mdc-list-list-item-supporting-text-font: #{$latin-font};
+  --mdc-list-list-item-trailing-supporting-text-font: #{$latin-font};
+  --mat-paginator-container-text-font: #{$latin-font};
+  --mat-tab-header-label-text-font: #{$latin-font};
+  --mdc-text-button-label-text-font: #{$latin-font};
+  --mdc-filled-button-label-text-font: #{$latin-font};
+  --mdc-protected-button-label-text-font: #{$latin-font};
+  --mdc-outlined-button-label-text-font: #{$latin-font};
+  --mdc-extended-fab-label-text-font: #{$latin-font};
+  --mdc-snackbar-supporting-text-font: #{$latin-font};
+  --mat-table-header-headline-font: #{$latin-font};
+  --mat-table-row-item-label-text-font: #{$latin-font};
+  --mat-table-footer-supporting-text-font: #{$latin-font};
+  --mat-badge-text-font: #{$latin-font};
+  --mat-bottom-sheet-container-text-font: #{$latin-font};
+  --mat-datepicker-calendar-text-font: #{$latin-font};
+  --mat-expansion-header-text-font: #{$latin-font};
+  --mat-expansion-container-text-font: #{$latin-font};
+  --mat-stepper-container-text-font: #{$latin-font};
+  --mat-stepper-header-label-text-font: #{$latin-font};
+  --mat-toolbar-title-text-font: #{$latin-font};
+  --mat-tree-node-text-font: #{$latin-font};
+}
+
 html, body {
   height: 100%;
   margin: 0;
   font-family: 'Noto Naskh Arabic', 'Noto Sans', Roboto, sans-serif;
+}
+
+html[dir="ltr"], html[dir="ltr"] body {
+  font-family: #{$latin-font};
 }
 
 // Scrollbar styling
