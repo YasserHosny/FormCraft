@@ -9,6 +9,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { TemplateService } from '../../../core/services/template.service';
 import { FormDetectionService } from '../../../core/services/form-detection.service';
 import { DetectedField, DetectionResponse } from '../../designer/models/detected-field.model';
+import { TemplateFeedbackService } from '../../desk/services/template-feedback.service';
+import { FeedbackPanelComponent } from '../../designer/feedback-panel/feedback-panel.component';
 
 interface PaletteGroup {
   label: string;
@@ -42,7 +44,7 @@ interface ObjectItem {
 @Component({
   selector: 'fc-designer',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatSnackBarModule, MatTooltipModule],
+  imports: [CommonModule, MatIconModule, MatSnackBarModule, MatTooltipModule, FeedbackPanelComponent],
   templateUrl: './designer.component.html',
   styleUrl: './designer.component.scss',
 })
@@ -54,6 +56,12 @@ export class DesignerComponent implements OnInit, OnDestroy {
   templateName = 'طلب فتح حساب جاري للأفراد';
   templateCode = 'AC-001 · v4.2';
   isMobile = false;
+
+  // ── Feedback state ────────────────────────────────────────────────────────
+  showFeedbackPanel = false;
+  feedbackItems: any[] = [];
+  feedbackLoading = false;
+  newFeedbackCount = 0;
 
   // ── AI Detection state ─────────────────────────────────────────────────────
   detectMode: 'import' | 'results' | 'history' | null = null;
@@ -74,6 +82,7 @@ export class DesignerComponent implements OnInit, OnDestroy {
     private templateService: TemplateService,
     private detectionService: FormDetectionService,
     private breakpointObserver: BreakpointObserver,
+    private feedbackService: TemplateFeedbackService,
   ) {}
 
   ngOnInit(): void {
@@ -126,6 +135,35 @@ export class DesignerComponent implements OnInit, OnDestroy {
     } else {
       this.snackBar.open('افتح نموذجاً حقيقياً للمعاينة', '', { duration: 3000 });
     }
+  }
+
+  // ── Feedback panel ────────────────────────────────────────────────────────
+
+  toggleFeedbackPanel(): void {
+    this.showFeedbackPanel = !this.showFeedbackPanel;
+    if (this.showFeedbackPanel && this.templateId) {
+      this.feedbackLoading = true;
+      this.feedbackService.listFeedback(this.templateId).subscribe({
+        next: (response) => {
+          this.feedbackItems = response.items || [];
+          this.newFeedbackCount = this.feedbackItems.filter((f: any) => f.status === 'new').length;
+          this.feedbackLoading = false;
+        },
+        error: () => { this.feedbackLoading = false; },
+      });
+    }
+  }
+
+  closeFeedbackPanel(): void {
+    this.showFeedbackPanel = false;
+  }
+
+  onAcknowledgeFeedback(feedbackId: string): void {
+    this.feedbackService.updateFeedbackStatus(this.templateId, feedbackId, 'acknowledged').subscribe();
+  }
+
+  onResolveFeedback(feedbackId: string): void {
+    this.feedbackService.updateFeedbackStatus(this.templateId, feedbackId, 'resolved').subscribe();
   }
 
   // ── AI Detection ──────────────────────────────────────────────────────────
