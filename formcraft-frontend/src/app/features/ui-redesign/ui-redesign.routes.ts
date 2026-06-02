@@ -80,8 +80,9 @@ export const UI_REDESIGN_ROUTES: Routes = [
       {
         path: 'desk/customers/:id',
         canActivate: [RoleGuard],
-        data: { roles: ['admin', 'branch_manager', 'operator'], classicRoute: '/desk/customers/:id' },
-        component: ClassicRedirectComponent,
+        data: { roles: ['admin', 'branch_manager', 'operator'] },
+        loadComponent: () =>
+          import('./desk/customer-detail.component').then(m => m.CustomerDetailComponent),
       },
       {
         path: 'desk/history',
