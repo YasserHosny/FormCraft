@@ -1,0 +1,129 @@
+<div class="add-customer-page">
+
+  <!-- Page header with back navigation -->
+  <div class="page-header">
+    <button class="back-btn" type="button" (click)="cancel()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1 class="page-title">{{ 'add_customer.title' | translate }}</h1>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="save()" class="customer-form">
+
+    <!-- Arabic Name (full-width, dir="auto") -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'add_customer.field_name_ar' | translate }}</mat-label>
+      <input
+        matInput
+        formControlName="name_ar"
+        dir="auto"
+        [placeholder]="'add_customer.placeholder_name_ar' | translate"
+      />
+      <mat-error *ngIf="form.get('name_ar')?.hasError('required')">
+        {{ 'add_customer.error_required' | translate }}
+      </mat-error>
+      <mat-error *ngIf="form.get('name_ar')?.hasError('whitespace') && !form.get('name_ar')?.hasError('required')">
+        {{ 'add_customer.error_whitespace' | translate }}
+      </mat-error>
+    </mat-form-field>
+
+    <!-- English Name (full-width, dir="ltr") -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'add_customer.field_name_en' | translate }}</mat-label>
+      <input
+        matInput
+        formControlName="name_en"
+        dir="ltr"
+        [placeholder]="'add_customer.placeholder_name_en' | translate"
+      />
+    </mat-form-field>
+
+    <!-- Identifier Type + Identifier (two-column row) -->
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'add_customer.field_identifier_type' | translate }}</mat-label>
+        <mat-select formControlName="identifier_type">
+          <mat-option *ngFor="let t of identifierTypes" [value]="t.value">
+            {{ t.labelKey | translate }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="form.get('identifier_type')?.hasError('required')">
+          {{ 'add_customer.error_required' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'add_customer.field_identifier' | translate }}</mat-label>
+        <input
+          matInput
+          formControlName="identifier"
+          dir="ltr"
+          [placeholder]="'add_customer.placeholder_identifier' | translate"
+        />
+        <mat-error *ngIf="form.get('identifier')?.hasError('required')">
+          {{ 'add_customer.error_required' | translate }}
+        </mat-error>
+        <mat-error *ngIf="form.get('identifier')?.hasError('duplicate')">
+          {{ 'add_customer.error_duplicate' | translate }}
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- Phone + Email (two-column row) -->
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'add_customer.field_phone' | translate }}</mat-label>
+        <input
+          matInput
+          formControlName="contact_phone"
+          dir="ltr"
+          [placeholder]="'add_customer.placeholder_phone' | translate"
+        />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'add_customer.field_email' | translate }}</mat-label>
+        <input
+          matInput
+          formControlName="contact_email"
+          dir="ltr"
+          type="email"
+          [placeholder]="'add_customer.placeholder_email' | translate"
+        />
+        <mat-error *ngIf="form.get('contact_email')?.hasError('email')">
+          {{ 'add_customer.error_email' | translate }}
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- Address (full-width, dir="auto") -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'add_customer.field_address' | translate }}</mat-label>
+      <textarea
+        matInput
+        formControlName="address"
+        dir="auto"
+        rows="3"
+        [placeholder]="'add_customer.placeholder_address' | translate"
+      ></textarea>
+    </mat-form-field>
+
+    <!-- Action buttons -->
+    <div class="form-actions">
+      <button type="button" class="fc-btn outline" (click)="cancel()" [disabled]="saving">
+        {{ 'add_customer.btn_cancel' | translate }}
+      </button>
+      <button
+        type="submit"
+        class="fc-btn primary"
+        data-testid="save-btn"
+        [disabled]="saving"
+      >
+        <mat-spinner *ngIf="saving" diameter="18" class="btn-spinner"></mat-spinner>
+        <span *ngIf="!saving">{{ 'add_customer.btn_save' | translate }}</span>
+        <span *ngIf="saving">{{ 'add_customer.btn_save' | translate }}</span>
+      </button>
+    </div>
+
+  </form>
+</div>
