@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { catchError, forkJoin, of, Subject, takeUntil } from 'rxjs';
 import {
   DashboardFilter,
@@ -58,6 +58,7 @@ const PALETTE = [
 export class AnalyticsComponent implements OnInit {
   private router = inject(Router);
   private analyticsService = inject(AnalyticsService);
+  private translate = inject(TranslateService);
   private destroy$ = new Subject<void>();
 
   filter: DashboardFilter = { period: '30d' };
@@ -78,12 +79,12 @@ export class AnalyticsComponent implements OnInit {
 
   get selectedDeptLabel(): string {
     const dept = this.departments.find(d => d.id === this.filter.departmentId);
-    return dept?.name || 'جميع الإدارات';
+    return dept?.name || this.translate.instant('analytics.dashboard.filter.all_departments');
   }
 
   get selectedBranchLabel(): string {
     const branch = this.branches.find(b => b.id === this.filter.branchId);
-    return branch?.name || 'جميع الفروع';
+    return branch?.name || this.translate.instant('analytics.dashboard.filter.all_branches');
   }
 
   // Line chart getters
@@ -97,7 +98,8 @@ export class AnalyticsComponent implements OnInit {
 
   get peakLabel(): string {
     if (!this.timeSeries?.peakCount || !this.timeSeries.peakDate) return '';
-    const dateStr = new Date(this.timeSeries.peakDate).toLocaleDateString('ar-EG', { month: 'long', day: 'numeric' });
+    const locale = this.translate.currentLang === 'ar' ? 'ar-EG' : 'en-US';
+    const dateStr = new Date(this.timeSeries.peakDate).toLocaleDateString(locale, { month: 'long', day: 'numeric' });
     return `${this.formatValue(this.timeSeries.peakCount)} — ${dateStr}`;
   }
 
@@ -212,7 +214,8 @@ export class AnalyticsComponent implements OnInit {
 
   formatValue(n: number | null | undefined): string {
     if (n == null) return '–';
-    return n.toLocaleString('ar-EG');
+    const locale = this.translate.currentLang === 'ar' ? 'ar-EG' : 'en-US';
+    return n.toLocaleString(locale);
   }
 
   formatMsToTime(ms: number | null | undefined): string {

@@ -1,4 +1,4 @@
-<fc-page-header title="التحليلات والتقارير" subtitle="نظرة شاملة على نشاط النماذج والعمليات عبر المؤسسة">
+<fc-page-header [title]="'analytics.dashboard.page_title' | translate" [subtitle]="'analytics.dashboard.page_subtitle' | translate">
   <div actions>
     <div class="fc-filter-pill" [matMenuTriggerFor]="periodMenu">
       <span class="label-key">{{ 'analytics.dashboard.filter.period' | translate }}:</span>
@@ -32,8 +32,8 @@
       <button mat-menu-item *ngFor="let branch of branches" (click)="setBranch(branch.id)">{{ branch.name }}</button>
     </mat-menu>
 
-    <button class="fc-btn outline" (click)="exportPdf()"><mat-icon>file_download</mat-icon>تصدير PDF</button>
-    <button class="fc-btn primary"><mat-icon>auto_graph</mat-icon>جدولة تقرير</button>
+    <button class="fc-btn outline" (click)="exportPdf()"><mat-icon>file_download</mat-icon>{{ 'analytics.exportPdf' | translate }}</button>
+    <button class="fc-btn primary"><mat-icon>auto_graph</mat-icon>{{ 'analytics.dashboard.schedule_report' | translate }}</button>
   </div>
 </fc-page-header>
 
@@ -47,10 +47,10 @@
     <button class="fc-btn ghost sm" (click)="retryWidget('summary')">{{ 'analytics.dashboard.retry' | translate }}</button>
   </div>
   <div class="kpi-grid" *ngIf="!loadingStates.summary && !errorStates.summary">
-    <fc-kpi-card label="إجمالي النماذج المعبأة" [value]="formatValue(summary?.totalFormsFilled)" [delta]="(summary?.deltaPct != null ? (summary?.deltaPct! >= 0 ? '+' : '') + summary?.deltaPct + '%' : '–') + ' عن الفترة السابقة'" deltaDir="up" icon="task_alt"></fc-kpi-card>
-    <fc-kpi-card label="نماذج منشورة" [value]="(summary?.activeTemplates ?? 0) + ' / ' + (summary?.totalTemplates ?? 0)" delta="من القوالب" icon="description"></fc-kpi-card>
-    <fc-kpi-card label="متوسط زمن المعالجة" [value]="formatMsToTime(summary?.avgFillTimeMs)" [delta]="(summary?.fillTimeDeltaPct != null ? summary?.fillTimeDeltaPct + '%' : '–') + ' (تحسّن)'" deltaDir="up" icon="schedule"></fc-kpi-card>
-    <fc-kpi-card label="عملاء فريدون" [value]="formatValue(summary?.uniqueCustomers)" [delta]="'+' + formatValue(summary?.newCustomersThisWeek) + ' هذا الأسبوع'" deltaDir="up" icon="groups"></fc-kpi-card>
+    <fc-kpi-card [label]="'analytics.dashboard.kpi.total_forms' | translate" [value]="formatValue(summary?.totalFormsFilled)" [delta]="(summary?.deltaPct != null ? (summary?.deltaPct! >= 0 ? '+' : '') + summary?.deltaPct + '%' : '–') + ' ' + ('analytics.dashboard.kpi.delta_prev_period' | translate)" deltaDir="up" icon="task_alt"></fc-kpi-card>
+    <fc-kpi-card [label]="'analytics.dashboard.kpi.published_forms' | translate" [value]="(summary?.activeTemplates ?? 0) + ' / ' + (summary?.totalTemplates ?? 0)" [delta]="'analytics.dashboard.kpi.delta_from_templates' | translate" icon="description"></fc-kpi-card>
+    <fc-kpi-card [label]="'analytics.dashboard.kpi.avg_processing_time' | translate" [value]="formatMsToTime(summary?.avgFillTimeMs)" [delta]="(summary?.fillTimeDeltaPct != null ? summary?.fillTimeDeltaPct + '%' : '–') + ' ' + ('analytics.dashboard.kpi.delta_improvement' | translate)" deltaDir="up" icon="schedule"></fc-kpi-card>
+    <fc-kpi-card [label]="'analytics.dashboard.kpi.unique_customers' | translate" [value]="formatValue(summary?.uniqueCustomers)" [delta]="'+' + formatValue(summary?.newCustomersThisWeek) + ' ' + ('analytics.dashboard.kpi.delta_this_week' | translate)" deltaDir="up" icon="groups"></fc-kpi-card>
   </div>
 
   <!-- Chart Row 1 -->
@@ -59,14 +59,14 @@
     <div class="fc-card">
       <div class="card-header">
         <div class="card-header-info">
-          <h3>النماذج المعبأة عبر الزمن</h3>
-          <span>آخر ٣٠ يوماً · تحديث كل ساعة</span>
+          <h3>{{ 'analytics.dashboard.chart.forms_over_time' | translate }}</h3>
+          <span>{{ 'analytics.dashboard.chart.forms_subtitle' | translate }}</span>
         </div>
         <div class="time-btns">
-          <button class="fc-btn ghost sm" [class.active]="activePeriod === '7d'" (click)="setPeriod('7d')">٧ أيام</button>
-          <button class="fc-btn outline sm" [class.active]="activePeriod === '30d'" (click)="setPeriod('30d')">٣٠ يوماً</button>
-          <button class="fc-btn ghost sm" [class.active]="activePeriod === '90d'" (click)="setPeriod('90d')">٩٠ يوماً</button>
-          <button class="fc-btn ghost sm" [class.active]="activePeriod === 'yearly'" (click)="setPeriod('yearly')">سنوي</button>
+          <button class="fc-btn ghost sm" [class.active]="activePeriod === '7d'" (click)="setPeriod('7d')">{{ 'analytics.dashboard.periods.7d' | translate }}</button>
+          <button class="fc-btn outline sm" [class.active]="activePeriod === '30d'" (click)="setPeriod('30d')">{{ 'analytics.dashboard.periods.30d' | translate }}</button>
+          <button class="fc-btn ghost sm" [class.active]="activePeriod === '90d'" (click)="setPeriod('90d')">{{ 'analytics.dashboard.periods.90d' | translate }}</button>
+          <button class="fc-btn ghost sm" [class.active]="activePeriod === 'yearly'" (click)="setPeriod('yearly')">{{ 'analytics.dashboard.periods.yearly' | translate }}</button>
         </div>
       </div>
       <div class="chart-body">
@@ -91,7 +91,7 @@
     <div class="fc-card">
       <div class="card-header">
         <div class="card-header-info">
-          <h3>التوزيع حسب الإدارة</h3>
+          <h3>{{ 'analytics.dashboard.chart.by_department' | translate }}</h3>
         </div>
         <button class="fc-icon-btn"><mat-icon>more_horiz</mat-icon></button>
       </div>
@@ -104,7 +104,7 @@
         <ng-container *ngIf="!loadingStates.distribution && !errorStates.distribution">
           <div class="donut-placeholder">
             <div class="donut-center">
-              <span class="donut-label">إجمالي</span>
+              <span class="donut-label">{{ 'analytics.dashboard.chart.donut_total' | translate }}</span>
               <span class="donut-value fc-num">{{ formatValue(donutTotal) }}</span>
             </div>
           </div>
@@ -126,10 +126,10 @@
     <div class="fc-card">
       <div class="card-header">
         <div class="card-header-info">
-          <h3>أكثر النماذج استخداماً</h3>
-          <span>أعلى ٧ قوالب — هذا الشهر</span>
+          <h3>{{ 'analytics.dashboard.chart.top_templates' | translate }}</h3>
+          <span>{{ 'analytics.dashboard.chart.top_templates_subtitle' | translate }}</span>
         </div>
-        <button class="fc-btn ghost sm">الكل<mat-icon>chevron_left</mat-icon></button>
+        <button class="fc-btn ghost sm">{{ 'analytics.dashboard.chart.top_templates_all' | translate }}<mat-icon>chevron_right</mat-icon></button>
       </div>
       <div class="chart-body">
         <div *ngIf="loadingStates.topTemplates" class="skeleton-box bar-skeleton"></div>
@@ -155,10 +155,10 @@
     <div class="fc-card">
       <div class="card-header">
         <div class="card-header-info">
-          <h3>أداء الموظفين</h3>
-          <span>أعلى الموظفين أداءً هذا الأسبوع</span>
+          <h3>{{ 'analytics.dashboard.chart.operator_performance' | translate }}</h3>
+          <span>{{ 'analytics.dashboard.chart.operator_subtitle' | translate }}</span>
         </div>
-        <button class="fc-btn ghost sm">عرض الكل</button>
+        <button class="fc-btn ghost sm">{{ 'analytics.dashboard.chart.view_all' | translate }}</button>
       </div>
       <div *ngIf="loadingStates.operators" class="skeleton-box table-skeleton"></div>
       <div *ngIf="errorStates.operators" class="widget-error">
@@ -168,10 +168,10 @@
       <table class="fc-table" *ngIf="!loadingStates.operators && !errorStates.operators">
         <thead>
           <tr>
-            <th>الموظف</th>
-            <th class="col-center">نماذج</th>
-            <th class="col-center">متوسط الزمن</th>
-            <th class="col-accuracy">الدقة</th>
+            <th>{{ 'analytics.dashboard.table.employee' | translate }}</th>
+            <th class="col-center">{{ 'analytics.dashboard.table.forms' | translate }}</th>
+            <th class="col-center">{{ 'analytics.dashboard.table.avg_time' | translate }}</th>
+            <th class="col-accuracy">{{ 'analytics.dashboard.table.accuracy' | translate }}</th>
           </tr>
         </thead>
         <tbody>
