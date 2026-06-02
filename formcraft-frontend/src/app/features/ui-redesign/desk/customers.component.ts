@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
 import { StatusChipComponent } from '../shared/components/status-chip.component';
@@ -12,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'fc-customers',
   standalone: true,
-  imports: [CommonModule, MatIconModule, TranslateModule, PageHeaderComponent, StatusChipComponent, AvatarComponent, FormsModule],
+  imports: [CommonModule, MatIconModule, MatMenuModule, TranslateModule, PageHeaderComponent, StatusChipComponent, AvatarComponent, FormsModule],
   templateUrl: './customers.component.html',
   styleUrl: './customers.component.scss',
 })
