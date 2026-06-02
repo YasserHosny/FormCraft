@@ -789,7 +789,10 @@
     "DOCUMENT_HASH": "Document Hash",
     "INTEGRITY": "Integrity",
     "VERIFY_INTEGRITY": "Verify Integrity",
-    "SIGNERS": "Signers"
+    "SIGNERS": "Signers",
+    "clear": "Clear",
+    "confirm": "Confirm",
+    "required": "Signature is required"
   },
   "table": {
     "title": "Table Settings",

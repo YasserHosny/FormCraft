@@ -185,7 +185,9 @@ export class FillComponent implements OnInit, OnDestroy {
   wireTafqeetSubscriptions(elements: TemplateElement[]): void {
     const tafqeetElements = elements.filter((e) => e.type === 'tafqeet');
     for (const tafqeetElem of tafqeetElements) {
-      const sourceKey = tafqeetElem.formatting?.source_element || tafqeetElem.validation?.source_element;
+      // Designer stores camelCase: sourceElementKey, currencyCode, outputLanguage, etc.
+      const fmt = tafqeetElem.formatting || {};
+      const sourceKey = fmt.sourceElementKey || fmt.source_element || tafqeetElem.validation?.source_element;
       if (!sourceKey) continue;
 
       const sourceControl = this.form.get(sourceKey);
@@ -193,11 +195,11 @@ export class FillComponent implements OnInit, OnDestroy {
       if (!sourceControl || !tafqeetControl) continue;
 
       const formatting = {
-        currency_code: tafqeetElem.formatting?.currency_code || 'SAR',
-        language: tafqeetElem.formatting?.language || 'ar',
-        show_currency: tafqeetElem.formatting?.show_currency !== false,
-        prefix: tafqeetElem.formatting?.prefix || 'none',
-        suffix: tafqeetElem.formatting?.suffix || 'la_ghair',
+        currency_code: fmt.currencyCode || fmt.currency_code || 'SAR',
+        language: fmt.outputLanguage || fmt.language || 'ar',
+        show_currency: fmt.showCurrency !== undefined ? fmt.showCurrency : (fmt.show_currency !== false),
+        prefix: fmt.prefix || 'none',
+        suffix: fmt.suffix || 'la_ghair',
       };
 
       sourceControl.valueChanges.pipe(

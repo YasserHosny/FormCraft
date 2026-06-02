@@ -23,7 +23,7 @@ import { SignaturePadComponent } from '../../../features/desk/components/signatu
 import { PrintDialogComponent } from '../../../features/desk/components/print-dialog/print-dialog.component';
 import { Customer } from '../../../features/desk/customers/customer.models';
 import { CustomerPickerDialogComponent } from '../../../features/desk/components/customer-picker/customer-picker-dialog.component';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, debounceTime } from 'rxjs';
 
 @Component({
   selector: 'fc-form-filler',
@@ -94,6 +94,13 @@ export class FormFillerComponent implements OnInit, OnDestroy {
     this.conditionEngineService.requiredChanged$.pipe(takeUntil(this.destroy$)).subscribe((keys) => {
       this.requiredKeys = keys;
       this.updateRequiredValidators();
+    });
+
+    // React to language switching — update field labels, section titles, side panel
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe((event) => {
+      this.currentLanguage = event.lang === 'ar' ? 'ar' : 'en';
+      this.retryLabel = this.translate.instant('desk.retry');
+      this.refreshLabels();
     });
 
     if (!this.templateId) {
@@ -215,6 +222,43 @@ export class FormFillerComponent implements OnInit, OnDestroy {
       this.submitError = null;
     });
 
+    // Wire tafqeet auto-population: source number field → tafqeet target field
+    const tafqeetElements = flatElements.filter((e) => e.type === 'tafqeet');
+    for (const tafqeetElem of tafqeetElements) {
+      // Designer stores camelCase: sourceElementKey, currencyCode, outputLanguage, etc.
+      const fmt = tafqeetElem.formatting || {};
+      const sourceKey = fmt.sourceElementKey || fmt.source_element || tafqeetElem.validation?.source_element;
+      if (!sourceKey) continue;
+
+      const sourceControl = this.formGroup.get(sourceKey);
+      const tafqeetControl = this.formGroup.get(tafqeetElem.key);
+      if (!sourceControl || !tafqeetControl) continue;
+
+      const formatting: TafqeetSourceMapping['formatting'] = {
+        currency_code: fmt.currencyCode || fmt.currency_code || 'SAR',
+        language: fmt.outputLanguage || fmt.language || 'ar',
+        show_currency: fmt.showCurrency !== undefined ? fmt.showCurrency : (fmt.show_currency !== false),
+        prefix: fmt.prefix || 'none',
+        suffix: fmt.suffix || 'la_ghair',
+      };
+
+      sourceControl.valueChanges.pipe(
+        debounceTime(200),
+        takeUntil(this.destroy$),
+      ).subscribe((val: any) => {
+        const num = val !== null && val !== undefined && val !== '' ? Number(val) : NaN;
+        if (isNaN(num)) {
+          tafqeetControl.setValue('', { emitEvent: false });
+          return;
+        }
+        this.tafqeetService.compute(num, formatting).pipe(takeUntil(this.destroy$)).subscribe({
+          next: (result) => tafqeetControl.setValue(result || '', { emitEvent: false }),
+          error: () => tafqeetControl.setValue('', { emitEvent: false }),
+        });
+      });
+    }
+
+    // Wire inline tafqeet text below number fields with tafqeet_enabled
     for (const element of flatElements) {
       if (!element.tafqeet_enabled) continue;
       const control = this.formGroup.get(element.key);
@@ -271,6 +315,34 @@ export class FormFillerComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Re-derive field labels, section titles, and side-panel labels from the current language */
+  private refreshLabels(): void {
+    if (!this.template) return;
+
+    this.templateName = this.template.name;
+
+    this.template.pages.forEach((page, pageIndex) => {
+      const pageTitle = this.translate.instant('desk.page_number', { n: pageIndex + 1 });
+      const section = this.sections[pageIndex];
+      if (section) {
+        section.title = pageTitle;
+        for (const field of section.fields) {
+          const el = field.element;
+          field.label = this.currentLanguage === 'ar' ? el.label_ar : el.label_en;
+          field.options = (el.options || []).map((opt) => ({
+            value: opt.value,
+            label: this.currentLanguage === 'ar' ? opt.label_ar : opt.label_en,
+          }));
+        }
+      }
+
+      const sideSection = this.sideSections[pageIndex];
+      if (sideSection) {
+        sideSection.label = pageTitle;
+      }
+    });
+  }
+
   private loadDraft(draftId: string): void {
     this.draftService.getDraft(draftId).subscribe({
       next: (draft) => {
@@ -297,7 +369,7 @@ export class FormFillerComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/ui/desk']);
+    this.router.navigate(['/ui/desk/templates']);
   }
 
   saveDraft(): void {
@@ -426,11 +498,11 @@ export class FormFillerComponent implements OnInit, OnDestroy {
   }
 
   onSignatureConfirmed(key: string, base64Value: string | null): void {
-    this.formGroup.get(key)?.setValue(base64Value);
-  }
-
-  onSignatureCleared(key: string): void {
-    this.formGroup.get(key)?.setValue(null);
+    const control = this.formGroup.get(key);
+    if (control) {
+      control.setValue(base64Value);
+      control.markAsTouched();
+    }
   }
 
   getErrorMessage(fieldKey: string): string {

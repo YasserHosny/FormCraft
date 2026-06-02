@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnChanges, SimpleChanges, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,7 +12,7 @@ import { TranslateModule } from '@ngx-translate/core';
   template: `
     <div class="signature-pad-container">
       <label class="signature-label" *ngIf="label">{{ label }}</label>
-      <div class="canvas-wrapper" #canvasWrapper>
+      <div class="canvas-wrapper" [class.confirmed]="confirmed" #canvasWrapper>
         <canvas #signatureCanvas
           (mousedown)="onMouseDown($event)"
           (mousemove)="onMouseMove($event)"
@@ -22,18 +22,21 @@ import { TranslateModule } from '@ngx-translate/core';
           (touchmove)="onTouchMove($event)"
           (touchend)="onMouseUp()">
         </canvas>
+        <div class="confirmed-badge" *ngIf="confirmed">
+          <mat-icon>check_circle</mat-icon>
+        </div>
       </div>
       <div class="signature-actions">
-        <button mat-stroked-button (click)="clear()" [disabled]="isEmpty">
+        <button mat-stroked-button type="button" (click)="clear()" [disabled]="isEmpty && !confirmed">
           <mat-icon>delete_outline</mat-icon>
           {{ 'signature.clear' | translate }}
         </button>
-        <button mat-raised-button color="primary" (click)="confirm()" [disabled]="isEmpty">
+        <button mat-raised-button color="primary" type="button" (click)="confirm()" [disabled]="isEmpty || confirmed">
           <mat-icon>check</mat-icon>
           {{ 'signature.confirm' | translate }}
         </button>
       </div>
-      <mat-error *ngIf="required && isEmpty && touched" class="signature-error">
+      <mat-error *ngIf="required && isEmpty && !confirmed && touched" class="signature-error">
         {{ 'signature.required' | translate }}
       </mat-error>
     </div>
@@ -51,11 +54,30 @@ import { TranslateModule } from '@ngx-translate/core';
       margin-bottom: 4px;
     }
     .canvas-wrapper {
+      position: relative;
       border: 2px dashed #999;
       border-radius: 4px;
       background: #fafafa;
       overflow: hidden;
       touch-action: none;
+      transition: border-color 0.2s;
+    }
+    .canvas-wrapper.confirmed {
+      border-color: #4caf50;
+      border-style: solid;
+    }
+    .confirmed-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      color: #4caf50;
+      display: flex;
+      align-items: center;
+    }
+    .confirmed-badge mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
     }
     canvas {
       display: block;
@@ -79,6 +101,10 @@ import { TranslateModule } from '@ngx-translate/core';
     :host-context([dir='rtl']) .signature-label {
       text-align: right;
     }
+    :host-context([dir='rtl']) .confirmed-badge {
+      right: auto;
+      left: 8px;
+    }
   `],
 })
 export class SignaturePadComponent implements AfterViewInit, OnDestroy, OnChanges {
@@ -92,15 +118,23 @@ export class SignaturePadComponent implements AfterViewInit, OnDestroy, OnChange
 
   isEmpty = true;
   touched = false;
+  confirmed = false;
 
   private ctx: CanvasRenderingContext2D | null = null;
   private drawing = false;
   private lastPoint: { x: number; y: number } | null = null;
   private resizeObserver: ResizeObserver | null = null;
 
+  constructor(
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef,
+  ) {}
+
   ngAfterViewInit(): void {
     this.initCanvas();
-    this.resizeObserver = new ResizeObserver(() => this.resizeCanvas());
+    this.resizeObserver = new ResizeObserver(() => {
+      this.ngZone.run(() => this.resizeCanvas());
+    });
     this.resizeObserver.observe(this.canvasRef.nativeElement.parentElement!);
   }
 
@@ -119,14 +153,17 @@ export class SignaturePadComponent implements AfterViewInit, OnDestroy, OnChange
   private initCanvas(): void {
     const canvas = this.canvasRef.nativeElement;
     const wrapper = canvas.parentElement!;
-    canvas.width = wrapper.clientWidth;
-    canvas.height = Math.max(wrapper.clientWidth * 0.4, 100);
+    canvas.width = wrapper.clientWidth || 300;
+    canvas.height = Math.max((wrapper.clientWidth || 300) * 0.4, 100);
     this.ctx = canvas.getContext('2d');
-    this.ctx!.lineWidth = 2;
-    this.ctx!.lineCap = 'round';
-    this.ctx!.lineJoin = 'round';
-    this.ctx!.strokeStyle = this.penColor;
+    if (this.ctx) {
+      this.ctx.lineWidth = 2;
+      this.ctx.lineCap = 'round';
+      this.ctx.lineJoin = 'round';
+      this.ctx.strokeStyle = this.penColor;
+    }
     this.isEmpty = true;
+    this.confirmed = false;
   }
 
   private resizeCanvas(): void {
@@ -134,38 +171,44 @@ export class SignaturePadComponent implements AfterViewInit, OnDestroy, OnChange
     const canvas = this.canvasRef.nativeElement;
     const wrapper = canvas.parentElement!;
     const dataUrl = this.isEmpty ? null : canvas.toDataURL('image/png');
-    canvas.width = wrapper.clientWidth;
-    canvas.height = Math.max(wrapper.clientWidth * 0.4, 100);
+    canvas.width = wrapper.clientWidth || 300;
+    canvas.height = Math.max((wrapper.clientWidth || 300) * 0.4, 100);
     this.ctx = canvas.getContext('2d');
-    this.ctx!.lineWidth = 2;
-    this.ctx!.lineCap = 'round';
-    this.ctx!.lineJoin = 'round';
-    this.ctx!.strokeStyle = this.penColor;
+    if (this.ctx) {
+      this.ctx.lineWidth = 2;
+      this.ctx.lineCap = 'round';
+      this.ctx.lineJoin = 'round';
+      this.ctx.strokeStyle = this.penColor;
+    }
     if (dataUrl) {
       const img = new Image();
       img.onload = () => {
-        this.ctx!.drawImage(img, 0, 0);
+        this.ctx?.drawImage(img, 0, 0);
       };
       img.src = dataUrl;
     }
   }
 
   onMouseDown(event: MouseEvent): void {
+    if (this.confirmed) return;
     event.preventDefault();
     this.drawing = true;
     this.touched = true;
+    this.isEmpty = false;
     const point = this.getPoint(event);
     this.lastPoint = point;
-    this.ctx!.beginPath();
-    this.ctx!.moveTo(point.x, point.y);
+    if (this.ctx) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(point.x, point.y);
+    }
   }
 
   onMouseMove(event: MouseEvent): void {
-    if (!this.drawing) return;
+    if (!this.drawing || !this.ctx) return;
     event.preventDefault();
     const point = this.getPoint(event);
-    this.ctx!.lineTo(point.x, point.y);
-    this.ctx!.stroke();
+    this.ctx.lineTo(point.x, point.y);
+    this.ctx.stroke();
     this.lastPoint = point;
     this.isEmpty = false;
   }
@@ -176,6 +219,7 @@ export class SignaturePadComponent implements AfterViewInit, OnDestroy, OnChange
   }
 
   onTouchStart(event: TouchEvent): void {
+    if (this.confirmed) return;
     event.preventDefault();
     const touch = event.touches[0];
     const canvas = this.canvasRef.nativeElement;
@@ -186,13 +230,16 @@ export class SignaturePadComponent implements AfterViewInit, OnDestroy, OnChange
     };
     this.drawing = true;
     this.touched = true;
+    this.isEmpty = false;
     this.lastPoint = point;
-    this.ctx!.beginPath();
-    this.ctx!.moveTo(point.x, point.y);
+    if (this.ctx) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(point.x, point.y);
+    }
   }
 
   onTouchMove(event: TouchEvent): void {
-    if (!this.drawing) return;
+    if (!this.drawing || !this.ctx) return;
     event.preventDefault();
     const touch = event.touches[0];
     const canvas = this.canvasRef.nativeElement;
@@ -201,17 +248,19 @@ export class SignaturePadComponent implements AfterViewInit, OnDestroy, OnChange
       x: touch.clientX - rect.left,
       y: touch.clientY - rect.top,
     };
-    this.ctx!.lineTo(point.x, point.y);
-    this.ctx!.stroke();
+    this.ctx.lineTo(point.x, point.y);
+    this.ctx.stroke();
     this.lastPoint = point;
     this.isEmpty = false;
   }
 
   clear(): void {
-    if (!this.ctx) return;
     const canvas = this.canvasRef.nativeElement;
-    this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (this.ctx) {
+      this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
     this.isEmpty = true;
+    this.confirmed = false;
     this.valueChange.emit(null);
   }
 
@@ -219,6 +268,7 @@ export class SignaturePadComponent implements AfterViewInit, OnDestroy, OnChange
     if (this.isEmpty) return;
     const canvas = this.canvasRef.nativeElement;
     const dataUrl = canvas.toDataURL('image/png');
+    this.confirmed = true;
     this.valueChange.emit(dataUrl);
   }
 

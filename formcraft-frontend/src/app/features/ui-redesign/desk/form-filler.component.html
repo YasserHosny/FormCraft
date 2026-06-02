@@ -102,13 +102,14 @@
 
                 <textarea *ngSwitchCase="'textarea'" class="field-input" [formControlName]="f.key" dir="auto"></textarea>
 
+                <div *ngSwitchCase="'tafqeet'" class="tafqeet-field" dir="auto">{{ formGroup.get(f.key)?.value }}</div>
+
                 <div *ngSwitchCase="'signature'" class="signature-pad-wrapper">
                   <fc-signature-pad
                     [required]="requiredKeys.has(f.key) || f.required"
                     [value]="formGroup.get(f.key)?.value || null"
                     (valueChange)="onSignatureConfirmed(f.key, $event)">
                   </fc-signature-pad>
-                  <button class="fc-btn ghost sm" type="button" (click)="onSignatureCleared(f.key)">{{ 'signature.clear' | translate }}</button>
                 </div>
 
                 <input *ngSwitchDefault class="field-input" type="text" [formControlName]="f.key" dir="auto" />

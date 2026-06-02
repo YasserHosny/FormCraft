@@ -502,13 +502,14 @@ export class CanvasService implements OnDestroy {
   }
 
   /**
-   * Update element formatting data (used by property panel without triggering save).
-   * Does NOT mark dirty — caller decides when to save.
+   * Update element formatting data (used by property panels like tafqeet).
+   * Merges the patch into the existing formatting object and marks dirty.
    */
   updateElementFormatting(elementId: string, formatting: Record<string, unknown>): void {
     const el = this.elements.get(elementId);
     if (!el) return;
     el.data['formatting'] = { ...(el.data['formatting'] as Record<string, unknown> || {}), ...formatting };
+    this._dirty.next(true);
   }
 
   /** Patch arbitrary fields on an element's data, re-render the visual, and mark dirty. */

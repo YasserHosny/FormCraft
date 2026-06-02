@@ -5,20 +5,23 @@ class SignatureRenderer(ElementHTMLRenderer):
     def render(self, element: dict, data: dict | None = None) -> str:
         style = self._base_style(element)
         props = element.get("properties", {})
+        key = element.get("key", "")
 
-        if data and isinstance(data, dict):
-            sig_type = data.get("type", "inline")
+        # Look up the signature value from field_values by element key
+        sig_value = data.get(key) if data and key else None
+
+        src = ""
+        if sig_value and isinstance(sig_value, str) and sig_value.startswith("data:image"):
+            # Raw base64 data URL (e.g. from Spark form filler)
+            src = sig_value
+        elif sig_value and isinstance(sig_value, dict):
+            sig_type = sig_value.get("type", "inline")
             if sig_type == "inline":
-                src = data.get("data", "")
+                src = sig_value.get("data", "")
             elif sig_type == "storage":
-                src = data.get("data", "") or data.get("path", "")
-            else:
-                src = ""
-        else:
-            src = ""
+                src = sig_value.get("data", "") or sig_value.get("path", "")
 
         if src:
-            props.get("pen_color", "#000000")
             return (
                 f'<img src="{src}" '
                 f'style="{style} object-fit: contain; '

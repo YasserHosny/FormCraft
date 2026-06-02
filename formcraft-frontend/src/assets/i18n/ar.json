@@ -789,7 +789,10 @@
     "DOCUMENT_HASH": "تجزئة المستند",
     "INTEGRITY": "السلامة",
     "VERIFY_INTEGRITY": "التحقق من السلامة",
-    "SIGNERS": "الموقعون"
+    "SIGNERS": "الموقعون",
+    "clear": "مسح",
+    "confirm": "تأكيد التوقيع",
+    "required": "التوقيع مطلوب"
   },
   "table": {
     "title": "إعدادات الجدول",
