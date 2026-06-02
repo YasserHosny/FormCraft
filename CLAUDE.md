@@ -1,6 +1,6 @@
 # FormCraft Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-05-31
+Auto-generated from all feature plans. Last updated: 2026-06-02
 
 ## Active Technologies
 - Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Auth), Angular Material, WeasyPrint (PDF export), ng2-charts / Chart.js (frontend charting) (027-analytics-reporting)
@@ -11,6 +11,8 @@ Auto-generated from all feature plans. Last updated: 2026-05-31
 - Supabase PostgreSQL; extend existing `organizations`, `org_settings`, `templates`, `pages`, `elements`, `submissions`, `profiles`, `audit_logs`; add portal configuration/session/OTP/rate-limit/public-submission metadata tables (034-external-form-portal-plan)
 - TypeScript / Angular 19 (standalone components) + Angular Material, RxJS, ngx-translate, existing desk services (providedIn: 'root') (050-new-theme-desk-data)
 - Supabase PostgreSQL (accessed via existing REST APIs through desk services) (050-new-theme-desk-data)
+- TypeScript / Angular 19 (standalone components) + Angular Material, ngx-translate, RxJS, Angular Reactive Forms, `CustomerService` (existing, `providedIn: 'root'`) (056-spark-add-customer)
+- N/A — uses existing Supabase-backed REST API via `CustomerService` (056-spark-add-customer)
 
 - Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Storage + Auth), Angular Material (001-customer-feedback)
 
@@ -38,9 +40,9 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.12 (backend), TypeScript / Angular 19 (frontend): Follow standard conventions
 
 ## Recent Changes
+- 056-spark-add-customer: Added TypeScript / Angular 19 (standalone components) + Angular Material, ngx-translate, RxJS, Angular Reactive Forms, `CustomerService` (existing, `providedIn: 'root'`)
 - 050-new-theme-desk-data: Added TypeScript / Angular 19 (standalone components) + Angular Material, RxJS, ngx-translate, existing desk services (providedIn: 'root')
 - 034-external-form-portal-plan: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, Zod, Pydantic, existing validation/condition/tafqeet services, existing PDF renderer, existing notification/email infrastructure, pluggable SMS provider adapter, hCaptcha/reCAPTCHA adapter
-- 028-approval-workflow: Added Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Auth), Angular Material, WeasyPrint (timeline PDF export)
 
 
 <!-- MANUAL ADDITIONS START -->
