@@ -5,6 +5,7 @@ import { HttpClientModule, HttpClient, HTTP_INTERCEPTORS } from '@angular/common
 import { ReactiveFormsModule } from '@angular/forms';
 import { BidiModule } from '@angular/cdk/bidi';
 import { TextFieldModule } from '@angular/cdk/text-field';
+import { MatPaginatorIntl } from '@angular/material/paginator';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
@@ -14,7 +15,7 @@ import { SharedModule } from './shared/shared.module';
 import { AuthInterceptor } from './core/auth/auth.interceptor';
 import { GlobalErrorHandler } from './core/error-handler/global-error-handler';
 import { FeedbackWidgetComponent } from './features/feedback/components/feedback-widget/feedback-widget.component';
-import { FeedbackService } from './features/feedback/services/feedback.service';
+import { TranslatedPaginatorIntl } from './core/i18n/translated-paginator-intl';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -43,6 +44,7 @@ export function HttpLoaderFactory(http: HttpClient) {
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
+    { provide: MatPaginatorIntl, useClass: TranslatedPaginatorIntl },
   ],
   bootstrap: [AppComponent],
 })
