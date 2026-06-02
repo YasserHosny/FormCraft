@@ -110,7 +110,7 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   validatorSearch = '';
 
   get canEdit(): boolean {
-    return this.templateStatus === 'draft' || this.templateStatus === 'rejected';
+    return this.templateStatus !== 'archived' && this.templateStatus !== 'deprecated';
   }
 
   get canSubmitForReview(): boolean {
@@ -852,7 +852,8 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   save(): void {
     if (!this.pageId) return;
-    
+    if (!this.canEdit) return;
+
     // Allow concurrent saves but track them individually
     this.saveInProgress = true;
     this.isSaving = true;

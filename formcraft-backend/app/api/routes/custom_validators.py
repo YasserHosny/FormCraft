@@ -153,7 +153,14 @@ async def list_validators_for_designer(
     Used by the Design Studio canvas dropdown and the Form Desk validator engine.
     Cached per-org for 60s; cache is invalidated on any admin CRUD operation.
     """
+    from app.core.db_errors import is_missing_schema_error
+
     org_id = _require_org(current_user)
     service = CustomValidatorService(get_supabase_client())
-    items = await service.list_for_designer(org_id)
+    try:
+        items = await service.list_for_designer(org_id)
+    except Exception as exc:
+        if is_missing_schema_error(exc):
+            return []
+        raise
     return [CustomValidatorDesignerView(**row) for row in items]
