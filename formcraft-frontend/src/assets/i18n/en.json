@@ -655,6 +655,7 @@
     "id_type_national": "National ID",
     "action_view": "View",
     "action_fill": "Fill Form",
+    "action_more": "More actions",
     "empty": "No customer data available",
     "empty_found": "No customers found",
     "error_load": "Failed to load customer list",

@@ -655,6 +655,7 @@
     "id_type_national": "هوية وطنية",
     "action_view": "عرض",
     "action_fill": "تعبئة نموذج",
+    "action_more": "إجراءات إضافية",
     "empty": "لا توجد بيانات عملاء متاحة",
     "empty_found": "لا يوجد عملاء",
     "error_load": "فشل تحميل قائمة العملاء",
