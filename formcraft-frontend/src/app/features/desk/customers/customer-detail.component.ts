@@ -67,7 +67,9 @@ export class CustomerDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (id === 'new') {
+    const isCreateRoute = id === 'new' || this.route.snapshot.data?.['mode'] === 'create';
+
+    if (isCreateRoute) {
       this.isNew = true;
       this.loading = false;
     } else if (id) {
