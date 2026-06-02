@@ -47,6 +47,14 @@
   </button>
   <button class="fc-btn ghost" (click)="preview()"><mat-icon>visibility</mat-icon>معاينة</button>
   <button class="fc-btn ghost"><mat-icon>history</mat-icon>الإصدارات</button>
+  <button class="fc-icon-btn feedback-btn"
+          [class.active]="showFeedbackPanel"
+          (click)="toggleFeedbackPanel()"
+          matTooltip="ملاحظات النموذج"
+          style="position:relative">
+    <mat-icon>feedback</mat-icon>
+    <span *ngIf="newFeedbackCount > 0" class="feedback-badge">{{ newFeedbackCount }}</span>
+  </button>
   <button class="fc-btn outline" (click)="saveDraft()"><mat-icon>save</mat-icon>حفظ كمسودة</button>
   <button class="fc-btn primary" (click)="submitForReview()"><mat-icon>rocket_launch</mat-icon>إرسال للمراجعة</button>
 </div>
@@ -412,5 +420,18 @@
     </ng-container><!-- /normal props mode -->
 
   </aside>
+</div>
+
+<!-- Feedback panel overlay -->
+<div class="feedback-overlay" *ngIf="showFeedbackPanel" (click)="closeFeedbackPanel()"></div>
+<div class="feedback-drawer" [class.open]="showFeedbackPanel">
+  <fc-feedback-panel
+    [templateId]="templateId"
+    [feedbackItems]="feedbackItems"
+    [loading]="feedbackLoading"
+    (close)="closeFeedbackPanel()"
+    (acknowledge)="onAcknowledgeFeedback($event)"
+    (resolve)="onResolveFeedback($event)">
+  </fc-feedback-panel>
 </div>
 </ng-template>

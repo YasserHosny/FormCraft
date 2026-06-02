@@ -941,6 +941,54 @@
   color: var(--fc-text-3);
 }
 
+// ── Feedback drawer ───────────────────────────────────────────────────────
+
+.feedback-badge {
+  position: absolute;
+  top: 4px;
+  inset-inline-end: 4px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--fc-error, #c62828);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  padding: 0 4px;
+  pointer-events: none;
+}
+
+.feedback-btn.active {
+  color: var(--fc-primary);
+  background: var(--fc-primary-10, rgba(0, 100, 200, 0.08));
+}
+
+.feedback-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.feedback-drawer {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-end: -380px;
+  width: 380px;
+  z-index: 201;
+  background: var(--fc-surface);
+  border-inline-start: 1px solid var(--fc-border);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.12);
+  transition: inset-inline-end 0.25s ease;
+  overflow-y: auto;
+
+  &.open {
+    inset-inline-end: 0;
+  }
+}
+
 // ── Responsive ────────────────────────────────────────────────────────────
 
 @include responsive.fc-phone {
