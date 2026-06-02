@@ -9,10 +9,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CustomerService } from '../services/customer.service';
 import { Customer, CustomerListResponse } from './customer.models';
 
@@ -32,6 +34,8 @@ import { Customer, CustomerListResponse } from './customer.models';
     MatChipsModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
+    TranslateModule,
   ],
   templateUrl: './customer-list.component.html',
   styleUrls: ['./customer-list.component.scss'],
@@ -50,6 +54,7 @@ export class CustomerListComponent implements OnInit {
     private customerService: CustomerService,
     private router: Router,
     private snackBar: MatSnackBar,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit(): void {
@@ -78,7 +83,7 @@ export class CustomerListComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
-        this.snackBar.open('Failed to load customers', '', { duration: 3000 });
+        this.snackBar.open(this.translate.instant('customers.error_load'), '', { duration: 3000 });
       },
     });
   }
