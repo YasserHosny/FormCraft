@@ -1,14 +1,14 @@
 .feedback-fab {
   position: fixed;
   bottom: 24px;
-  right: 24px;
+  inset-inline-end: 24px;
   z-index: 1000;
 }
 
 @media (max-width: 400px) {
   .feedback-fab {
     bottom: 16px;
-    right: 16px;
+    inset-inline-end: 16px;
   }
 }
 

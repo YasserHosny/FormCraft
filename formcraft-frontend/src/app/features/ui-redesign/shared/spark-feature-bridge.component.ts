@@ -101,7 +101,12 @@ export class SparkFeatureBridgeComponent implements OnInit {
     const data = this.route.snapshot.data;
     this.featureName = data['featureName'] ?? '';
     this.icon = data['featureIcon'] ?? 'open_in_new';
-    this.classicRoute = data['classicRoute'] ?? '/';
+    let route = (data['classicRoute'] as string) ?? '/';
+    const params = this.route.snapshot.paramMap;
+    params.keys.forEach((key) => {
+      route = route.replace(`:${key}`, params.get(key) || '');
+    });
+    this.classicRoute = route;
   }
 
   openInClassic(): void {
