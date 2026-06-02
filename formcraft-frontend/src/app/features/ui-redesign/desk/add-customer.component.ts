@@ -99,7 +99,7 @@ export class AddCustomerComponent implements OnInit {
     this.customerService.create(this.buildPayload()).subscribe({
       next: (customer) => {
         this.saving = false;
-        this.router.navigate(['/desk/customers', customer.id]);
+        this.router.navigate(['/ui/desk/customers', customer.id]);
       },
       error: (err) => {
         this.saving = false;

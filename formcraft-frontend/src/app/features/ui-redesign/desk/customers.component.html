@@ -65,19 +65,19 @@
         <td><div class="checkbox"></div></td>
         <td>
           <div class="customer-cell">
-            <fc-avatar [name]="c.name" size="md" [color]="c.color || 'c1'"></fc-avatar>
+            <fc-avatar [name]="getCustomerName(c)" size="md" [color]="c.color || 'c1'"></fc-avatar>
             <div class="customer-info">
               <div class="customer-name-row">
-                <span class="name">{{ c.name }}</span>
+                <span class="name">{{ getCustomerName(c) }}</span>
                 <span class="tag premium" *ngIf="c.is_premium"><mat-icon>star</mat-icon>{{ 'customers.tag_premium' | translate }}</span>
               </div>
-              <span class="customer-en">{{ c.name_en || c.name }}</span>
+              <span class="customer-en" *ngIf="getCustomerSecondaryName(c) as secondaryName">{{ secondaryName }}</span>
             </div>
           </div>
         </td>
-        <td class="text-secondary">{{ c.id_type || ('customers.id_type_national' | translate) }}</td>
-        <td class="fc-num">{{ c.national_id || c.id?.slice(0, 12) }}</td>
-        <td class="fc-num">{{ c.phone || '-' }}</td>
+        <td class="text-secondary">{{ getIdentifierType(c) }}</td>
+        <td class="fc-num">{{ getIdentifier(c) }}</td>
+        <td class="fc-num">{{ getPhone(c) }}</td>
         <td class="text-secondary">{{ c.branch || '-' }}</td>
         <td class="col-center"><span class="forms-count fc-num">{{ c.submission_count || 0 }}</span></td>
         <td class="text-secondary">{{ c.updated_at | date:'short' }}</td>

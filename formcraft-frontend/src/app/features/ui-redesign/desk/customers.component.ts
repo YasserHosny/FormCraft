@@ -3,11 +3,19 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Customer } from '../../../features/desk/customers/customer.models';
 import { PageHeaderComponent } from '../shared/components/page-header.component';
 import { StatusChipComponent } from '../shared/components/status-chip.component';
 import { AvatarComponent } from '../shared/components/avatar.component';
 import { CustomerService } from '../../../features/desk/services/customer.service';
 import { FormsModule } from '@angular/forms';
+
+type CustomerGridItem = Customer & {
+  branch?: string;
+  color?: string;
+  is_premium?: boolean;
+  submission_count?: number;
+};
 
 @Component({
   selector: 'fc-customers',
@@ -17,7 +25,7 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './customers.component.scss',
 })
 export class CustomersComponent implements OnInit {
-  customers: any[] = [];
+  customers: CustomerGridItem[] = [];
   loading = true;
   error: string | null = null;
   searchQuery = '';
@@ -66,11 +74,11 @@ export class CustomersComponent implements OnInit {
   }
 
   viewCustomer(customerId: string): void {
-    this.router.navigate(['/desk/customers', customerId]);
+    this.router.navigate(['/ui/desk/customers', customerId]);
   }
 
   fillFormForCustomer(): void {
-    this.router.navigate(['/desk']);
+    this.router.navigate(['/ui/desk']);
   }
 
   onSearch(query: string): void {
@@ -106,5 +114,37 @@ export class CustomersComponent implements OnInit {
     this.pageSize = size;
     this.currentPage = 1;
     this.loadCustomers();
+  }
+
+  getCustomerName(customer: CustomerGridItem): string {
+    const nameAr = customer.name_ar?.trim() || '';
+    const nameEn = customer.name_en?.trim() || '';
+
+    if (this.translate.currentLang === 'ar') {
+      return nameAr || nameEn || '-';
+    }
+
+    return nameEn || nameAr || '-';
+  }
+
+  getCustomerSecondaryName(customer: CustomerGridItem): string | null {
+    const primaryName = this.getCustomerName(customer);
+    const fallbackName = this.translate.currentLang === 'ar'
+      ? customer.name_en?.trim()
+      : customer.name_ar?.trim();
+
+    return fallbackName && fallbackName !== primaryName ? fallbackName : null;
+  }
+
+  getIdentifierType(customer: CustomerGridItem): string {
+    return customer.identifier_type || this.translate.instant('customers.id_type_national');
+  }
+
+  getIdentifier(customer: CustomerGridItem): string {
+    return customer.identifier || customer.id?.slice(0, 12) || '-';
+  }
+
+  getPhone(customer: CustomerGridItem): string {
+    return customer.contact_phone || '-';
   }
 }
