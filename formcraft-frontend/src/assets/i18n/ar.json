@@ -23,7 +23,8 @@
     "role_viewer": "مشاهد",
     "role_branch_manager": "مدير فرع",
     "bridge_body": "هذه الميزة غير متاحة بعد في واجهة Spark. انقر أدناه لفتحها في الوضع الكلاسيكي.",
-    "bridge_open_classic": "فتح في الوضع الكلاسيكي"
+    "bridge_open_classic": "فتح في الوضع الكلاسيكي",
+    "customerDetail": "تفاصيل العميل"
   },
   "common": {
     "save": "حفظ",
@@ -636,6 +637,7 @@
     "more_filters": "المزيد",
     "sort_last": "آخر تعامل ↓",
     "status_active": "نشط",
+    "status_inactive": "غير نشط",
     "status_all": "الكل",
     "id_type_all": "الكل",
     "branch_all": "جميع الفروع",
@@ -643,6 +645,7 @@
     "col_customer": "العميل",
     "col_id_type": "نوع الهوية",
     "col_id_num": "رقم الهوية",
+    "col_contact": "بيانات التواصل",
     "col_phone": "الجوال",
     "col_branch": "الفرع",
     "col_forms": "نماذج",
@@ -653,11 +656,21 @@
     "action_view": "عرض",
     "action_fill": "تعبئة نموذج",
     "empty": "لا توجد بيانات عملاء متاحة",
+    "empty_found": "لا يوجد عملاء",
     "error_load": "فشل تحميل قائمة العملاء",
     "error_search": "فشل البحث عن العملاء",
     "error_title": "حدث خطأ",
     "page_rows": "السطور بالصفحة:",
     "page_of": "صفحة {{page}} من {{total}}"
+  },
+  "paginator": {
+    "items_per_page": "العناصر في الصفحة:",
+    "next_page": "الصفحة التالية",
+    "previous_page": "الصفحة السابقة",
+    "first_page": "الصفحة الأولى",
+    "last_page": "الصفحة الأخيرة",
+    "range": "{{start}} - {{end}} من {{length}}",
+    "range_empty": "0 من {{length}}"
   },
   "filler": {
     "cancel": "إلغاء",
@@ -1367,6 +1380,37 @@
         "30d": "٣٠ يوماً",
         "90d": "٩٠ يوماً",
         "yearly": "سنوي"
+      },
+      "page_title": "التحليلات والتقارير",
+      "page_subtitle": "نظرة شاملة على نشاط النماذج والعمليات عبر المؤسسة",
+      "schedule_report": "جدولة تقرير",
+      "kpi": {
+        "total_forms": "إجمالي النماذج المعبأة",
+        "published_forms": "نماذج منشورة",
+        "avg_processing_time": "متوسط زمن المعالجة",
+        "unique_customers": "عملاء فريدون",
+        "delta_prev_period": "عن الفترة السابقة",
+        "delta_from_templates": "من القوالب",
+        "delta_improvement": "(تحسّن)",
+        "delta_this_week": "هذا الأسبوع"
+      },
+      "chart": {
+        "forms_over_time": "النماذج المعبأة عبر الزمن",
+        "forms_subtitle": "آخر ٣٠ يوماً · تحديث كل ساعة",
+        "by_department": "التوزيع حسب الإدارة",
+        "top_templates": "أكثر النماذج استخداماً",
+        "top_templates_subtitle": "أعلى ٧ قوالب — هذا الشهر",
+        "top_templates_all": "الكل",
+        "operator_performance": "أداء الموظفين",
+        "operator_subtitle": "أعلى الموظفين أداءاً هذا الأسبوع",
+        "view_all": "عرض الكل",
+        "donut_total": "إجمالي"
+      },
+      "table": {
+        "employee": "الموظف",
+        "forms": "نماذج",
+        "avg_time": "متوسط الزمن",
+        "accuracy": "الدقة"
       }
     }
   },
@@ -1521,5 +1565,16 @@
     "error_duplicate": "يوجد عميل بنفس رقم الهوية مسبقاً",
     "error_generic": "فشل إنشاء العميل. يرجى المحاولة مرة أخرى.",
     "success_created": "تم إنشاء العميل بنجاح"
+  },
+  "customer_detail": {
+    "title": "تفاصيل العميل",
+    "btn_edit": "تعديل",
+    "btn_save": "حفظ",
+    "status_active": "نشط",
+    "status_inactive": "غير نشط",
+    "created": "تاريخ الإنشاء:",
+    "error_load": "فشل تحميل بيانات العميل",
+    "error_save": "فشل حفظ التعديلات",
+    "save_success": "تم حفظ التعديلات بنجاح"
   }
 }

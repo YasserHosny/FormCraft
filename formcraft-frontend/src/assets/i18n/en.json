@@ -23,7 +23,8 @@
     "role_viewer": "Viewer",
     "role_branch_manager": "Branch Manager",
     "bridge_body": "This feature is not yet available in the Spark theme. Click below to open it in Classic mode.",
-    "bridge_open_classic": "Open in Classic Mode"
+    "bridge_open_classic": "Open in Classic Mode",
+    "customerDetail": "Customer Details"
   },
   "common": {
     "save": "Save",
@@ -636,6 +637,7 @@
     "more_filters": "More",
     "sort_last": "Last Activity ↓",
     "status_active": "Active",
+    "status_inactive": "Inactive",
     "status_all": "All",
     "id_type_all": "All",
     "branch_all": "All Branches",
@@ -643,6 +645,7 @@
     "col_customer": "Customer",
     "col_id_type": "ID Type",
     "col_id_num": "ID Number",
+    "col_contact": "Contact",
     "col_phone": "Phone",
     "col_branch": "Branch",
     "col_forms": "Forms",
@@ -653,11 +656,21 @@
     "action_view": "View",
     "action_fill": "Fill Form",
     "empty": "No customer data available",
+    "empty_found": "No customers found",
     "error_load": "Failed to load customer list",
     "error_search": "Failed to search customers",
     "error_title": "An error occurred",
     "page_rows": "Rows per page:",
     "page_of": "Page {{page}} of {{total}}"
+  },
+  "paginator": {
+    "items_per_page": "Items per page:",
+    "next_page": "Next page",
+    "previous_page": "Previous page",
+    "first_page": "First page",
+    "last_page": "Last page",
+    "range": "{{start}} - {{end}} of {{length}}",
+    "range_empty": "0 of {{length}}"
   },
   "filler": {
     "cancel": "Cancel",
@@ -1373,6 +1386,37 @@
         "30d": "30 Days",
         "90d": "90 Days",
         "yearly": "Yearly"
+      },
+      "page_title": "Analytics & Reports",
+      "page_subtitle": "Comprehensive overview of form activity and operations across the organization",
+      "schedule_report": "Schedule Report",
+      "kpi": {
+        "total_forms": "Total Forms Filled",
+        "published_forms": "Published Templates",
+        "avg_processing_time": "Avg. Processing Time",
+        "unique_customers": "Unique Customers",
+        "delta_prev_period": "vs. previous period",
+        "delta_from_templates": "of templates",
+        "delta_improvement": "(improved)",
+        "delta_this_week": "this week"
+      },
+      "chart": {
+        "forms_over_time": "Forms Filled Over Time",
+        "forms_subtitle": "Last 30 days · Updated every hour",
+        "by_department": "Distribution by Department",
+        "top_templates": "Most Used Templates",
+        "top_templates_subtitle": "Top 7 templates — this month",
+        "top_templates_all": "All",
+        "operator_performance": "Employee Performance",
+        "operator_subtitle": "Top performers this week",
+        "view_all": "View All",
+        "donut_total": "Total"
+      },
+      "table": {
+        "employee": "Employee",
+        "forms": "Forms",
+        "avg_time": "Avg. Time",
+        "accuracy": "Accuracy"
       }
     }
   },
@@ -1527,5 +1571,16 @@
     "error_duplicate": "A customer with this identifier already exists",
     "error_generic": "Failed to create customer. Please try again.",
     "success_created": "Customer created successfully"
+  },
+  "customer_detail": {
+    "title": "Customer Details",
+    "btn_edit": "Edit",
+    "btn_save": "Save",
+    "status_active": "Active",
+    "status_inactive": "Inactive",
+    "created": "Created:",
+    "error_load": "Failed to load customer",
+    "error_save": "Failed to save changes",
+    "save_success": "Changes saved successfully"
   }
 }
