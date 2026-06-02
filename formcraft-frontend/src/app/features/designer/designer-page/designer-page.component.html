@@ -38,45 +38,43 @@
     <!-- Center: Canvas -->
     <mat-sidenav-content class="canvas-area" [class.detections-docked]="showDetectionsPanel && detectionsDocked">
       <mat-toolbar class="canvas-toolbar">
-        <fc-status-badge [status]="templateStatus"></fc-status-badge>
-        <span style="margin-left: 8px;">{{ templateName }}</span>
-        <mat-form-field appearance="outline" style="margin-left: 12px; width: 180px; font-size: 12px;" *ngIf="departments.length > 0">
-          <mat-label>{{ 'departments.title' | translate }}</mat-label>
-          <mat-select [(value)]="templateDepartmentId" (selectionChange)="onDepartmentChange($event.value)">
-            <mat-option [value]="null">{{ 'common.none' | translate }}</mat-option>
-            <mat-option *ngFor="let dept of departments" [value]="dept.id">{{ dept.name_en }}</mat-option>
-          </mat-select>
-        </mat-form-field>
-        <span class="spacer"></span>
+        <button mat-raised-button color="primary" (click)="save()" [disabled]="!isDirty">
+          {{ 'common.save' | translate }}
+        </button>
+        <button mat-icon-button (click)="canvasService.undo()" matTooltip="Undo"><mat-icon>undo</mat-icon></button>
+        <button mat-icon-button (click)="canvasService.redo()" matTooltip="Redo"><mat-icon>redo</mat-icon></button>
+        <button mat-icon-button (click)="canvasService.zoomIn()" matTooltip="Zoom In"><mat-icon>zoom_in</mat-icon></button>
+        <button mat-icon-button (click)="canvasService.zoomOut()" matTooltip="Zoom Out"><mat-icon>zoom_out</mat-icon></button>
+        <button mat-icon-button (click)="canvasService.toggleSnap()" matTooltip="Snap"><mat-icon>grid_on</mat-icon></button>
+        <button mat-stroked-button color="primary" (click)="openImport()">
+          <mat-icon>upload_file</mat-icon>
+          Import Cheque
+        </button>
+        <button mat-icon-button (click)="toggleFeedbackPanel()" matTooltip="{{ 'template_feedback.panel.title' | translate }}" style="position:relative">
+          <mat-icon>feedback</mat-icon>
+          <span *ngIf="newFeedbackCount > 0" class="feedback-badge">{{ newFeedbackCount }}</span>
+        </button>
         <button mat-icon-button *ngIf="canSubmitForReview" (click)="submitForReview()" matTooltip="{{ 'templates.submitForReview' | translate }}">
           <mat-icon>send</mat-icon>
         </button>
         <button mat-icon-button (click)="openVersionHistory()" matTooltip="{{ 'templates.versionHistory' | translate }}">
           <mat-icon>history</mat-icon>
         </button>
-        <button mat-icon-button (click)="toggleFeedbackPanel()" matTooltip="{{ 'template_feedback.panel.title' | translate }}" style="position:relative">
-          <mat-icon>feedback</mat-icon>
-          <span *ngIf="newFeedbackCount > 0" class="feedback-badge">{{ newFeedbackCount }}</span>
-        </button>
+        <span class="spacer"></span>
+        <fc-status-badge [status]="templateStatus"></fc-status-badge>
+        <span style="margin-inline-start: 8px;">{{ templateName }}</span>
+        <mat-form-field appearance="outline" style="margin-inline-start: 12px; width: 180px; font-size: 12px;" *ngIf="departments.length > 0">
+          <mat-label>{{ 'departments.title' | translate }}</mat-label>
+          <mat-select [(value)]="templateDepartmentId" (selectionChange)="onDepartmentChange($event.value)">
+            <mat-option [value]="null">{{ 'common.none' | translate }}</mat-option>
+            <mat-option *ngFor="let dept of departments" [value]="dept.id">{{ dept.name_en }}</mat-option>
+          </mat-select>
+        </mat-form-field>
         <button mat-icon-button (click)="togglePalettePin()" matTooltip="{{ palettePinned ? 'Auto-hide palette' : 'Pin palette' }}">
           <mat-icon>{{ palettePinned ? 'chevron_left' : 'push_pin' }}</mat-icon>
         </button>
         <button mat-icon-button (click)="togglePropertyPin()" matTooltip="{{ propertyPinned ? 'Auto-hide properties' : 'Pin properties' }}">
           <mat-icon>{{ propertyPinned ? 'chevron_right' : 'push_pin' }}</mat-icon>
-        </button>
-        <button mat-stroked-button color="primary" (click)="openImport()">
-          <mat-icon>upload_file</mat-icon>
-          Import Cheque
-        </button>
-        <button mat-icon-button (click)="canvasService.zoomIn()" matTooltip="Zoom In"><mat-icon>zoom_in</mat-icon></button>
-        <button mat-icon-button (click)="canvasService.zoomOut()" matTooltip="Zoom Out"><mat-icon>zoom_out</mat-icon></button>
-        <button mat-icon-button (click)="canvasService.toggleSnap()" matTooltip="Snap"><mat-icon>grid_on</mat-icon></button>
-        <mat-divider vertical="true"></mat-divider>
-        <button mat-icon-button (click)="canvasService.undo()" matTooltip="Undo"><mat-icon>undo</mat-icon></button>
-        <button mat-icon-button (click)="canvasService.redo()" matTooltip="Redo"><mat-icon>redo</mat-icon></button>
-        <mat-divider vertical="true"></mat-divider>
-        <button mat-raised-button color="primary" (click)="save()" [disabled]="!isDirty">
-          {{ 'common.save' | translate }}
         </button>
       </mat-toolbar>
       <div
