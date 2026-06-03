@@ -32,6 +32,13 @@ class LocalImportRequest(BaseModel):
     page_index: int = Field(0, ge=0)
 
 
+def _detect_image_ext(image_bytes: bytes) -> str:
+    """Return 'png' or 'jpg' based on magic bytes."""
+    if image_bytes[:8] == b"\x89PNG\r\n\x1a\n":
+        return "png"
+    return "jpg"
+
+
 def _get_local_import_path() -> Path:
     if not settings.DEV_LOCAL_IMPORT_PATH:
         raise HTTPException(
@@ -252,6 +259,21 @@ def _process_import(template_id: UUID, image_bytes: bytes, page_index: int) -> F
         template_id,
     )
 
+    # Upload the original image to Supabase storage so the background URL is
+    # permanent and accessible by WeasyPrint on the server (blob: URLs are not).
+    # Unique path per detection avoids collisions and the need for upsert.
+    background_asset_url: str | None = None
+    try:
+        ext = _detect_image_ext(image_bytes)
+        content_type = mimetypes.guess_type(f"image.{ext}")[0] or "image/jpeg"
+        storage_path = f"form-backgrounds/{template_id}/{detection_record['id']}.{ext}"
+        client.storage.from_("assets").upload(
+            storage_path, image_bytes, {"content-type": content_type}
+        )
+        background_asset_url = client.storage.from_("assets").get_public_url(storage_path)
+    except Exception as exc:
+        logger.warning("Could not upload background image to storage: %s", exc)
+
     return FormDetectionResponse(
         id=detection_record["id"],
         template_id=template_id,
@@ -259,6 +281,7 @@ def _process_import(template_id: UUID, image_bytes: bytes, page_index: int) -> F
         detected_fields=detected_fields,
         page_dimensions={"width": effective_width_mm, "height": effective_height_mm},
         created_at=detection_record["created_at"],
+        background_asset_url=background_asset_url,
     )
 
 

@@ -524,9 +524,13 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
       this.canvasService.reset('konva-container', response.page_dimensions.width, response.page_dimensions.height);
     }
     if (previewUrl) {
+      // Use the blob URL only for the in-page canvas preview (browser-session only).
       this.canvasService.setBackgroundImage(previewUrl);
+      // Persist the permanent Supabase storage URL so WeasyPrint can fetch it on the server.
+      // Fall back to the blob URL only if the upload failed (server will skip the image).
+      const persistUrl = response.background_asset_url || previewUrl;
       if (this.pageId) {
-        this.templateService.updatePage(this.pageId, { background_asset: previewUrl }).subscribe();
+        this.templateService.updatePage(this.pageId, { background_asset: persistUrl }).subscribe();
       }
     }
     this.canvasService.setDetections(this.detections);

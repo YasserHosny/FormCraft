@@ -38,6 +38,7 @@ class FormDetectionResponse(BaseModel):
     detected_fields: list[DetectedField]
     page_dimensions: dict[str, float]  # {width, height} in mm
     created_at: datetime
+    background_asset_url: str | None = None
 
     class Config:
         from_attributes = True

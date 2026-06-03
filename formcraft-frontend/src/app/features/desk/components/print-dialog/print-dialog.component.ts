@@ -7,8 +7,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { TranslateModule } from '@ngx-translate/core';
-import { HttpClient } from '@angular/common/http';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import {
   PrinterProfile,
@@ -88,12 +89,16 @@ export class PrintDialogComponent implements OnInit {
   compositePreview = true;
   loading = false;
 
+  errorMessage = '';
+
   constructor(
     private dialogRef: MatDialogRef<PrintDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: PrintDialogData,
     private http: HttpClient,
     private profileService: PrinterProfileService,
-    private settingsService: PrintSettingsService
+    private settingsService: PrintSettingsService,
+    private snackBar: MatSnackBar,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit(): void {
@@ -121,20 +126,36 @@ export class PrintDialogComponent implements OnInit {
     }
 
     const url = `${environment.apiBaseUrl}/pdf/render/${this.data.templateId}`;
-    this.http.post(url, body, { responseType: 'blob' }).subscribe({
-      next: (blob) => {
+    this.http.post(url, body, { responseType: 'blob', observe: 'response' }).subscribe({
+      next: (response) => {
         this.loading = false;
+        const blob = response.body!;
+        // Treat a non-OK blob response (e.g. 502 proxied as blob) as an error
+        if (blob.type === 'application/json' || blob.type === 'text/plain') {
+          this.snackBar.open(this.translate.instant('desk.form_filler.pdf_failed'), '', { duration: 5000 });
+          return;
+        }
         const fileUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = fileUrl;
+        a.style.display = 'none';
+        document.body.appendChild(a);
         const ext = this.printMode === 'both' ? 'zip' : 'pdf';
         a.download = `${this.data.templateName}.${ext}`;
         a.click();
-        URL.revokeObjectURL(fileUrl);
+        // Delay revoke so the browser can start the download
+        setTimeout(() => {
+          URL.revokeObjectURL(fileUrl);
+          document.body.removeChild(a);
+        }, 1000);
         this.dialogRef.close(true);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.loading = false;
+        const msg = err.status === 504 || err.status === 502
+          ? this.translate.instant('desk.form_filler.pdf_timeout')
+          : this.translate.instant('desk.form_filler.pdf_failed');
+        this.snackBar.open(msg, '', { duration: 5000 });
       },
     });
   }

@@ -536,6 +536,8 @@
       "draft_version_mismatch": "Draft version differs from current template version",
       "submit_success": "Form submitted successfully",
       "submit_failed": "Submission failed. Please try again.",
+      "pdf_failed": "PDF generation failed. Please try again.",
+      "pdf_timeout": "PDF generation timed out. The document may be complex — please try again.",
       "retry": "Retry",
       "read_only_mode": "Read-only mode: designers can review but cannot submit forms.",
       "save_draft": "Save Draft",

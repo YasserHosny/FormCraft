@@ -22,4 +22,5 @@ export interface DetectionResponse {
     height: number;
   };
   created_at: string;
+  background_asset_url?: string | null;
 }
