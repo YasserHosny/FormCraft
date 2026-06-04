@@ -293,6 +293,15 @@
           <p class="empty-hint" *ngIf="!validatorsLoading && customValidators.length === 0">{{ 'designer.validators.empty' | translate }}</p>
         </section>
 
+        <!-- Formatting property panel (all element types) -->
+        <ng-container *ngIf="selectedElement">
+          <mat-divider style="margin: 12px 0;"></mat-divider>
+          <h4>{{ 'formatting.title' | translate }}</h4>
+          <fc-formatting-property-panel
+            [element]="selectedElement"
+          ></fc-formatting-property-panel>
+        </ng-container>
+
         <!-- Tafqeet-specific property panel (US2–US4, US7) -->
         <ng-container *ngIf="selectedElement.data['type'] === 'tafqeet'">
           <mat-divider style="margin: 12px 0;"></mat-divider>

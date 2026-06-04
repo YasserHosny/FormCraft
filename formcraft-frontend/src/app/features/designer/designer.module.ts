@@ -11,13 +11,14 @@ import { FeedbackPanelComponent } from './feedback-panel/feedback-panel.componen
 import { SignaturePropertyPanelComponent } from './components/signature-property-panel/signature-property-panel.component';
 import { TableConfigPanelComponent } from './components/table-config/table-config.component';
 import { RefBindingPanelComponent } from './components/ref-binding-panel/ref-binding-panel.component';
+import { FormattingPropertyPanelComponent } from './components/formatting-property-panel/formatting-property-panel.component';
 
 const routes: Routes = [
   { path: ':templateId', component: DesignerPageComponent },
 ];
 
 @NgModule({
-  declarations: [DesignerPageComponent, AiSuggestionChipComponent, TafqeetPropertyPanelComponent],
+  declarations: [DesignerPageComponent, AiSuggestionChipComponent, TafqeetPropertyPanelComponent, FormattingPropertyPanelComponent],
   imports: [
     SharedModule,
     RouterModule.forChild(routes),

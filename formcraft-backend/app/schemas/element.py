@@ -1,3 +1,4 @@
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -64,6 +65,27 @@ class UpdateElementRequest(BaseModel):
 
 class ReorderElementsRequest(BaseModel):
     element_ids: list[UUID]
+
+
+class FontSettings(BaseModel):
+    family: str | None = None
+    size_pt: float | None = Field(default=None, ge=1, le=128)
+    weight: Literal["normal", "bold"] | None = None
+    style: Literal["normal", "italic"] | None = None
+    color: str | None = None
+    min_size_pt: float | None = Field(default=6.0, ge=1, le=128)
+
+
+class LineLayout(BaseModel):
+    max_lines: int | None = Field(default=None, ge=1, le=100)
+    first_line_left_inset_mm: float | None = Field(default=None, ge=0)
+    last_line_right_inset_mm: float | None = Field(default=None, ge=0)
+
+
+class ElementFormatting(BaseModel):
+    font: FontSettings | None = None
+    line_layout: LineLayout | None = None
+    overflow: Literal["clip", "shrink-to-fit", "visible"] | None = None
 
 
 class ElementResponse(BaseModel):

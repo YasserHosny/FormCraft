@@ -70,25 +70,11 @@ class TafqeetRenderer(ElementHTMLRenderer):
             return self._blank(element)
 
         lines = result.split("\n")
-        html_lines = []
-        for line in lines:
-            is_ar = any("\u0600" <= ch <= "\u06FF" for ch in line)
-            direction = "rtl" if is_ar else "ltr"
-            text_align = "right" if is_ar else "left"
-            # WeasyPrint uses HarfBuzz which handles Arabic shaping and BiDi natively.
-            # Do NOT pre-process with arabic_reshaper / python-bidi \u2014 that causes double
-            # BiDi processing which reverses/breaks the glyph order.
-            html_lines.append(
-                f'<p style="margin:0; direction:{direction}; text-align:{text_align};">'
-                f"{line}</p>"
-            )
+        html = self._apply_line_insets(lines, element, line_direction="rtl", line_text_align="right")
 
         style = self._base_style(element)
-        # FR-014 / Clarification Q2: overflow is visible — Designer responsibility
-        style = style.replace("overflow: hidden;", "overflow: visible;")
-        return f'<div style="{style}">{"".join(html_lines)}</div>'
+        return self._apply_overflow_policy(element, html, style)
 
     def _blank(self, element: dict) -> str:
         style = self._base_style(element)
-        style = style.replace("overflow: hidden;", "overflow: visible;")
-        return f'<div style="{style}"></div>'
+        return self._apply_overflow_policy(element, "", style)

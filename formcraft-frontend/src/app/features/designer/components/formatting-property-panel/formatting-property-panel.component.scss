@@ -1,0 +1,36 @@
+.formatting-panel {
+  padding: 8px 0;
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin: 16px 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  .full-width {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  .warning {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #f57c00;
+    font-size: 12px;
+    margin-bottom: 12px;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+}

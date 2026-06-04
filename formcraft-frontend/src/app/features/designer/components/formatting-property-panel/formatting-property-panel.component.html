@@ -1,0 +1,94 @@
+<div class="formatting-panel">
+
+  <!-- Font Section -->
+  <h4 class="section-title">{{ 'formatting.font' | translate }}</h4>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'formatting.font_family' | translate }}</mat-label>
+    <mat-select [value]="fontFamily" (selectionChange)="onFontFamilyChange($event.value)">
+      <mat-option value="">— {{ 'common.none' | translate }} —</mat-option>
+      <mat-option *ngFor="let fam of ['Noto Naskh Arabic', 'Noto Sans']" [value]="fam">{{ fam }}</mat-option>
+      <mat-option value="custom">{{ 'formatting.custom_font' | translate }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width" *ngIf="fontFamily === 'custom'">
+    <mat-label>{{ 'formatting.custom_font' | translate }}</mat-label>
+    <input matInput [value]="customFontFamily" (input)="onCustomFontFamilyChange($any($event.target).value)" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'formatting.font_size' | translate }}</mat-label>
+    <input matInput type="number" [value]="fontSize ?? ''" (input)="onFontSizeChange($any($event.target).value)" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'formatting.font_weight' | translate }}</mat-label>
+    <mat-select [value]="fontWeight" (selectionChange)="onFontWeightChange($event.value)">
+      <mat-option value="normal">{{ 'formatting.font_weight_normal' | translate }}</mat-option>
+      <mat-option value="bold">{{ 'formatting.font_weight_bold' | translate }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'formatting.font_style' | translate }}</mat-label>
+    <mat-select [value]="fontStyle" (selectionChange)="onFontStyleChange($event.value)">
+      <mat-option value="normal">{{ 'formatting.font_style_normal' | translate }}</mat-option>
+      <mat-option value="italic">{{ 'formatting.font_style_italic' | translate }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'formatting.font_color' | translate }}</mat-label>
+    <input matInput type="color" [value]="fontColor || '#000000'" (input)="onFontColorChange($any($event.target).value)" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'formatting.font_min_size' | translate }}</mat-label>
+    <input matInput type="number" [value]="minSizePt ?? ''" (input)="onMinSizeChange($any($event.target).value)" />
+  </mat-form-field>
+
+  <!-- Warning for custom font not bundled -->
+  <mat-hint class="warning" *ngIf="showBundledWarning">
+    <mat-icon>warning_amber</mat-icon>
+    {{ 'formatting.font_not_bundled_warning' | translate }}
+  </mat-hint>
+
+  <!-- Line Layout Section -->
+  <h4 class="section-title">{{ 'formatting.line_layout' | translate }}</h4>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'formatting.max_lines' | translate }}</mat-label>
+    <input matInput type="number" [value]="maxLines ?? ''" (input)="onMaxLinesChange($any($event.target).value)" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'formatting.first_line_left_inset' | translate }}</mat-label>
+    <input matInput type="number" [value]="firstLineLeftInset ?? ''" (input)="onFirstLineLeftInsetChange($any($event.target).value)" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'formatting.last_line_right_inset' | translate }}</mat-label>
+    <input matInput type="number" [value]="lastLineRightInset ?? ''" (input)="onLastLineRightInsetChange($any($event.target).value)" />
+  </mat-form-field>
+
+  <!-- Warning for insets exceeding box width -->
+  <mat-hint class="warning" *ngIf="showInsetWarning">
+    <mat-icon>warning</mat-icon>
+    {{ 'formatting.inset_warning' | translate }}
+  </mat-hint>
+
+  <!-- Overflow Section -->
+  <h4 class="section-title">{{ 'formatting.overflow' | translate }}</h4>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ 'formatting.overflow' | translate }}</mat-label>
+    <mat-select [value]="overflow" (selectionChange)="onOverflowChange($event.value)">
+      <mat-option value="">— {{ 'common.none' | translate }} —</mat-option>
+      <mat-option *ngFor="let opt of overflowOptions" [value]="opt.value">
+        {{ opt.labelKey | translate }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+</div>

@@ -1,4 +1,7 @@
+import logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 # Font directory relative to project root
 FONT_DIR = Path(__file__).resolve().parent.parent.parent.parent / "assets" / "fonts"
@@ -9,6 +12,9 @@ FONTS = {
     "NotoSans-Regular": FONT_DIR / "NotoSans-Regular.ttf",
     "NotoSans-Bold": FONT_DIR / "NotoSans-Bold.ttf",
 }
+
+# Canonical family names that are bundled and embedded
+BUNDLED_FAMILIES = {"Noto Naskh Arabic", "Noto Sans"}
 
 
 def check_fonts() -> list[str]:
@@ -35,3 +41,28 @@ def generate_font_face_css() -> str:
                 f"}}"
             )
     return "\n".join(css_parts)
+
+
+def resolve_font_family(name: str | None) -> str:
+    """Resolve a requested font family to a bundled family or pass-through.
+
+    If *name* is None or empty, returns the default bundled family.
+    If *name* matches a bundled family exactly, returns it.
+    Otherwise returns the name as-is (WeasyPrint will use system fallback)
+    and logs a warning so the caller can surface a designer toast.
+    """
+    if not name:
+        return "Noto Naskh Arabic"
+
+    # Normalise common aliases
+    lower = name.strip().lower()
+    if lower in {"noto naskh arabic", "notonaskharabic", "naskh"}:
+        return "Noto Naskh Arabic"
+    if lower in {"noto sans", "notosans", "sans"}:
+        return "Noto Sans"
+
+    if name.strip() in BUNDLED_FAMILIES:
+        return name.strip()
+
+    logger.warning("font_family_not_bundled", extra={"requested_family": name})
+    return name.strip()

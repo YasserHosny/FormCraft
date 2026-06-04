@@ -19,6 +19,8 @@ Auto-generated from all feature plans. Last updated: 2026-05-26
 - Supabase PostgreSQL with versioned SQL migration in `formcraft-backend/migrations/041_granular_template_permissions.sql` (043-granular-template-permissions)
 - Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/Storage/RLS, existing OCR services (`AzureOCRClient`, `FieldClassifier`, `BoundingBoxConverter`), Angular Material, ngx-translate, RxJS (045-batch-ocr-onboarding)
 - Supabase PostgreSQL plus Storage; add OCR onboarding batch/item/detection/decision tables and links to existing templates/pages/elements/form_detections/audit_logs (045-batch-ocr-onboarding)
+- Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, WeasyPrint (057-overlay-control-font-insets)
+- Supabase PostgreSQL; no schema migration — extends existing `element.formatting` JSON dict with per-control font, line layout, and overflow policy (057-overlay-control-font-insets)
 
 - Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Storage + Auth), Angular Material (001-customer-feedback)
 
@@ -46,6 +48,7 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.12 (backend), TypeScript / Angular 19 (frontend): Follow standard conventions
 
 ## Recent Changes
+- 057-overlay-control-font-insets: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, WeasyPrint — per-control font styling, generic line insets, and overflow/fit policy for overlay printing
 - 043-granular-template-permissions: Added Python 3.12 backend; TypeScript / Angular 19 frontend remains unchanged for this increment + FastAPI, Pydantic, Supabase PostgreSQL/Auth/RLS/Storage, existing AuditLogger
 - 045-batch-ocr-onboarding: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/Storage/RLS, existing OCR services (`AzureOCRClient`, `FieldClassifier`, `BoundingBoxConverter`), Angular Material, ngx-translate, RxJS
 - 039-platform-admin-console: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, Pydantic, ng2-charts/Chart.js, APScheduler
