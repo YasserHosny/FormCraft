@@ -503,12 +503,14 @@ export class CanvasService implements OnDestroy {
 
   /**
    * Update element formatting data (used by property panels like tafqeet).
-   * Merges the patch into the existing formatting object and marks dirty.
+   * Merges the patch into the existing formatting object, re-renders the visual,
+   * and marks dirty.
    */
   updateElementFormatting(elementId: string, formatting: Record<string, unknown>): void {
     const el = this.elements.get(elementId);
     if (!el) return;
     el.data['formatting'] = { ...(el.data['formatting'] as Record<string, unknown> || {}), ...formatting };
+    this.updateElementVisual(el);
     this._dirty.next(true);
   }
 
@@ -679,6 +681,8 @@ export class CanvasService implements OnDestroy {
     const tafqeetDisplay = isTafqeet
       ? ((data['formatting'] as Record<string, unknown>)?.['_previewText'] as string) || label
       : label;
+    const fmt = data['formatting'] as Record<string, unknown> | undefined;
+    const font = fmt?.['font'] as Record<string, unknown> | undefined;
     const text = new Konva.Text({
       name: 'label',
       text: tafqeetDisplay,
@@ -686,9 +690,10 @@ export class CanvasService implements OnDestroy {
       height: h,
       align: 'center',
       verticalAlign: 'middle',
-      fontSize: 12,
-      fontFamily: 'Noto Naskh Arabic, Noto Sans, sans-serif',
-      fill: isTafqeet ? '#5d4037' : '#333',
+      fontSize: (font?.['size_pt'] as number) || 12,
+      fontFamily: (font?.['family'] as string) || 'Noto Naskh Arabic, Noto Sans, sans-serif',
+      fontStyle: `${(font?.['style'] as string) || 'normal'} ${(font?.['weight'] as string) || 'normal'}`,
+      fill: (font?.['color'] as string) || (isTafqeet ? '#5d4037' : '#333'),
       listening: false,
     });
     group.add(text);
@@ -819,6 +824,16 @@ export class CanvasService implements OnDestroy {
     if (text) {
       text.width(widthPx);
       text.height(heightPx);
+      const fmt = el.data['formatting'] as Record<string, unknown> | undefined;
+      const font = fmt?.['font'] as Record<string, unknown> | undefined;
+      if (font) {
+        if (font['size_pt']) text.fontSize(font['size_pt'] as number);
+        if (font['family']) text.fontFamily(font['family'] as string);
+        if (font['style'] || font['weight']) {
+          text.fontStyle(`${(font['style'] as string) || 'normal'} ${(font['weight'] as string) || 'normal'}`);
+        }
+        if (font['color']) text.fill(font['color'] as string);
+      }
     }
     group.x(mmToPx(el.data['x_mm'] as number, this.dpi, this._zoom.value) + this.pageOffsetPx);
     group.y(mmToPx(el.data['y_mm'] as number, this.dpi, this._zoom.value) + this.pageOffsetPx);
