@@ -95,6 +95,8 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private subs: Subscription[] = [];
   private elementCounter = 0;
   private lastSavedElementIds: string[] = [];
+  /** id -> serialized last-saved payload, so save() only PUTs elements that actually changed. */
+  private lastSavedElementData = new Map<string, string>();
   private saveSubject$ = new Subject<void>();
   private saveInProgress = false;
   private snapshotElementIds: string[] = [];
@@ -230,6 +232,12 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
           }
           // Initialize lastSavedElementIds with existing elements for deletion tracking
           this.lastSavedElementIds = (page?.elements || []).map((el: any) => el.id);
+          // Seed the per-element payload snapshot so the first save only PUTs
+          // elements the user actually edited (not the whole page).
+          this.lastSavedElementData.clear();
+          for (const { id, data } of this.canvasService.getElementsDataWithIds()) {
+            this.lastSavedElementData.set(id, this.serializeElementForSave(data));
+          }
           this.canvasService.markClean();
         },
       });
@@ -854,6 +862,28 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
 
+  /**
+   * Serializes the exact field set sent in an element update PUT, so save()
+   * can diff against the last-saved payload and skip elements that are
+   * unchanged. Must mirror the body built in the `updateCalls` map below.
+   */
+  private serializeElementForSave(data: Record<string, unknown>): string {
+    return JSON.stringify({
+      label_ar: data['label_ar'] ?? null,
+      label_en: data['label_en'] ?? null,
+      x_mm: data['x_mm'] ?? null,
+      y_mm: data['y_mm'] ?? null,
+      width_mm: data['width_mm'] ?? null,
+      height_mm: data['height_mm'] ?? null,
+      required: data['required'] ?? null,
+      direction: data['direction'] ?? null,
+      validation: data['validation'] ?? null,
+      formatting: data['formatting'] ?? null,
+      properties: data['properties'] ?? null,
+      custom_validators_ids: data['custom_validators_ids'] ?? [],
+    });
+  }
+
   save(): void {
     if (!this.pageId) return;
     if (!this.canEdit) return;
@@ -867,18 +897,22 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
     const elementsWithIds = this.canvasService.getElementsDataWithIds();
     const snapshotState = JSON.stringify(elementsWithIds);
     
-    const updates: Array<{ id: string; data: Record<string, unknown> }> = [];
-    const creates: Array<{ element: Record<string, unknown>; canvasId: string }> = [];
+    const updates: Array<{ id: string; data: Record<string, unknown>; serialized: string }> = [];
+    const creates: Array<{ element: Record<string, unknown>; canvasId: string; serialized: string }> = [];
     const deletions: string[] = [];
 
     // Process current elements using canvas element IDs
     for (const elementInfo of elementsWithIds) {
       const { id, data } = elementInfo;
       if (id && !(id as string).startsWith('elem_')) {
-        updates.push({ id: id as string, data });
+        // Only PUT elements whose payload actually changed since the last save.
+        const serialized = this.serializeElementForSave(data);
+        if (this.lastSavedElementData.get(id as string) !== serialized) {
+          updates.push({ id: id as string, data, serialized });
+        }
       } else {
         // Use actual canvas element ID for mapping
-        creates.push({ element: data, canvasId: id });
+        creates.push({ element: data, canvasId: id, serialized: this.serializeElementForSave(data) });
       }
     }
 
@@ -949,6 +983,21 @@ export class DesignerPageComponent implements OnInit, AfterViewInit, OnDestroy {
               idMappings.push({ oldId: result.canvasId, newId: result.response.id });
               this.canvasService.updateElementId(result.canvasId, result.response.id);
             }
+          });
+
+          // Refresh the per-element saved-payload cache so the next save only
+          // PUTs elements that actually changed again.
+          updates.forEach(({ id, serialized }) => {
+            this.lastSavedElementData.set(id, serialized);
+          });
+          creates.forEach(({ canvasId, serialized }) => {
+            const mapping = idMappings.find((m) => m.oldId === canvasId);
+            if (mapping) {
+              this.lastSavedElementData.set(mapping.newId, serialized);
+            }
+          });
+          deletions.forEach((id) => {
+            this.lastSavedElementData.delete(id);
           });
 
           // Update last saved element IDs with current state

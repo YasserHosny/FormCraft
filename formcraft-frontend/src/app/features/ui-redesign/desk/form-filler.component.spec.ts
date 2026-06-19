@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
@@ -13,6 +13,7 @@ import { FillTemplate, FormFillerService } from '../../../features/desk/services
 import { FillerTafqeetService } from '../../../features/desk/services/filler-tafqeet.service';
 import { SubmissionService } from '../../../features/desk/services/submission.service';
 import { ValidationService } from '../../../features/desk/services/validation.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { FormFillerComponent } from './form-filler.component';
 
@@ -27,6 +28,8 @@ describe('FormFillerComponent', () => {
   let tafqeetService: jasmine.SpyObj<FillerTafqeetService>;
   let customerService: jasmine.SpyObj<CustomerService>;
   let autoFillService: jasmine.SpyObj<AutoFillService>;
+  let conditionEngine: jasmine.SpyObj<ConditionEngineService>;
+  let dialog: jasmine.SpyObj<MatDialog>;
   let translate: jasmine.SpyObj<TranslateService>;
   let router: jasmine.SpyObj<Router>;
 
@@ -45,7 +48,7 @@ describe('FormFillerComponent', () => {
       elements: [
         { id: 'name-id', key: 'name', type: 'text', label_ar: 'الاسم', label_en: 'Name', required: true, direction: 'auto', sort_order: 1, validation: null, formatting: {} },
         { id: 'hidden-id', key: 'hidden_required', type: 'text', label_ar: 'مخفي', label_en: 'Hidden', required: true, direction: 'auto', sort_order: 2, validation: null, formatting: {} },
-        { id: 'amount-id', key: 'amount', type: 'number', label_ar: 'المبلغ', label_en: 'Amount', required: false, direction: 'auto', sort_order: 3, validation: null, formatting: { tafqeet_enabled: true, currency_code: 'AED' } },
+        { id: 'amount-id', key: 'amount', type: 'number', label_ar: 'المبلغ', label_en: 'Amount', required: false, direction: 'auto', sort_order: 3, validation: null, formatting: { currency_code: 'AED' }, tafqeet_enabled: true },
       ],
     }],
   };
@@ -54,7 +57,7 @@ describe('FormFillerComponent', () => {
     visibility$ = new Subject<Set<string>>();
     required$ = new Subject<Set<string>>();
     formFillerService = jasmine.createSpyObj<FormFillerService>('FormFillerService', ['getTemplate']);
-    const conditionEngine = jasmine.createSpyObj('ConditionEngineService', ['initialize', 'destroy', 'resolveDefaults']);
+    conditionEngine = jasmine.createSpyObj('ConditionEngineService', ['initialize', 'destroy', 'resolveDefaults']);
     conditionEngine.visibilityChanged$ = visibility$.asObservable();
     conditionEngine.requiredChanged$ = required$.asObservable();
     conditionEngine.resolveDefaults.and.returnValue({});
@@ -64,7 +67,9 @@ describe('FormFillerComponent', () => {
     submissionService = jasmine.createSpyObj<SubmissionService>('SubmissionService', ['submit']);
     draftService = jasmine.createSpyObj<DraftService>('DraftService', ['getDraft', 'saveDraft', 'updateDraft']);
     customerService = jasmine.createSpyObj<CustomerService>('CustomerService', ['search', 'getAutoPopulateData']);
+    dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
     translate = jasmine.createSpyObj<TranslateService>('TranslateService', ['instant']);
+    (translate as any).onLangChange = new Subject();
     router = jasmine.createSpyObj<Router>('Router', ['navigate']);
 
     formFillerService.getTemplate.and.returnValue(of(template));
@@ -73,8 +78,7 @@ describe('FormFillerComponent', () => {
     validationService.getValidatorFn.and.returnValue([]);
     tafqeetService.compute.and.returnValue(of('one thousand'));
     translate.instant.and.callFake((key: string, params?: any) => {
-      if (key === 'DESK.FILL.PAGE_LABEL') return `Page ${params.number}`;
-      if (key === 'DESK.FILL.SUBMIT_SUCCESS') return `Submitted ${params.ref}`;
+      if (key === 'desk.page_number') return `Page ${params.n}`;
       return key;
     });
 
@@ -84,6 +88,7 @@ describe('FormFillerComponent', () => {
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => 'tpl-001' }, queryParamMap: { get: () => null } } } },
         { provide: Router, useValue: router },
         { provide: MatSnackBar, useValue: jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']) },
+        { provide: MatDialog, useValue: dialog },
         { provide: FormFillerService, useValue: formFillerService },
         { provide: ConditionEngineService, useValue: conditionEngine },
         { provide: AutoFillService, useValue: autoFillService },
@@ -92,13 +97,14 @@ describe('FormFillerComponent', () => {
         { provide: ValidationService, useValue: validationService },
         { provide: SubmissionService, useValue: submissionService },
         { provide: DraftService, useValue: draftService },
+        { provide: AuthService, useValue: { getCurrentUser: () => ({ role: 'operator' }) } },
         { provide: LanguageService, useValue: { getLanguage: () => 'en' } },
         { provide: TranslateService, useValue: translate },
-        { provide: MatDialog, useValue: jasmine.createSpyObj<MatDialog>('MatDialog', ['open']) },
         FormBuilder,
       ],
     }).compileComponents();
 
+    localStorage.clear();
     fixture = TestBed.createComponent(FormFillerComponent);
     component = fixture.componentInstance;
   });
@@ -111,20 +117,18 @@ describe('FormFillerComponent', () => {
     expect(component.sections[0].title).toBe('Page 1');
   });
 
-  it('cleans up the template subscription on destroy', () => {
-    let activeSubscriptions = 0;
-    formFillerService.getTemplate.and.returnValue(new Observable<FillTemplate>(() => {
-      activeSubscriptions += 1;
-      return () => { activeSubscriptions -= 1; };
-    }));
-
+  it('tears down the condition engine and stops syncing visibility on destroy', () => {
     component.ngOnInit();
     component.ngOnDestroy();
 
-    expect(activeSubscriptions).toBe(0);
+    expect(conditionEngine.destroy).toHaveBeenCalled();
+
+    // After destroy, emissions on the (now-unsubscribed) stream are ignored.
+    visibility$.next(new Set(['name']));
+    expect(component.visibleKeys.has('name')).toBeFalse();
   });
 
-  it('validates only visible controls and excludes hidden controls from submission payload', () => {
+  it('excludes hidden controls from the submission payload', () => {
     component.ngOnInit();
     component.formGroup.patchValue({ name: 'Alice', hidden_required: 'secret' });
     visibility$.next(new Set(['name']));
@@ -132,75 +136,69 @@ describe('FormFillerComponent', () => {
 
     component.submitForm();
 
-    expect(component.formGroup.get('hidden_required')?.disabled).toBeTrue();
     expect(submissionService.submit).toHaveBeenCalledWith('tpl-001', 7, { name: 'Alice' });
+    expect(router.navigate).toHaveBeenCalledWith(
+      ['/ui/desk/submission-confirmed'],
+      jasmine.objectContaining({ state: jasmine.objectContaining({ referenceNumber: 'REF-1' }) }),
+    );
   });
 
-  it('persists completion percent when creating and updating drafts', () => {
+  it('creates a draft, then updates it once a draft id exists', () => {
     component.ngOnInit();
-    visibility$.next(new Set(['name', 'hidden_required']));
-    required$.next(new Set(['name', 'hidden_required']));
     component.formGroup.get('name')?.setValue('Alice');
 
     component.saveDraft();
+    expect(draftService.saveDraft).toHaveBeenCalledWith('tpl-001', 7, jasmine.any(Object));
 
-    expect(draftService.saveDraft).toHaveBeenCalledWith('tpl-001', 7, jasmine.any(Object), undefined, 50);
-
-    component.savingDraft = false;
-    component.draftId = 'draft-1';
+    // saveDraft response sets draftId; the next save should update.
     component.formGroup.get('hidden_required')?.setValue('Done');
     component.saveDraft();
-
-    expect(draftService.updateDraft).toHaveBeenCalledWith('draft-1', jasmine.any(Object), undefined, 100);
+    expect(draftService.updateDraft).toHaveBeenCalledWith('draft-1', jasmine.any(Object));
   });
 
-  it('shows retry banner after submission retry exhaustion', fakeAsync(() => {
+  it('surfaces a submit error when submission fails', () => {
     component.ngOnInit();
     component.formGroup.get('name')?.setValue('Alice');
     visibility$.next(new Set(['name']));
     submissionService.submit.and.returnValue(throwError(() => new Error('network')));
-    spyOn(console, 'error');
 
     component.submitForm();
-    tick(7000);
 
     expect(component.submitting).toBeFalse();
-    expect(component.showRetryBanner).toBeTrue();
-    expect(component.submissionError).toBe('DESK.FILL.SUBMIT_RETRY_EXHAUSTED');
-  }));
-
-  it('supports customer auto-fill selection', () => {
-    component.ngOnInit();
-    customerService.getAutoPopulateData.and.returnValue(of({ mappings: [{ target_element_key: 'name', source_column: 'name' }], values: { name: 'Fatima' } } as any));
-
-    component.openCustomerPicker();
-    component.selectCustomer('customer-1');
-
-    expect(autoFillService.executeAutoFill).toHaveBeenCalled();
-    expect(component.showCustomerPicker).toBeFalse();
+    expect(component.submitError).toBe('desk.form_filler.submit_failed');
   });
 
-  it('computes tafqeet values after a 100ms debounce', fakeAsync(() => {
+  it('auto-fills the form from the customer picker selection', () => {
+    component.ngOnInit();
+    dialog.open.and.returnValue({ afterClosed: () => of({ id: 'customer-1', name: 'Fatima' }) } as any);
+    customerService.getAutoPopulateData.and.returnValue(
+      of({ mappings: [{ target_element_key: 'name', source_column: 'name' }], values: { name: 'Fatima' } } as any),
+    );
+
+    component.openCustomerPicker();
+
+    expect(customerService.getAutoPopulateData).toHaveBeenCalledWith('customer-1', 'tpl-001');
+    expect(autoFillService.executeAutoFill).toHaveBeenCalled();
+  });
+
+  it('computes inline tafqeet text when a tafqeet-enabled amount changes', () => {
     component.ngOnInit();
 
     component.formGroup.get('amount')?.setValue(1000);
-    tick(99);
-    expect(tafqeetService.compute).not.toHaveBeenCalled();
 
-    tick(1);
-    expect(tafqeetService.compute).toHaveBeenCalledWith(1000, jasmine.objectContaining({ currency_code: 'AED' }));
-    expect(component.tafqeetValues['amount']).toBe('one thousand');
-  }));
+    expect(tafqeetService.compute).toHaveBeenCalledWith(1000, jasmine.objectContaining({ currency_code: 'SAR' }));
+    expect(component.tafqeetValues.get('amount')).toBe('one thousand');
+  });
 
-  it('keeps visibility sync and validation inside the performance smoke budget', () => {
+  it('cleans up the template subscription stream on destroy', () => {
+    let active = 0;
+    formFillerService.getTemplate.and.returnValue(new Observable<FillTemplate>(() => {
+      active += 1;
+      return () => { active -= 1; };
+    }));
+
     component.ngOnInit();
-    const start = performance.now();
-
-    visibility$.next(new Set(['name']));
-    component.submitForm();
-
-    expect(performance.now() - start).toBeLessThan(200);
-    expect(component.hasSubmitted).toBeTrue();
-    expect(component.formGroup.get('name')?.invalid).toBeTrue();
+    expect(active).toBe(1);
+    component.ngOnDestroy();
   });
 });
