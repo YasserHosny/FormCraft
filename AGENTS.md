@@ -1,6 +1,6 @@
 # FormCraft Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-05-26
+Auto-generated from all feature plans. Last updated: 2026-06-19
 
 ## Active Technologies
 - Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Auth), Angular Material, WeasyPrint (PDF export), ng2-charts / Chart.js (frontend charting) (027-analytics-reporting)
@@ -21,6 +21,8 @@ Auto-generated from all feature plans. Last updated: 2026-05-26
 - Supabase PostgreSQL plus Storage; add OCR onboarding batch/item/detection/decision tables and links to existing templates/pages/elements/form_detections/audit_logs (045-batch-ocr-onboarding)
 - Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, WeasyPrint (057-overlay-control-font-insets)
 - Supabase PostgreSQL; no schema migration — extends existing `element.formatting` JSON dict with per-control font, line layout, and overflow policy (057-overlay-control-font-insets)
+- Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, existing audit/organization/platform/marketplace/OCR services, external PayGateway service (058-paygateway-billing)
+- Supabase PostgreSQL with versioned migration for billing prices, purchase intents, fulfillment effects, refunds, and marketplace revenue splits; RLS policies isolate organization purchase records (058-paygateway-billing)
 
 - Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Storage + Auth), Angular Material (001-customer-feedback)
 
@@ -48,6 +50,7 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.12 (backend), TypeScript / Angular 19 (frontend): Follow standard conventions
 
 ## Recent Changes
+- 058-paygateway-billing: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, existing audit/organization/platform/marketplace/OCR services, external PayGateway service
 - 057-overlay-control-font-insets: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, WeasyPrint — per-control font styling, generic line insets, and overflow/fit policy for overlay printing
 - 043-granular-template-permissions: Added Python 3.12 backend; TypeScript / Angular 19 frontend remains unchanged for this increment + FastAPI, Pydantic, Supabase PostgreSQL/Auth/RLS/Storage, existing AuditLogger
 - 045-batch-ocr-onboarding: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Pydantic, Supabase PostgreSQL/Auth/Storage/RLS, existing OCR services (`AzureOCRClient`, `FieldClassifier`, `BoundingBoxConverter`), Angular Material, ngx-translate, RxJS

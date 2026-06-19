@@ -1,5 +1,6 @@
 /formcraft-frontend/node_modules
 /formcraft-frontend/dist
+/formcraft-frontend/build
 /formcraft-frontend/.angular
 /formcraft-backend/.venv
 /formcraft-backend/__pycache__
@@ -17,6 +18,7 @@
 **/Thumbs.db
 **/*.tmp
 **/*.swp
+build/
 .vscode/
 .idea/
 

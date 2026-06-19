@@ -1,0 +1,27 @@
+<section class="billing-page">
+  <header>
+    <h1>{{ 'billing.title' | translate }}</h1>
+    <p>{{ 'billing.subtitle' | translate }}</p>
+  </header>
+
+  <mat-spinner *ngIf="loading" diameter="36"></mat-spinner>
+
+  <div class="tier-grid" *ngIf="options">
+    <mat-card *ngFor="let tier of options.tiers">
+      <mat-card-header>
+        <mat-card-title>{{ ('billing.tiers.' + tier.tier) | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p *ngIf="tier.available">{{ tier.amount_minor | number }} {{ tier.currency }}</p>
+        <p *ngIf="!tier.available">{{ (tier.unavailable_reason_key || 'billing.priceUnavailable') | translate }}</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" [disabled]="!tier.available" (click)="buyTier(tier.tier)">
+          {{ 'billing.checkout.buy' | translate }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <fc-purchase-history></fc-purchase-history>
+</section>

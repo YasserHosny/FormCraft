@@ -1,0 +1,10 @@
+<section class="purchase-history">
+  <h2>{{ 'billing.history.title' | translate }}</h2>
+  <mat-spinner *ngIf="loading" diameter="28"></mat-spinner>
+  <mat-list *ngIf="!loading">
+    <mat-list-item *ngFor="let purchase of purchases">
+      <span matListItemTitle>{{ ('billing.purpose.' + purchase.purpose) | translate }}</span>
+      <span matListItemLine>{{ purchase.status }} · {{ purchase.amount_minor | number }} {{ purchase.currency }}</span>
+    </mat-list-item>
+  </mat-list>
+</section>

@@ -1,0 +1,20 @@
+.billing-page {
+  display: block;
+  padding: 24px;
+}
+
+.billing-page header {
+  margin-bottom: 24px;
+}
+
+.billing-page h1 {
+  font-size: 28px;
+  margin: 0 0 8px;
+}
+
+.tier-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 24px;
+}

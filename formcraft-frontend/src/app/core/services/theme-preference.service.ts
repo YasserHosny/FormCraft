@@ -75,6 +75,16 @@ const ROUTE_MAPPINGS: RouteMapping[] = [
     fallbackNew: '/ui/admin/analytics',
   },
   {
+    classicPattern: /^\/billing/,
+    newPattern: /^\/ui\/admin\/billing/,
+    classicTemplate: '/billing',
+    newTemplate: '/ui/admin/billing',
+    params: [],
+    productionReady: true,
+    fallbackClassic: '/billing',
+    fallbackNew: '/ui/admin/billing',
+  },
+  {
     classicPattern: /^\/desk\/customers$/,
     newPattern: /^\/ui\/desk\/customers$/,
     classicTemplate: '/desk/customers',

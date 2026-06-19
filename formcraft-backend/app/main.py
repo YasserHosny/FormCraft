@@ -53,6 +53,7 @@ from app.api.routes import (
     digital_signatures,
     custom_validators,
     connector_framework,
+    billing,
 )
 
 logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO))
@@ -134,6 +135,9 @@ def create_app() -> FastAPI:
     app.include_router(custom_validators.designer_router, prefix="/api")
     # Feature 049: Connector Framework (Phase 1)
     app.include_router(connector_framework.router, prefix="/api/admin")
+    # Feature 058: PayGateway billing
+    app.include_router(billing.router, prefix="/api")
+    app.include_router(billing.platform_router, prefix="/api")
 
     # Global handler for Supabase/PostgREST errors (missing tables/columns
     # from unapplied migrations) — returns a clear 503 instead of 500.
