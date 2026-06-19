@@ -33,6 +33,7 @@ const ALL_TABS: ModeTab[] = [
   { key: 'adminExport',  icon: 'file_download',        labelKey: 'nav.adminExport',  route: '/ui/admin/export',       roles: ['admin'] },
   { key: 'portal',       icon: 'public',               labelKey: 'nav.portal',       route: '/ui/admin/portal',       roles: ['admin'] },
   { key: 'integrations', icon: 'hub',                  labelKey: 'nav.integrations', route: '/ui/admin/integrations', roles: ['admin'] },
+  { key: 'billing',      icon: 'credit_card',          labelKey: 'billing.title',    route: '/ui/admin/billing',      roles: ['admin'] },
   { key: 'platform',     icon: 'cloud',                labelKey: 'nav.platform',     route: '/ui/admin/platform',     roles: ['admin'], requiresPlatformAdmin: true },
 ];
 

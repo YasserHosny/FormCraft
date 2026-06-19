@@ -1,0 +1,13 @@
+.provider-mount {
+  align-items: center;
+  border: 1px dashed rgba(0, 0, 0, 0.24);
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  min-height: 96px;
+  padding: 16px;
+}
+
+.error {
+  color: #b00020;
+}

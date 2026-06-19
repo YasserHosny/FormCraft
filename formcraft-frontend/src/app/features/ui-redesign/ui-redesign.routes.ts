@@ -177,6 +177,13 @@ export const UI_REDESIGN_ROUTES: Routes = [
         component: SparkFeatureBridgeComponent,
       },
       {
+        path: 'admin/billing',
+        canActivate: [RoleGuard],
+        data: { roles: ['admin'], featureName: 'billing.title', featureIcon: 'credit_card', classicRoute: '/billing' },
+        loadChildren: () =>
+          import('../billing/billing.module').then(m => m.BillingModule),
+      },
+      {
         path: 'admin/platform',
         canActivate: [RoleGuard],
         data: { roles: ['admin'], featureName: 'nav.platform', featureIcon: 'cloud', classicRoute: '/platform' },

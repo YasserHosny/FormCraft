@@ -32,6 +32,13 @@ class Settings(BaseSettings):
     # SSO / MFA
     SSO_ENCRYPTION_KEY: str = ""
 
+    # PayGateway billing (F058)
+    PAYGATEWAY_BASE_URL: str = ""
+    PAYGATEWAY_SERVICE_KEY: str = ""
+    PAYGATEWAY_WEBHOOK_SECRET: str = ""
+    PAYGATEWAY_TIMEOUT_SECONDS: float = 10.0
+    PAYGATEWAY_MODE: str = "test"
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]

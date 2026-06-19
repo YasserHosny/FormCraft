@@ -54,6 +54,50 @@
     "date": "Date",
     "name": "Name"
   },
+  "billing": {
+    "title": "Billing",
+    "subtitle": "Upgrade your subscription or buy add-ons securely.",
+    "priceUnavailable": "This option is unavailable in your organization currency.",
+    "tiers": {
+      "starter": "Starter",
+      "professional": "Professional",
+      "enterprise": "Enterprise",
+      "platform": "Platform"
+    },
+    "purpose": {
+      "subscription_tier": "Subscription tier",
+      "seats": "Operator seats",
+      "ocr_batch": "OCR scan credits",
+      "marketplace_template": "Marketplace template"
+    },
+    "checkout": {
+      "title": "Secure checkout",
+      "buy": "Buy",
+      "pay": "Pay",
+      "secureInput": "Card details are collected only by PayGateway.",
+      "ready": "Ready to create a secure payment session.",
+      "tokenReady": "Secure payment session created."
+    },
+    "history": {
+      "title": "Purchase history"
+    },
+    "platform": {
+      "startTierPurchase": "Start tier purchase"
+    },
+    "purchase": {
+      "fulfilled": "Purchase completed."
+    },
+    "payment": {
+      "requires_action": "Additional bank authentication is required.",
+      "failed": "Payment failed.",
+      "declined": "The card was declined."
+    },
+    "provider_unavailable": "Payment provider is unavailable. Try again shortly.",
+    "provider_rate_limited": "Payment provider is busy. Try again shortly.",
+    "provider_error": "Payment provider error.",
+    "price_unavailable": "Price is unavailable.",
+    "org_admin_required": "Organization admin access is required."
+  },
   "adminExport": {
     "title": "Data Export",
     "schedulesTitle": "Recurring Export Schedules",

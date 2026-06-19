@@ -48,6 +48,15 @@ const routes: Routes = [
     data: { roles: ['admin'] },
   },
   {
+    path: 'billing',
+    loadChildren: () =>
+      import('./features/billing/billing.module').then(
+        (m) => m.BillingModule
+      ),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['admin'] },
+  },
+  {
     path: 'designer',
     loadChildren: () =>
       import('./features/designer/designer.module').then(

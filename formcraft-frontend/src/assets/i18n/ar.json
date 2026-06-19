@@ -54,6 +54,50 @@
     "date": "التاريخ",
     "name": "الاسم"
   },
+  "billing": {
+    "title": "الفوترة",
+    "subtitle": "رقّ اشتراكك أو اشتر الإضافات بأمان.",
+    "priceUnavailable": "هذا الخيار غير متاح بعملة مؤسستك.",
+    "tiers": {
+      "starter": "المبتدئ",
+      "professional": "الاحترافي",
+      "enterprise": "المؤسسي",
+      "platform": "المنصة"
+    },
+    "purpose": {
+      "subscription_tier": "باقة الاشتراك",
+      "seats": "مقاعد المشغلين",
+      "ocr_batch": "رصيد مسح OCR",
+      "marketplace_template": "قالب من السوق"
+    },
+    "checkout": {
+      "title": "دفع آمن",
+      "buy": "شراء",
+      "pay": "ادفع",
+      "secureInput": "يتم إدخال بيانات البطاقة عبر PayGateway فقط.",
+      "ready": "جاهز لإنشاء جلسة دفع آمنة.",
+      "tokenReady": "تم إنشاء جلسة الدفع الآمنة."
+    },
+    "history": {
+      "title": "سجل المشتريات"
+    },
+    "platform": {
+      "startTierPurchase": "بدء شراء الباقة"
+    },
+    "purchase": {
+      "fulfilled": "اكتملت عملية الشراء."
+    },
+    "payment": {
+      "requires_action": "مطلوب تحقق إضافي من البنك.",
+      "failed": "فشلت عملية الدفع.",
+      "declined": "تم رفض البطاقة."
+    },
+    "provider_unavailable": "مزود الدفع غير متاح. حاول لاحقاً.",
+    "provider_rate_limited": "مزود الدفع مشغول. حاول لاحقاً.",
+    "provider_error": "حدث خطأ لدى مزود الدفع.",
+    "price_unavailable": "السعر غير متاح.",
+    "org_admin_required": "يلزم حساب مسؤول المؤسسة."
+  },
   "adminExport": {
     "title": "تصدير البيانات",
     "schedulesTitle": "جداول التصدير المتكررة",

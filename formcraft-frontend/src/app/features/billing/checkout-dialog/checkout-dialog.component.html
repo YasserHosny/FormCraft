@@ -1,0 +1,16 @@
+<h2 mat-dialog-title>{{ 'billing.checkout.title' | translate }}</h2>
+<mat-dialog-content>
+  <p>{{ 'billing.checkout.secureInput' | translate }}</p>
+  <div class="provider-mount" aria-live="polite">
+    <mat-spinner *ngIf="loading" diameter="28"></mat-spinner>
+    <span *ngIf="!loading && !result">{{ 'billing.checkout.ready' | translate }}</span>
+    <span *ngIf="result?.checkout">{{ 'billing.checkout.tokenReady' | translate }}</span>
+  </div>
+  <p class="error" *ngIf="errorKey">{{ errorKey | translate }}</p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">{{ 'common.cancel' | translate }}</button>
+  <button mat-raised-button color="primary" [disabled]="loading" (click)="start()">
+    {{ 'billing.checkout.pay' | translate }}
+  </button>
+</mat-dialog-actions>
