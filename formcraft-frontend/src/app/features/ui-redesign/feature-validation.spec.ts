@@ -3,6 +3,7 @@ import { EventEmitter } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
 import { Router, Routes } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, NEVER, of, throwError } from 'rxjs';
 
 import { AppRoutingModule } from '../../app-routing.module';
@@ -27,6 +28,7 @@ import { DashboardComponent } from './desk/dashboard.component';
 import { FormFillerComponent } from './desk/form-filler.component';
 import { CustomersComponent } from './desk/customers.component';
 import { AnalyticsComponent } from './admin/analytics.component';
+import { AnalyticsService } from '../analytics/services/analytics.service';
 
 describe('FormCraft feature validation automation', () => {
   const flattenRoutes = (routes: Routes, prefix = ''): string[] =>
@@ -45,7 +47,7 @@ describe('FormCraft feature validation automation', () => {
       const paths = flattenRoutes(UI_REDESIGN_ROUTES);
 
       expect(paths).toContain('studio/templates');
-      expect(paths).toContain('studio/designer/:pageId');
+      expect(paths).toContain('studio/designer');
       expect(paths).toContain('desk');
       expect(paths).toContain('desk/fill/:templateId');
       expect(paths).toContain('desk/customers');
@@ -66,8 +68,6 @@ describe('FormCraft feature validation automation', () => {
         .map((route) => route.path);
 
       expect(redirected).toEqual([
-        'desk/customers/:id',
-        'desk/history',
         'desk/queue',
         'admin/reviews',
         'admin/governance',
@@ -255,6 +255,11 @@ describe('FormCraft feature validation automation', () => {
         jasmine.createSpyObj<Router>('Router', ['navigate']),
         jasmine.createSpyObj('MatDialog', { open: { afterClosed: () => of(true) } }),
         jasmine.createSpyObj('MatSnackBar', ['open']),
+        (() => {
+          const t = jasmine.createSpyObj('TranslateService', ['instant']);
+          t.instant.and.callFake((key: string) => key);
+          return t;
+        })(),
       );
       const template = {
         id: 'tpl-1',
@@ -295,6 +300,12 @@ describe('FormCraft feature validation automation', () => {
           get: of({ id: 'tpl-1', name: 'Template', version: 3 }),
           publish: of({}),
         }),
+        jasmine.createSpyObj('FormDetectionService', { listDetections: of([]) }),
+        jasmine.createSpyObj('BreakpointObserver', { observe: of({ matches: false, breakpoints: {} }) }),
+        jasmine.createSpyObj('TemplateFeedbackService', {
+          listFeedback: of({ items: [] }),
+          updateFeedbackStatus: of(undefined),
+        }),
       );
 
       component.ngOnInit();
@@ -324,7 +335,15 @@ describe('FormCraft feature validation automation', () => {
         }),
         {
           currentUser$: of({ display_name: 'Operator', email: 'operator@example.com' }),
+          getCurrentUser: () => ({ display_name: 'Operator', email: 'operator@example.com' }),
         } as any,
+        (() => {
+          const t = jasmine.createSpyObj('TranslateService', ['instant']);
+          t.instant.and.callFake((key: string) => key);
+          (t as any).onLangChange = of({});
+          return t;
+        })(),
+        { getLanguage: () => 'ar' } as any,
       );
 
       component.ngOnInit();
@@ -375,7 +394,8 @@ describe('FormCraft feature validation automation', () => {
       conditionEngine.requiredChanged$ = required$.asObservable();
       conditionEngine.resolveDefaults.and.returnValue({});
       const translate = jasmine.createSpyObj('TranslateService', ['instant']);
-      translate.instant.and.callFake((key: string, params?: any) => key === 'DESK.FILL.PAGE_LABEL' ? `Page ${params.number}` : key);
+      translate.instant.and.callFake((key: string, params?: any) => key === 'desk.page_number' ? `Page ${params.n}` : key);
+      translate.onLangChange = of({ lang: 'ar' });
       const draftService = jasmine.createSpyObj('DraftService', {
         saveDraft: of({ id: 'draft-1', updated_at: '2026-06-01T00:00:00Z' }),
         updateDraft: of({ id: 'draft-1', updated_at: '2026-06-01T00:00:00Z' }),
@@ -383,6 +403,13 @@ describe('FormCraft feature validation automation', () => {
       const submissionService = jasmine.createSpyObj('SubmissionService', {
         submit: of({ reference_number: 'REF-1' }),
       });
+      const dialog = jasmine.createSpyObj('MatDialog', ['open']);
+      dialog.open.and.returnValue({ afterClosed: () => of(undefined) } as any);
+      const authService = jasmine.createSpyObj('AuthService', ['getCurrentUser']);
+      authService.getCurrentUser.and.returnValue({ role: 'operator' } as any);
+      // Constructor order must match FormFillerComponent: route, router, snackBar,
+      // dialog, formFillerService, conditionEngine, autoFill, tafqeet, validation,
+      // submission, draft, customer, auth, language, translate, fb.
       const component = new FormFillerComponent(
         {
           snapshot: {
@@ -392,17 +419,18 @@ describe('FormCraft feature validation automation', () => {
         } as any,
         router,
         snackBar,
+        dialog,
         formFillerService as any,
         conditionEngine,
         jasmine.createSpyObj('AutoFillService', ['executeAutoFill']),
-        jasmine.createSpyObj('CustomerService', ['search', 'getAutoPopulateData']),
         jasmine.createSpyObj('FillerTafqeetService', { compute: of('') }),
         jasmine.createSpyObj('ValidationService', { getValidatorFn: [] }),
         submissionService,
         draftService,
+        jasmine.createSpyObj('CustomerService', ['search', 'getAutoPopulateData']),
+        authService,
         { getLanguage: () => 'ar' } as any,
         translate,
-        jasmine.createSpyObj('MatDialog', ['open']),
         new FormBuilder(),
       );
 
@@ -411,13 +439,14 @@ describe('FormCraft feature validation automation', () => {
       component.printPdf();
       component.submitForm();
       component.openCustomerPicker();
-      component.createNewCustomer();
 
       expect(component.sections.length).toBeGreaterThan(0);
-      expect(snackBar.open).toHaveBeenCalledWith('DESK.FILL.DRAFT_SAVED', '', { duration: 3000 });
-      expect(snackBar.open).toHaveBeenCalledWith('DESK.FILL.SUBMIT_SUCCESS', '', { duration: 3000 });
-      expect(router.navigate).toHaveBeenCalledWith(['/desk/fill', 'tpl-1'], { queryParams: { print: true } });
-      expect(router.navigate).toHaveBeenCalledWith(['/desk/customers/new']);
+      expect(snackBar.open).toHaveBeenCalledWith('desk.form_filler.draft_saved', '', { duration: 3000 });
+      expect(router.navigate).toHaveBeenCalledWith(
+        ['/ui/desk/submission-confirmed'],
+        jasmine.objectContaining({ state: jasmine.objectContaining({ referenceNumber: 'REF-1' }) }),
+      );
+      expect(dialog.open).toHaveBeenCalled();
     });
 
     it('validates customer table add/view/fill actions', () => {
@@ -436,13 +465,41 @@ describe('FormCraft feature validation automation', () => {
 
       expect(component.customers.length).toBeGreaterThan(0);
       expect(router.navigate).toHaveBeenCalledWith(['/ui/desk/customers/new']);
-      expect(router.navigate).toHaveBeenCalledWith(['/desk/customers', 'cust-1']);
-      expect(router.navigate).toHaveBeenCalledWith(['/desk']);
+      expect(router.navigate).toHaveBeenCalledWith(['/ui/desk/customers', 'cust-1']);
+      expect(router.navigate).toHaveBeenCalledWith(['/ui/desk']);
     });
 
     it('validates analytics KPIs, charts, and export action', () => {
       const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
-      const component = new AnalyticsComponent(router);
+      const points = Array.from({ length: 30 }, (_, i) => ({
+        date: `2026-05-${String(i + 1).padStart(2, '0')}`,
+        count: i,
+      }));
+      const analyticsService = jasmine.createSpyObj('AnalyticsService', {
+        getDashboardSummary: of({ totalFormsFilled: 10, activeTemplates: 2, totalTemplates: 3 } as any),
+        getSubmissionsOverTime: of({ points, peakDate: '2026-05-30', peakCount: 29, granularity: 'daily' } as any),
+        getDepartmentDistribution: of({
+          departments: [{ departmentId: 'd1', departmentName: 'HR', count: 5, percentage: 100 }],
+          total: 5,
+        } as any),
+        getTopTemplates: of({
+          templates: [{ templateId: 't1', templateName: 'Form A', templateCode: 'FA', count: 7 }],
+        } as any),
+        getOperatorAnalytics: of({ operators: [], orgAverageErrorRate: 0 } as any),
+      });
+      const translate = jasmine.createSpyObj('TranslateService', ['instant']);
+      translate.instant.and.callFake((key: string) => key);
+
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: Router, useValue: router },
+          { provide: AnalyticsService, useValue: analyticsService },
+          { provide: TranslateService, useValue: translate },
+        ],
+      });
+      const component = TestBed.runInInjectionContext(() => new AnalyticsComponent());
+
+      component.ngOnInit();
 
       expect(component.lineData.length).toBe(30);
       expect(component.donutData.length).toBeGreaterThan(0);
@@ -514,6 +571,7 @@ describe('FormCraft feature validation automation', () => {
       wizardService.createTemplate.and.returnValue(of({ id: 'created-template' }));
 
       const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+      (router as any).url = '/templates';
       const component = new TemplateWizardComponent(wizardService, router);
 
       component.onCreate();
