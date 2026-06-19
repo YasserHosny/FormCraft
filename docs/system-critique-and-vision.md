@@ -1,7 +1,7 @@
 # FormCraft — Critical Analysis & Strategic Vision
 
 > Complete system analysis, business value assessment, and full-platform vision.
-> Date: 2026-05-15 | Last updated: 2026-06-01
+> Date: 2026-05-15 | Last updated: 2026-06-19
 
 ---
 
@@ -29,7 +29,7 @@ FormCraft is an **enterprise Arabic-first form designer and print studio** targe
 
 **Architecture**: Angular 19 frontend + FastAPI backend + Supabase (PostgreSQL, Auth, Storage) + AWS Bedrock (AI) + Azure Document Intelligence (OCR) + WeasyPrint (PDF). Hosted on Bunny Magic Containers.
 
-**Current scope**: 53 feature spec directories (001–053) spanning the full platform lifecycle. Of the original 26 features (001–026), 22 are fully working, 1 partial (F09 — performance caching), and 2 awaiting external credentials (F05 — AWS Bedrock AI, F26 — Azure OCR). Specs 027–053 cover: analytics-reporting, approval-workflow, notification-center, customer-profiles, template-governance, data-export-integration, operational-reports, external-form-portal, template-marketplace, batch-operations, desk-search-quickfill, template-creation-wizard, platform-admin-console, enhanced-analytics, UI-redesign-prototype (041), enterprise-SSO-MFA (042), granular-template-permissions (043), data-retention-archival (044), batch-OCR-onboarding (045), digital-signatures (046), mobile-offline-desk (047), custom-locale-validators (048), connector-framework (049), new-theme-desk-data (050), responsive-themes-mobile (051), and cross-theme form filler (052–053). Specs 041/050/052–053 have frontend code in production (new theme routes live).
+**Current scope**: 58 feature spec directories (001–058) spanning the full platform lifecycle. Of the original 26 features (001–026), 22 are fully working, 1 partial (F09 — performance caching), and 2 awaiting external credentials (F05 — AWS Bedrock AI, F26 — Azure OCR). Specs 027–058 cover: analytics-reporting, approval-workflow, notification-center, customer-profiles, template-governance, data-export-integration, operational-reports, external-form-portal, template-marketplace, batch-operations, desk-search-quickfill, template-creation-wizard, platform-admin-console, enhanced-analytics, UI-redesign-prototype (041), enterprise-SSO-MFA (042), granular-template-permissions (043), data-retention-archival (044), batch-OCR-onboarding (045), digital-signatures (046), mobile-offline-desk (047), custom-locale-validators (048), connector-framework (049), new-theme-desk-data (050), responsive-themes-mobile (051), cross-theme form filler (052–053), analytics-real-data (054), spark3-missing-pages (055), spark-add-customer (056), overlay-control-font-insets (057), and paygateway-billing (058). Specs 041/050/052–053 have frontend code in production (new theme routes live); 058 is in draft/spec phase.
 
 ---
 
@@ -137,7 +137,7 @@ F26 significantly elevates OCR from a toolbar button to a first-class feature:
 | ~~Reference data / lookups~~ | ✅ DONE | F24: Reference lists with schema, entries, org-scoped |
 | ~~Notifications~~ | ✅ DONE | F14: Notification endpoint working (`/notifications` — 200) |
 | ~~White-labeling~~ | ✅ PARTIAL | F25: Custom domain + branding endpoint exists |
-| **Platform Admin Dashboard** | ⚠️ BACKEND ONLY | PC-01: 5 API endpoints exist (`require_platform_admin()`), **no frontend UI** — needs `/platform/*` routes, guard, components, Mode 4 tab |
+| **Platform Admin Dashboard** | ✅ DONE | PC-01: backend (5 endpoints, `require_platform_admin()`) + frontend now built — `features/platform` module, `PlatformAdminGuard`, org list/create/detail + tabs, routed at `admin/platform`. **Remaining gap: tiers are display/alert-only, not enforced** (see Revenue Model) |
 | Approval workflows | ❌ TODO | Template review/approve/reject not yet implemented |
 | Template permissions | ⚠️ SPECIFIED | Spec 043: per-role/dept/branch grants + explicit deny, access diagnostics |
 | Digital signatures | ⚠️ SPECIFIED | Spec 046: ordered/parallel multi-signer, OTP for external, SHA-256 evidence |
@@ -912,7 +912,7 @@ Form Desk print flow (overlay mode):
 
 ### Platform Console Features
 
-#### PC-01: Platform Admin Dashboard (new — backend exists, NO frontend) — ❌ FRONTEND MISSING
+#### PC-01: Platform Admin Dashboard — ✅ DONE (backend + frontend; tier enforcement still missing)
 
 ```
 /platform — cross-org management for platform super-admins (is_platform_admin=true)
@@ -2083,6 +2083,21 @@ Add-on pricing:
 
 The Studio is the **land** (sold once to the design team). The Desk is the **expand** (sold per-seat to every branch, every teller, every agent). One Studio license generates 50-200 Desk licenses in a large bank.
 
+### Implementation status (as of 2026-06-19) — monetization is the current revenue blocker
+
+Org onboarding is no longer the blocker: the Platform Console frontend (PC-01) is built, so platform admins can create and tier orgs through the UI. The gap has moved one layer deeper — a tier is a stored label that is neither **sellable** nor **enforced**:
+
+- `tier_limits` lookup table exists (`migrations/039_platform_admin_console.sql`) with values: starter 10 users / 50 templates / 5 GB, professional 50 / 200 / 25, enterprise 200 / 1000 / 100, platform 1000 / 5000 / 500.
+- `get_tier_limit_alerts()` fires at **≥90% of the user limit only** — it is monitoring, not a gate. Nothing blocks an org from exceeding any limit; the subscription tab is a read-only label with no upgrade/downgrade action.
+- **Two mismatches to reconcile before billing:** (1) the DB Starter limit (10 users) does not match the documented Starter tier (1 designer + 3 operators = 4 users + 100 submissions/mo); (2) the **submission-volume cap** central to the Starter tier is counted for display but is not part of `tier_limits` and is not enforced anywhere.
+
+The blocker splits into two independent halves:
+
+- **(a) Sellable — now specified.** Feature **058-paygateway-billing** (drafted 2026-06-19, design doc [`payment-gateway-integration.md`](payment-gateway-integration.md)) adds card payment via the existing PayGateway/Stripe service so an org admin can **pay to change tier** and buy add-ons (seats, OCR batch, marketplace template). Successful payment sets `subscription_tier` server-side and makes the read-only Subscription tab actionable. Clarified scope: upgrades only (downgrades happen via platform-admin refund/reversal), full refunds only, charge in the org's default currency, zero-amount purchases skip payment. This is the "turn the label into something you can buy" half.
+- **(b) Enforced — still TODO.** Blocking invites/submissions/storage when an org exceeds its `tier_limits`, and aligning the DB limit values with the documented tiers. Feature 058 deliberately leaves this out of scope; it records purchased allowances (seats, OCR credits) but does not gate on them.
+
+**Next revenue step:** implement 058 (sellable) and, in parallel, the enforcement gates at invite + submission time (enforced) — together they turn `subscription_tier` from a label into real, monetizable, governed access.
+
 ---
 
 ## Phased Roadmap
@@ -2197,7 +2212,7 @@ The Studio is the **land** (sold once to the design team). The Desk is the **exp
 | # | Initiative | Vision Status | Notes |
 |---|-----------|:------------:|-------|
 | 2.1 | Multi-tenancy (AC-01) | ✅ DONE | F25 — orgs, depts, branches, RLS |
-| 2.1b | **Platform Admin Dashboard (PC-01)** | ⚠️ BACKEND ONLY | Backend API exists (`/api/organizations` 5 endpoints, `require_platform_admin()`). **No frontend UI** — no routes, no components, no guard. Needs: `/platform/*` routes, `PlatformAdminGuard`, org list/create/detail components, Mode 4 tab in app-shell |
+| 2.1b | **Platform Admin Dashboard (PC-01)** | ✅ DONE | Backend (`/api/organizations` 5 endpoints, `require_platform_admin()`) + frontend (`features/platform`: layout, dashboard, org list/create/detail, profile/subscription/stats/users tabs, `PlatformAdminGuard`, routed `admin/platform`). **New gap surfaced: subscription tier is read-only display + 90% user-count alert only — no enforcement, no upgrade/downgrade, submission cap untracked, and `tier_limits` values (starter=10 users) don't match the documented Starter tier (4 users / 100 submissions)** |
 | 2.2 | User management (AC-02) | ✅ PARTIAL | Invitations done; bulk import not yet |
 | 2.5 | Conditional fields & logic | ✅ DONE | F22 — 3 conditional columns on elements |
 | 2.3-2.4 | Approval workflow + Reviewer role | ⚠️ SPECIFIED | Spec 028-approval-workflow |
@@ -2230,7 +2245,7 @@ The Studio is the **land** (sold once to the design team). The Desk is the **exp
 
 | Metric | Count |
 |--------|-------|
-| Total spec directories | 53 (001–053) |
+| Total spec directories | 58 (001–058) |
 | Fully implemented (001–026) | 22 |
 | Partially implemented (001–026) | 1 (F09 — performance caching) |
 | Awaiting external credentials | 2 (F05 — AWS Bedrock, F26 — Azure OCR) |
@@ -2260,7 +2275,7 @@ The Studio is the **land** (sold once to the design team). The Desk is the **exp
 │  PDF Preview        │  Printer Calibrate ★│  Analytics            │  Cross-Org User View   │
 │  Version Control    │  History & Reprint  │  Operational Reports ★│                        │
 │  Template Feedback  │  Batch Queue        │  Report Builder ★     │  Backend: ✅ EXISTS    │
-│  Ref Data Manager ★ │  Customer Profiles  │  Notification Center  │  Frontend: ❌ MISSING  │
+│  Ref Data Manager ★ │  Customer Profiles  │  Notification Center  │  Frontend: ✅ BUILT    │
 │                     │  Quick Fill         │  Data Export & Import │                        │
 │  By: Designers      │  Ref Data Lookup ★  │  Webhooks & API Keys  │  By: Platform Admins   │
 │  When: Occasionally │                     │  Custom Validators    │  When: Rare            │
