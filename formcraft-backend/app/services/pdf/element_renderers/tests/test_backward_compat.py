@@ -34,5 +34,8 @@ def test_tafqeet_renderer_backward_compat_blank():
         "formatting": {},
     }
     html = renderer.render(element)
-    # No source key → blank; default overflow for tafqeet = shrink-to-fit
-    assert "font-size: 6" in html
+    # No source key → blank cell. Default overflow for tafqeet is shrink-to-fit,
+    # but with no content there is nothing to overflow, so the configured
+    # default 10pt must be preserved (no unconditional shrink to min).
+    assert "font-size: 10pt;" in html
+    assert "font-size: 6pt;" not in html

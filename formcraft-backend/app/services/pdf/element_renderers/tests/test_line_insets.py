@@ -101,7 +101,8 @@ class TestApplyOverflowPolicy:
         result = renderer._apply_overflow_policy(element, "content", "overflow: hidden;")
         assert "overflow: visible;" in result
 
-    def test_shrink_to_fit_reduces_font(self, renderer):
+    def test_shrink_to_fit_reduces_font_when_overflowing(self, renderer):
+        # Long content in a small box must shrink below the configured size.
         element = {
             "type": "text",
             "width_mm": 50,
@@ -111,21 +112,49 @@ class TestApplyOverflowPolicy:
                 "font": {"size_pt": 20, "min_size_pt": 6},
             },
         }
-        result = renderer._apply_overflow_policy(element, "content", "font-size: 20pt;")
-        assert "font-size: 6pt;" in result
+        long_text = "x" * 200
+        result = renderer._apply_overflow_policy(
+            element, "content", "font-size: 20pt;", text_content=long_text
+        )
+        assert "font-size: 20pt;" not in result  # it shrank
 
-    def test_tafqeet_default_shrink_to_fit(self, renderer):
+    def test_shrink_to_fit_preserves_size_when_content_fits(self, renderer):
+        # Short content that already fits must NOT be shrunk (FR-14 / FR-08).
+        element = {
+            "type": "text",
+            "width_mm": 50,
+            "height_mm": 10,
+            "formatting": {
+                "overflow": "shrink-to-fit",
+                "font": {"size_pt": 12, "min_size_pt": 6},
+            },
+        }
+        result = renderer._apply_overflow_policy(
+            element, "content", "font-size: 12pt;", text_content="abc"
+        )
+        assert "font-size: 12pt;" in result
+
+    def test_tafqeet_default_shrink_only_when_overflowing(self, renderer):
         element = {
             "type": "tafqeet",
             "width_mm": 50,
             "height_mm": 10,
             "formatting": {},
         }
-        result = renderer._apply_overflow_policy(element, "content", "font-size: 10pt;")
-        # Default for tafqeet is shrink-to-fit
-        assert "font-size: 6" in result
+        # Short amount fits at the default 10pt -> preserved.
+        short = renderer._apply_overflow_policy(
+            element, "content", "font-size: 10pt;", text_content="مائة جنيه"
+        )
+        assert "font-size: 10pt;" in short
+        # A very long amount in the same box -> shrinks.
+        long_amount = "مائة وثلاثة وعشرون مليون " * 6
+        big = renderer._apply_overflow_policy(
+            element, "content", "font-size: 10pt;", text_content=long_amount
+        )
+        assert "font-size: 10pt;" not in big
 
     def test_shrink_to_fit_min_size_fallback(self, renderer):
+        # Impossibly long content stops at the minimum size, never below.
         element = {
             "type": "text",
             "width_mm": 50,
@@ -135,5 +164,7 @@ class TestApplyOverflowPolicy:
                 "font": {"size_pt": 8, "min_size_pt": 6},
             },
         }
-        result = renderer._apply_overflow_policy(element, "content", "font-size: 8pt;")
+        result = renderer._apply_overflow_policy(
+            element, "content", "font-size: 8pt;", text_content="z" * 5000
+        )
         assert "font-size: 6pt;" in result
