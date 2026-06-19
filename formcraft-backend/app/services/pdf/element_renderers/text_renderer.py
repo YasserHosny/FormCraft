@@ -35,4 +35,6 @@ class TextRenderer(ElementHTMLRenderer):
         else:
             html = display_text
 
-        return self._apply_overflow_policy(element, html, style)
+        return self._apply_overflow_policy(
+            element, html, style, text_content=display_text
+        )

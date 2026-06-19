@@ -19,8 +19,8 @@
 
 **Purpose**: Prepare project for feature work; no new dependencies required.
 
-- [ ] T001 [P] Add translation keys for Font, Line Layout, and Overflow panels to `formcraft-frontend/src/assets/i18n/en.json`
-- [ ] T002 [P] Add Arabic translation keys for Font, Line Layout, and Overflow panels to `formcraft-frontend/src/assets/i18n/ar.json`
+- [x] T001 [P] Add translation keys for Font, Line Layout, and Overflow panels to `formcraft-frontend/src/assets/i18n/en.json`
+- [x] T002 [P] Add Arabic translation keys for Font, Line Layout, and Overflow panels to `formcraft-frontend/src/assets/i18n/ar.json`
 
 ---
 
@@ -32,14 +32,14 @@
 
 ### Tests for Foundational
 
-- [ ] T003 [P] Write unit tests for `fonts.resolve_font_family` covering bundled families, custom names, and fallback in `formcraft-backend/app/services/pdf/tests/test_fonts.py`
-- [ ] T004 [P] Write Pydantic validation tests for `FontSettings`, `LineLayout`, and `ElementFormatting` schemas in `formcraft-backend/app/schemas/tests/test_element_formatting.py`
+- [x] T003 [P] Write unit tests for `fonts.resolve_font_family` covering bundled families, custom names, and fallback in `formcraft-backend/app/services/pdf/tests/test_fonts.py`
+- [x] T004 [P] Write Pydantic validation tests for `FontSettings`, `LineLayout`, and `ElementFormatting` schemas in `formcraft-backend/app/schemas/tests/test_element_formatting.py`
 
 ### Implementation for Foundational
 
-- [ ] T005 Implement `resolve_font_family(name: str) -> str` and warning logging in `formcraft-backend/app/services/pdf/fonts.py`
-- [ ] T006 Add optional `FontSettings`, `LineLayout`, `ElementFormatting` Pydantic sub-models to `formcraft-backend/app/schemas/element.py`
-- [ ] T007 Update `@font-face` CSS generation in `formcraft-backend/app/services/pdf/fonts.py` to include Courier and Arial if present in assets
+- [x] T005 Implement `resolve_font_family(name: str) -> str` and warning logging in `formcraft-backend/app/services/pdf/fonts.py`
+- [x] T006 Add optional `FontSettings`, `LineLayout`, `ElementFormatting` Pydantic sub-models to `formcraft-backend/app/schemas/element.py`
+- [x] T007 Update `@font-face` CSS generation in `formcraft-backend/app/services/pdf/fonts.py` to include Courier and Arial if present in assets
 
 **Checkpoint**: Foundation ready — font resolution works, schema validation passes, user story implementation can now begin in parallel.
 
@@ -53,18 +53,18 @@
 
 ### Tests for User Story 1
 
-- [ ] T008 [P] [US1] Write unit test for `_base_style` font injection: custom font overrides default in `formcraft-backend/app/services/pdf/element_renderers/tests/test_base_renderer.py`
-- [ ] T009 [P] [US1] Write unit test for `_base_style` fallback when `formatting.font` is absent in `formcraft-backend/app/services/pdf/element_renderers/tests/test_base_renderer.py`
-- [ ] T010 [P] [US1] Write frontend component test for `FormattingPropertyPanelComponent` font form binding and event emission in `formcraft-frontend/src/app/features/designer/components/formatting-property-panel/formatting-property-panel.component.spec.ts`
+- [x] T008 [P] [US1] Write unit test for `_base_style` font injection: custom font overrides default in `formcraft-backend/app/services/pdf/element_renderers/tests/test_base_renderer.py`
+- [x] T009 [P] [US1] Write unit test for `_base_style` fallback when `formatting.font` is absent in `formcraft-backend/app/services/pdf/element_renderers/tests/test_base_renderer.py`
+- [x] T010 [P] [US1] Write frontend component test for `FormattingPropertyPanelComponent` font form binding and event emission in `formcraft-frontend/src/app/features/designer/components/formatting-property-panel/formatting-property-panel.component.spec.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Extend `_base_style` in `formcraft-backend/app/services/pdf/element_renderers/base.py` to read `formatting.font` and emit CSS `font-family`, `font-size`, `font-weight`, `font-style`, `color`
-- [ ] T012 [US1] Update `TextRenderer.render` in `formcraft-backend/app/services/pdf/element_renderers/text_renderer.py` to use the inherited styled `_base_style`
-- [ ] T013 [US1] Update `TafqeetRenderer.render` in `formcraft-backend/app/services/pdf/element_renderers/tafqeet_renderer.py` to use the inherited styled `_base_style` (remove manual style rebuild if any)
-- [ ] T014 [P] [US1] Create `FormattingPropertyPanelComponent` with Font section (family dropdown+custom, size, weight, style, color) in `formcraft-frontend/src/app/features/designer/components/formatting-property-panel/`
-- [ ] T015 [US1] Wire `FormattingPropertyPanelComponent` into `DesignerPageComponent` for all element types in `formcraft-frontend/src/app/features/designer/designer-page/designer-page.component.html`
-- [ ] T016 [US1] Update `CanvasService.addElementInternal` and `updateElementVisual` in `formcraft-frontend/src/app/features/designer/services/canvas.service.ts` to apply `formatting.font` to `Konva.Text` nodes
+- [x] T011 [US1] Extend `_base_style` in `formcraft-backend/app/services/pdf/element_renderers/base.py` to read `formatting.font` and emit CSS `font-family`, `font-size`, `font-weight`, `font-style`, `color`
+- [x] T012 [US1] Update `TextRenderer.render` in `formcraft-backend/app/services/pdf/element_renderers/text_renderer.py` to use the inherited styled `_base_style`
+- [x] T013 [US1] Update `TafqeetRenderer.render` in `formcraft-backend/app/services/pdf/element_renderers/tafqeet_renderer.py` to use the inherited styled `_base_style` (remove manual style rebuild if any)
+- [x] T014 [P] [US1] Create `FormattingPropertyPanelComponent` with Font section (family dropdown+custom, size, weight, style, color) in `formcraft-frontend/src/app/features/designer/components/formatting-property-panel/`
+- [x] T015 [US1] Wire `FormattingPropertyPanelComponent` into `DesignerPageComponent` for all element types in `formcraft-frontend/src/app/features/designer/designer-page/designer-page.component.html`
+- [x] T016 [US1] Update `CanvasService.addElementInternal` and `updateElementVisual` in `formcraft-frontend/src/app/features/designer/services/canvas.service.ts` to apply `formatting.font` to `Konva.Text` nodes
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently.
 
@@ -78,17 +78,17 @@
 
 ### Tests for User Story 2
 
-- [ ] T017 [P] [US2] Write unit test for line inset CSS generation: first-line left padding, last-line right padding in `formcraft-backend/app/services/pdf/element_renderers/tests/test_line_insets.py`
-- [ ] T018 [P] [US2] Write unit test for tafqeet renderer with line insets: multi-line output respects per-line widths in `formcraft-backend/app/services/pdf/element_renderers/tests/test_tafqeet_renderer.py`
-- [ ] T019 [P] [US2] Write frontend component test for Line Layout form binding and validation (inset clamping) in `formcraft-frontend/src/app/features/designer/components/formatting-property-panel/formatting-property-panel.component.spec.ts`
+- [x] T017 [P] [US2] Write unit test for line inset CSS generation: first-line left padding, last-line right padding in `formcraft-backend/app/services/pdf/element_renderers/tests/test_line_insets.py`
+- [x] T018 [P] [US2] Write unit test for tafqeet renderer with line insets: multi-line output respects per-line widths in `formcraft-backend/app/services/pdf/element_renderers/tests/test_tafqeet_renderer.py`
+- [x] T019 [P] [US2] Write frontend component test for Line Layout form binding and validation (inset clamping) in `formcraft-frontend/src/app/features/designer/components/formatting-property-panel/formatting-property-panel.component.spec.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T020 [US2] Implement `render_line_inset_html` helper in `formcraft-backend/app/services/pdf/element_renderers/base.py` that wraps lines in `<p>` or `<span>` with per-line `padding-left` / `padding-right` CSS
-- [ ] T021 [US2] Update `TextRenderer.render` in `formcraft-backend/app/services/pdf/element_renderers/text_renderer.py` to apply line insets when `formatting.lineLayout` is present
-- [ ] T022 [US2] Update `TafqeetRenderer.render` in `formcraft-backend/app/services/pdf/element_renderers/tafqeet_renderer.py` to apply line insets to each `<p>` line
-- [ ] T023 [US2] Add Line Layout section (max lines, first-line left inset, last-line right inset) to `FormattingPropertyPanelComponent` in `formcraft-frontend/src/app/features/designer/components/formatting-property-panel/`
-- [ ] T024 [US2] Update `CanvasService` in `formcraft-frontend/src/app/features/designer/services/canvas.service.ts` to simulate line insets in Konva preview by adjusting effective text width per line
+- [x] T020 [US2] Implement `render_line_inset_html` helper in `formcraft-backend/app/services/pdf/element_renderers/base.py` that wraps lines in `<p>` or `<span>` with per-line `padding-left` / `padding-right` CSS
+- [x] T021 [US2] Update `TextRenderer.render` in `formcraft-backend/app/services/pdf/element_renderers/text_renderer.py` to apply line insets when `formatting.lineLayout` is present
+- [x] T022 [US2] Update `TafqeetRenderer.render` in `formcraft-backend/app/services/pdf/element_renderers/tafqeet_renderer.py` to apply line insets to each `<p>` line
+- [x] T023 [US2] Add Line Layout section (max lines, first-line left inset, last-line right inset) to `FormattingPropertyPanelComponent` in `formcraft-frontend/src/app/features/designer/components/formatting-property-panel/`
+- [x] T024 [US2] Update `CanvasService` in `formcraft-frontend/src/app/features/designer/services/canvas.service.ts` to simulate line insets in Konva preview by adjusting effective text width per line
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently.
 
@@ -102,18 +102,18 @@
 
 ### Tests for User Story 3
 
-- [ ] T025 [P] [US3] Write unit test for `shrink-to-fit` convergence: font reduces until content fits or min size reached in `formcraft-backend/app/services/pdf/element_renderers/tests/test_overflow_policy.py`
-- [ ] T026 [P] [US3] Write unit test for `clip` policy: overflow hidden in `formcraft-backend/app/services/pdf/element_renderers/tests/test_overflow_policy.py`
-- [ ] T027 [P] [US3] Write unit test for tafqeet default policy when `formatting.overflow` is absent: `shrink-to-fit` in `formcraft-backend/app/services/pdf/element_renderers/tests/test_tafqeet_renderer.py`
-- [ ] T028 [P] [US3] Write frontend component test for overflow policy selection in `formatting-property-panel.component.spec.ts`
+- [x] T025 [P] [US3] Write unit test for `shrink-to-fit` convergence: font reduces until content fits or min size reached in `formcraft-backend/app/services/pdf/element_renderers/tests/test_overflow_policy.py`
+- [x] T026 [P] [US3] Write unit test for `clip` policy: overflow hidden in `formcraft-backend/app/services/pdf/element_renderers/tests/test_overflow_policy.py`
+- [x] T027 [P] [US3] Write unit test for tafqeet default policy when `formatting.overflow` is absent: `shrink-to-fit` in `formcraft-backend/app/services/pdf/element_renderers/tests/test_tafqeet_renderer.py`
+- [x] T028 [P] [US3] Write frontend component test for overflow policy selection in `formatting-property-panel.component.spec.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T029 [US3] Implement `apply_overflow_policy(element, html, style)` helper in `formcraft-backend/app/services/pdf/element_renderers/base.py` handling `clip`, `visible`, and `shrink-to-fit` iterative reduction
-- [ ] T030 [US3] Replace unconditional `overflow: visible` in `formcraft-backend/app/services/pdf/element_renderers/tafqeet_renderer.py` with `apply_overflow_policy`; default to `shrink-to-fit` when absent
-- [ ] T031 [US3] Update `TextRenderer.render` in `formcraft-backend/app/services/pdf/element_renderers/text_renderer.py` to call `apply_overflow_policy`; default to `clip` when absent
-- [ ] T032 [US3] Add Overflow section (`clip` / `shrink-to-fit` / `visible`) to `FormattingPropertyPanelComponent`
-- [ ] T033 [US3] Update `CanvasService` in `formcraft-frontend/src/app/features/designer/services/canvas.service.ts` to respect overflow policy in preview (`clip` = truncated, `visible` = allow spill, `shrink-to-fit` = reduced fontSize)
+- [x] T029 [US3] Implement `apply_overflow_policy(element, html, style)` helper in `formcraft-backend/app/services/pdf/element_renderers/base.py` handling `clip`, `visible`, and `shrink-to-fit` iterative reduction
+- [x] T030 [US3] Replace unconditional `overflow: visible` in `formcraft-backend/app/services/pdf/element_renderers/tafqeet_renderer.py` with `apply_overflow_policy`; default to `shrink-to-fit` when absent
+- [x] T031 [US3] Update `TextRenderer.render` in `formcraft-backend/app/services/pdf/element_renderers/text_renderer.py` to call `apply_overflow_policy`; default to `clip` when absent
+- [x] T032 [US3] Add Overflow section (`clip` / `shrink-to-fit` / `visible`) to `FormattingPropertyPanelComponent`
+- [x] T033 [US3] Update `CanvasService` in `formcraft-frontend/src/app/features/designer/services/canvas.service.ts` to respect overflow policy in preview (`clip` = truncated, `visible` = allow spill, `shrink-to-fit` = reduced fontSize)
 
 **Checkpoint**: All user stories should now be independently functional.
 
@@ -125,19 +125,19 @@
 
 ### Tests for Polish
 
-- [ ] T034 [P] Write backward-compatibility test: template with no new settings generates identical HTML to pre-feature baseline in `formcraft-backend/app/services/pdf/element_renderers/tests/test_backward_compat.py`
-- [ ] T035 [P] Write edge-case test: inset larger than box width → clamp to minimum usable width in `formcraft-backend/app/services/pdf/element_renderers/tests/test_line_insets.py`
-- [ ] T036 [P] Write edge-case test: `shrink-to-fit` with font size larger than box height → reduces to fit in `formcraft-backend/app/services/pdf/element_renderers/tests/test_overflow_policy.py`
+- [x] T034 [P] Write backward-compatibility test: template with no new settings generates identical HTML to pre-feature baseline in `formcraft-backend/app/services/pdf/element_renderers/tests/test_backward_compat.py`
+- [x] T035 [P] Write edge-case test: inset larger than box width → clamp to minimum usable width in `formcraft-backend/app/services/pdf/element_renderers/tests/test_line_insets.py`
+- [x] T036 [P] Write edge-case test: `shrink-to-fit` with font size larger than box height → reduces to fit in `formcraft-backend/app/services/pdf/element_renderers/tests/test_overflow_policy.py`
 
 ### Implementation for Polish
 
-- [ ] T037 [P] Add inset clamping logic (left+right ≥ width → warn and clamp) to `formcraft-backend/app/services/pdf/element_renderers/base.py`
-- [ ] T038 [P] Add frontend warning toast for custom font not bundled in `FormattingPropertyPanelComponent`
-- [ ] T039 Verify canvas preview parity: font size, weight, color, and insets render identically to PDF at 100% zoom; document any known Konva limitations
-- [ ] T040 [P] Run `ruff check .` in `formcraft-backend` and fix any lint issues
-- [ ] T041 [P] Run `pytest` in `formcraft-backend` and ensure all new and existing tests pass
-- [ ] T042 [P] Run `ng test --watch=false` in `formcraft-frontend` and ensure all tests pass
-- [ ] T043 Update `AGENTS.md` active technologies and recent changes sections to mention F057
+- [x] T037 [P] Add inset clamping logic (left+right ≥ width → warn and clamp) to `formcraft-backend/app/services/pdf/element_renderers/base.py`
+- [x] T038 [P] Add frontend warning toast for custom font not bundled in `FormattingPropertyPanelComponent`
+- [x] T039 Verify canvas preview parity: font size, weight, color, and insets render identically to PDF at 100% zoom; document any known Konva limitations
+- [x] T040 [P] Run `ruff check .` in `formcraft-backend` and fix any lint issues
+- [x] T041 [P] Run `pytest` in `formcraft-backend` and ensure all new and existing tests pass
+- [x] T042 [P] Run `ng test --watch=false` in `formcraft-frontend` and ensure all tests pass
+- [x] T043 Update `AGENTS.md` active technologies and recent changes sections to mention F057
 
 ---
 
@@ -226,6 +226,28 @@ Because this is executed by a single AI agent, phases run sequentially:
 5. Polish tests → Polish implementation (T034–T043)
 
 ---
+
+## Post-Implementation Review (2026-06-05)
+
+A validation pass after the initial merge (commit `9085cba`) found and fixed:
+
+- **shrink-to-fit was not content-aware.** The first implementation unconditionally
+  reduced any tafqeet (default size > min) straight to 6pt, shrinking even short
+  amounts and breaking backward compatibility (FR-14). Reworked `_apply_overflow_policy`
+  to measure content against a deterministic box-capacity heuristic (`_fits_at_size`)
+  and only shrink when content actually overflows, never below `min_size_pt`. Callers
+  now pass the plain `text_content` for measurement.
+- **Missing mandatory tests added**: `test_overflow_policy.py` (clip/visible/shrink,
+  determinism, min-size fallback, oversized-height edge case), `test_tafqeet_renderer.py`
+  (no unconditional `overflow: visible`, short-vs-long shrink, insets, custom font), and
+  the frontend `formatting-property-panel.component.spec.ts` (getters, warnings, change
+  handlers). The backward-compat test was corrected to assert a blank/short tafqeet keeps
+  its default 10pt rather than the previously-enshrined 6pt.
+- Backend: 52 PDF/schema tests pass.
+- **Known caveat (out of F057 scope)**: the Angular karma suite currently fails to
+  compile due to pre-existing errors in `features/ui-redesign/feature-validation.spec.ts`
+  (specs 054/056 — `createNewCustomer`, `AnalyticsComponent` ctor, `FormFiller` fb arg).
+  This blocks running ANY frontend spec, including the new F057 one, until those are fixed.
 
 ## Notes
 

@@ -2,6 +2,45 @@ from abc import ABC, abstractmethod
 
 from app.services.pdf.fonts import resolve_font_family
 
+# Typographic constants for the deterministic shrink-to-fit capacity estimate.
+_PT_PER_MM = 2.834645669  # 1 mm = 2.834645669 pt
+_AVG_CHAR_WIDTH_RATIO = 0.55  # avg glyph advance as a fraction of font size (pt)
+_LINE_HEIGHT_RATIO = 1.3  # line box height as a fraction of font size (pt)
+_SHRINK_STEP_PT = 0.5  # font-size decrement per shrink iteration
+
+
+def _fits_at_size(
+    text_length: int,
+    size_pt: float,
+    width_mm: float,
+    height_mm: float,
+    max_lines: int | None = None,
+) -> bool:
+    """Deterministic estimate of whether *text_length* chars fit in the box.
+
+    Uses a simple monospace-ish capacity heuristic (chars-per-line * lines).
+    Same inputs always yield the same result (NFR-03). Empty text always fits.
+    """
+    if text_length <= 0:
+        return True
+    if size_pt <= 0 or width_mm <= 0 or height_mm <= 0:
+        return True  # cannot measure — don't shrink
+
+    char_width_mm = (size_pt * _AVG_CHAR_WIDTH_RATIO) / _PT_PER_MM
+    line_height_mm = (size_pt * _LINE_HEIGHT_RATIO) / _PT_PER_MM
+
+    # A single line taller than the box never fits (Edge Case #1).
+    if line_height_mm > height_mm:
+        return False
+
+    chars_per_line = max(1, int(width_mm / char_width_mm))
+    geometric_lines = max(1, int(height_mm / line_height_mm))
+    available_lines = (
+        min(geometric_lines, max_lines) if max_lines else geometric_lines
+    )
+    capacity = chars_per_line * available_lines
+    return text_length <= capacity
+
 
 class ElementHTMLRenderer(ABC):
     """Abstract base for element-to-HTML renderers."""
@@ -54,10 +93,13 @@ class ElementHTMLRenderer(ABC):
         element: dict,
         html: str,
         style: str,
+        text_content: str = "",
     ) -> str:
         """Apply clip / visible / shrink-to-fit overflow policy.
 
-        Returns the final <div style="...">{html}</div> string.
+        ``text_content`` is the plain (markup-free) text used to measure whether
+        the content overflows the box. Returns the final
+        ``<div style="...">{html}</div>`` string.
         """
         fmt = element.get("formatting", {})
         policy = fmt.get("overflow")
@@ -72,13 +114,46 @@ class ElementHTMLRenderer(ABC):
         if policy == "clip":
             return f'<div style="{style}">{html}</div>'
 
-        # shrink-to-fit: reduce font-size iteratively
+        # shrink-to-fit: only reduce font-size when the content actually
+        # overflows, and never below the configured minimum (FR-08). Short
+        # content that already fits keeps its configured size, preserving
+        # backward compatibility for existing elements (FR-14).
         if policy == "shrink-to-fit":
             font = fmt.get("font", {})
-            min_size = font.get("min_size_pt", 6.0)
-            current_size = font.get("size_pt", 10)
-            if current_size > min_size:
-                style = style.replace(f"font-size: {current_size}pt;", f"font-size: {min_size}pt;")
+            min_size = float(font.get("min_size_pt", 6.0))
+            # Match the exact raw token _base_style emitted (int or float form).
+            current_raw = font.get("size_pt", 10)
+            current_size = float(current_raw)
+
+            # Measure against the markup-free character count (newlines do not
+            # consume horizontal space).
+            total_length = len(text_content.replace("\n", ""))
+
+            layout = fmt.get("lineLayout", {}) or {}
+            max_lines = layout.get("max_lines")
+            width_mm = element.get("width_mm", 0)
+            height_mm = element.get("height_mm", 0)
+
+            fitted_size = current_size
+            # Deterministic iterative reduction (NFR-03).
+            while fitted_size > min_size and not _fits_at_size(
+                total_length,
+                fitted_size,
+                width_mm,
+                height_mm,
+                max_lines,
+            ):
+                fitted_size = round(fitted_size - _SHRINK_STEP_PT, 3)
+            # Floor at min_size, but never enlarge beyond the configured size
+            # (shrink-to-fit only ever reduces).
+            fitted_size = min(current_size, max(fitted_size, min_size))
+
+            if fitted_size != current_size:
+                fitted_str = f"{fitted_size:g}"  # 6.0 -> "6", 7.5 -> "7.5"
+                style = style.replace(
+                    f"font-size: {current_raw}pt;",
+                    f"font-size: {fitted_str}pt;",
+                )
             return f'<div style="{style}">{html}</div>'
 
         return f'<div style="{style}">{html}</div>'

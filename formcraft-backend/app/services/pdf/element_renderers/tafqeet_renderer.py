@@ -73,7 +73,7 @@ class TafqeetRenderer(ElementHTMLRenderer):
         html = self._apply_line_insets(lines, element, line_direction="rtl", line_text_align="right")
 
         style = self._base_style(element)
-        return self._apply_overflow_policy(element, html, style)
+        return self._apply_overflow_policy(element, html, style, text_content=result)
 
     def _blank(self, element: dict) -> str:
         style = self._base_style(element)
