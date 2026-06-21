@@ -83,3 +83,79 @@ export interface BillingRefundResponse {
   currency: string;
   message_key: string;
 }
+
+// F059 — Recurring subscription billing models
+
+export type SubscriptionStatus = 'active' | 'past_due' | 'cancelled';
+export type BillingInterval = 'monthly' | 'annual';
+
+export interface SubscriptionResponse {
+  id: string;
+  org_id: string;
+  tier: string;
+  billing_interval: BillingInterval;
+  status: SubscriptionStatus;
+  current_period_start: string;
+  current_period_end: string;
+  next_renewal_amount_minor: number;
+  currency: string;
+  scheduled_downgrade_tier: string | null;
+  cancel_at_period_end: boolean;
+  failed_payment_count: number;
+  provider_subscription_id?: string | null;
+}
+
+export interface CreateSubscriptionRequest {
+  tier: string;
+  billing_interval: BillingInterval;
+  return_url: string;
+}
+
+export interface CreateSubscriptionResponse {
+  subscription_id: string;
+  status: string;
+  checkout: BillingCheckoutToken | null;
+}
+
+export interface UpgradeSubscriptionRequest {
+  tier: string;
+}
+
+export interface UpgradeSubscriptionResponse {
+  subscription_id: string;
+  previous_tier: string;
+  new_tier: string;
+  proration_amount_minor: number;
+  currency: string;
+  status: SubscriptionStatus;
+}
+
+export interface ScheduleDowngradeRequest {
+  tier: string;
+}
+
+export interface DowngradeScheduleResponse {
+  subscription_id: string;
+  current_tier: string;
+  scheduled_downgrade_tier: string | null;
+  effective_date?: string | null;
+}
+
+export interface CancelSubscriptionResponse {
+  subscription_id: string;
+  tier: string;
+  cancel_at_period_end: boolean;
+  period_end: string;
+}
+
+export interface ReactivateSubscriptionResponse {
+  subscription_id: string;
+  tier: string;
+  cancel_at_period_end: boolean;
+  next_renewal_date: string;
+}
+
+export interface PortalUrlResponse {
+  portal_url: string;
+  expires_at: string;
+}

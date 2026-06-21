@@ -27,6 +27,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatStepperModule } from '@angular/material/stepper';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { RouterModule } from '@angular/router';
 
 import { AutoDirDirective } from './directives/auto-dir.directive';
@@ -59,6 +60,7 @@ const MATERIAL_MODULES = [
   MatBadgeModule,
   MatDividerModule,
   MatStepperModule,
+  MatButtonToggleModule,
 ];
 
 @NgModule({

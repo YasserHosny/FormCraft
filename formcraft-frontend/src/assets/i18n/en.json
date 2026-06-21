@@ -76,7 +76,9 @@
       "pay": "Pay",
       "secureInput": "Card details are collected only by PayGateway.",
       "ready": "Ready to create a secure payment session.",
-      "tokenReady": "Secure payment session created."
+      "tokenReady": "Secure payment session created.",
+      "cardInput": "Card details",
+      "processing": "Processing payment..."
     },
     "history": {
       "title": "Purchase history"
@@ -96,7 +98,46 @@
     "provider_rate_limited": "Payment provider is busy. Try again shortly.",
     "provider_error": "Payment provider error.",
     "price_unavailable": "Price is unavailable.",
-    "org_admin_required": "Organization admin access is required."
+    "org_admin_required": "Organization admin access is required.",
+    "user_limit_reached": "Your plan's user limit has been reached. Purchase additional seats to invite more users.",
+    "submission_limit_reached": "Your plan's monthly submission limit has been reached. Upgrade to continue submitting.",
+    "refund": {
+      "succeeded": "Refund issued successfully.",
+      "already_exists": "A refund has already been issued for this purchase.",
+      "not_eligible": "This purchase is not eligible for a refund.",
+      "amount_invalid": "Refund amount must be greater than zero and not exceed the original purchase amount."
+    },
+    "listing_not_found": "Marketplace listing not found or unavailable.",
+    "listing_not_premium": "This listing is not a premium template.",
+    "refund_not_eligible": "This purchase cannot be refunded.",
+    "refund_already_exists": "A refund already exists for this purchase.",
+    "refund_amount_invalid": "Refund amount must be between 1 and the original purchase amount.",
+    "subscription_status": {
+      "active": "Active",
+      "past_due": "Payment past due — please update your payment method.",
+      "cancelled": "Cancelled"
+    },
+    "subscription_renews_on": "Renews on",
+    "subscription_ends_on": "Subscription ends on",
+    "subscription_downgrade_scheduled": "Downgrade to {{tier}} scheduled for {{date}}",
+    "subscription_cancel_confirm_title": "Cancel Subscription",
+    "subscription_cancel_confirm_body": "Your subscription will remain active until the end of the current billing period. Are you sure?",
+    "update_payment_method": "Update payment method",
+    "interval": {
+      "monthly": "Monthly",
+      "annual": "Annual"
+    },
+    "subscription_already_active": "Your organisation already has an active subscription.",
+    "subscription_not_found": "No active subscription found.",
+    "downgrade_requires_schedule": "Schedule downgrade",
+    "interval_change_not_supported": "Changing billing interval requires cancelling and resubscribing.",
+    "upgrade_requires_immediate": "Upgrades take effect immediately with prorated charge.",
+    "no_downgrade_scheduled": "No downgrade is currently scheduled.",
+    "already_cancelled": "Subscription is already scheduled to cancel.",
+    "subscription_not_cancelling": "Subscription is not scheduled for cancellation.",
+    "subscription_already_expired": "The billing period has already ended. Please subscribe again.",
+    "subscription_not_past_due": "Payment portal is only available when your subscription is past due.",
+    "portal_url_error": "Could not open the payment portal. Please try again."
   },
   "adminExport": {
     "title": "Data Export",

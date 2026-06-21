@@ -12,17 +12,31 @@ from app.schemas.billing import (
     BillingPurchaseListResponse,
     BillingPurchaseResponse,
     BillingPurpose,
+    CancelSubscriptionResponse,
+    CreateSubscriptionRequest,
+    CreateSubscriptionResponse,
+    DowngradeScheduleRequest,
+    DowngradeScheduleResponse,
     PayGatewayWebhookRequest,
     PayGatewayWebhookResponse,
+    PortalUrlRequest,
+    PortalUrlResponse,
     PurchaseCreateRequest,
     PurchaseCreateResponse,
     PurchaseVerifyRequest,
     PurchaseVerifyResponse,
+    ReactivateSubscriptionResponse,
     RefundCreateRequest,
     RefundResponse,
+    SubscriptionResponse,
+    SubscriptionWebhookRequest,
+    SubscriptionWebhookResponse,
+    UpgradeSubscriptionRequest,
+    UpgradeSubscriptionResponse,
 )
 from app.services.billing_service import BillingService
 from app.services.paygateway_client import PayGatewayClient
+from app.services.subscription_service import SubscriptionService
 
 
 router = APIRouter(prefix="/billing", tags=["Billing"])
@@ -31,6 +45,10 @@ platform_router = APIRouter(prefix="/platform/billing", tags=["Platform Billing"
 
 def _service() -> BillingService:
     return BillingService(get_supabase_client())
+
+
+def _subscription_service() -> SubscriptionService:
+    return SubscriptionService(get_supabase_client())
 
 
 @router.get("/options", response_model=BillingOptionsResponse)
@@ -123,4 +141,119 @@ async def refund_billing_purchase(
     body: RefundCreateRequest,
     ctx: Annotated[OrgContext, Depends(require_platform_admin())],
 ):
-    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, "billing.refund_not_implemented")
+    return await _service().refund_purchase(
+        org_id=None,
+        purchase_id=purchase_id,
+        actor_id=ctx.user_id,
+        reason=body.reason,
+        amount_minor=body.amount_minor,
+    )
+
+
+# ---------------------------------------------------------------------------
+# F059 — Subscription endpoints
+# ---------------------------------------------------------------------------
+
+subscription_router = APIRouter(prefix="/billing/subscriptions", tags=["Billing Subscriptions"])
+
+
+@subscription_router.get("/current", response_model=SubscriptionResponse)
+async def get_current_subscription(
+    ctx: Annotated[OrgContext, Depends(require_org_admin())],
+):
+    sub = _subscription_service().get_current_subscription(ctx.org_id)
+    if sub is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "billing.subscription_not_found")
+    return sub
+
+
+@subscription_router.post("", response_model=CreateSubscriptionResponse, status_code=201)
+async def create_subscription(
+    body: CreateSubscriptionRequest,
+    ctx: Annotated[OrgContext, Depends(require_org_admin())],
+):
+    return await _subscription_service().create_subscription(
+        org_id=ctx.org_id,
+        actor_id=ctx.user_id,
+        tier=body.tier,
+        billing_interval=body.billing_interval.value,
+        return_url=body.return_url,
+    )
+
+
+@subscription_router.post("/upgrade", response_model=UpgradeSubscriptionResponse)
+async def upgrade_subscription(
+    body: UpgradeSubscriptionRequest,
+    ctx: Annotated[OrgContext, Depends(require_org_admin())],
+):
+    return await _subscription_service().upgrade_subscription(org_id=ctx.org_id, new_tier=body.tier)
+
+
+@subscription_router.post("/downgrade-schedule", response_model=DowngradeScheduleResponse)
+async def schedule_downgrade(
+    body: DowngradeScheduleRequest,
+    ctx: Annotated[OrgContext, Depends(require_org_admin())],
+):
+    return _subscription_service().schedule_downgrade(org_id=ctx.org_id, new_tier=body.tier)
+
+
+@subscription_router.delete("/downgrade-schedule", response_model=DowngradeScheduleResponse)
+async def cancel_downgrade_schedule(
+    ctx: Annotated[OrgContext, Depends(require_org_admin())],
+):
+    return _subscription_service().cancel_downgrade_schedule(ctx.org_id)
+
+
+@subscription_router.post("/cancel", response_model=CancelSubscriptionResponse)
+async def cancel_subscription(
+    ctx: Annotated[OrgContext, Depends(require_org_admin())],
+):
+    return await _subscription_service().cancel_subscription(ctx.org_id)
+
+
+@subscription_router.post("/reactivate", response_model=ReactivateSubscriptionResponse)
+async def reactivate_subscription(
+    ctx: Annotated[OrgContext, Depends(require_org_admin())],
+):
+    return await _subscription_service().reactivate_subscription(ctx.org_id)
+
+
+@subscription_router.post("/portal-url", response_model=PortalUrlResponse)
+async def get_portal_url(
+    body: PortalUrlRequest,
+    ctx: Annotated[OrgContext, Depends(require_org_admin())],
+):
+    return await _subscription_service().get_portal_url(org_id=ctx.org_id, return_url=body.return_url)
+
+
+# ---------------------------------------------------------------------------
+# F059 — Subscription lifecycle webhook (separate from payment webhook)
+# ---------------------------------------------------------------------------
+
+@router.post("/paygateway/subscription-webhook", response_model=SubscriptionWebhookResponse)
+async def subscription_webhook(
+    body: SubscriptionWebhookRequest,
+    request: Request,
+    x_paygateway_signature: Annotated[str | None, Header(alias="X-PayGateway-Signature")] = None,
+):
+    raw = await request.body()
+    if not PayGatewayClient().verify_webhook_signature(body=raw, signature=x_paygateway_signature):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "billing.webhook_invalid")
+
+    svc = _subscription_service()
+    event = body.model_dump()
+
+    match body.event_type:
+        case "invoice.paid":
+            await svc.handle_invoice_paid(event)
+        case "invoice.payment_failed":
+            await svc.handle_payment_failed(event)
+        case "customer.subscription.updated":
+            await svc.handle_subscription_updated(event)
+        case "customer.subscription.deleted":
+            svc.handle_subscription_deleted(event)
+        case _:
+            # Unknown event — acknowledge without processing
+            pass
+
+    return {"received": True, "event_type": body.event_type}

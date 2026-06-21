@@ -78,6 +78,12 @@ class NotificationService:
                 "body_ar": "",
                 "body_en": "",
             },
+            NotificationType.SUBSCRIPTION_PAYMENT_FAILED: {
+                "title_ar": "فشل تجديد الاشتراك",
+                "title_en": "Subscription Renewal Failed",
+                "body_ar": "فشل تجديد اشتراكك. يرجى تحديث طريقة الدفع للحفاظ على خدماتك.",
+                "body_en": "Your subscription renewal payment failed. Please update your payment method to keep your services active.",
+            },
         }
         return content_map.get(
             event_type,

@@ -4,4 +4,5 @@ export interface Environment {
   apiUrl: string;
   supabaseUrl: string;
   supabaseAnonKey: string;
+  stripePublishableKey: string;
 }

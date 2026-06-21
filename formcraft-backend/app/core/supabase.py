@@ -15,3 +15,13 @@ def get_supabase_client() -> Client:
         logger.info("supabase_client_init")
         _client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
     return _client
+
+
+def get_auth_client() -> Client:
+    """Return a fresh anon-key client for user auth operations (sign-in, refresh, sign-out).
+
+    Auth operations like sign_in_with_password mutate supabase-py's internal
+    PostgREST headers to the user JWT, which would break the service-role singleton.
+    Using a dedicated fresh client per auth call keeps the singleton untouched.
+    """
+    return create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)

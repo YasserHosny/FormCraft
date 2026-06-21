@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from decimal import ROUND_HALF_UP, Decimal
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException, status
@@ -13,12 +14,17 @@ from app.services.paygateway_client import PayGatewayClient, PayGatewayError
 
 
 TIER_ORDER = ["starter", "professional", "enterprise", "platform"]
+PUBLISHER_SHARE_PCT = Decimal("0.70")
 
 
 class BillingService:
     def __init__(self, client, paygateway: PayGatewayClient | None = None):
         self.client = client
         self.paygateway = paygateway or PayGatewayClient()
+
+    # ------------------------------------------------------------------
+    # Options
+    # ------------------------------------------------------------------
 
     async def get_options(self, *, org_id: UUID, purpose: BillingPurpose | None = None, listing_id: UUID | None = None) -> dict:
         org = self._get_org(org_id)
@@ -27,6 +33,10 @@ class BillingService:
         tiers = self._tier_options(current_tier=current_tier, currency=currency)
         addons = self._addon_options(currency=currency, purpose=purpose, listing_id=listing_id)
         return {"currency": currency, "current_tier": current_tier, "tiers": tiers, "addons": addons}
+
+    # ------------------------------------------------------------------
+    # Purchase create
+    # ------------------------------------------------------------------
 
     async def create_purchase(
         self,
@@ -109,6 +119,10 @@ class BillingService:
             },
         }
 
+    # ------------------------------------------------------------------
+    # Verify
+    # ------------------------------------------------------------------
+
     async def verify_purchase(self, *, org_id: UUID | None, purchase_id: UUID, actor_id: UUID, provider_payment_id: str | None = None) -> dict:
         purchase = self._get_purchase(purchase_id)
         self._assert_org_access(purchase, org_id)
@@ -130,6 +144,10 @@ class BillingService:
         self.client.table("billing_purchases").update({"status": "failed", "provider_status": provider_status, "failure_message_key": "billing.payment.failed"}).eq("id", str(purchase_id)).execute()
         return {"purchase_id": purchase_id, "status": "failed", "fulfilled": False, "message_key": "billing.payment.failed"}
 
+    # ------------------------------------------------------------------
+    # Fulfill (idempotent)
+    # ------------------------------------------------------------------
+
     async def fulfill_purchase_once(self, *, purchase_id: UUID, actor_id: UUID, source: BillingFulfillmentSource) -> bool:
         purchase = self._get_purchase(purchase_id)
         existing = self.client.table("billing_fulfillments").select("id").eq("purchase_id", str(purchase_id)).execute()
@@ -144,6 +162,7 @@ class BillingService:
         }[purpose]
         payload = dict(purchase.get("target") or {})
         org_id = purchase["organization_id"]
+
         if purpose == "subscription_tier":
             org = self._get_org(UUID(str(org_id)))
             self.client.table("billing_purchases").update(
@@ -154,10 +173,40 @@ class BillingService:
                 }
             ).eq("id", str(purchase_id)).execute()
             self.client.table("organizations").update({"subscription_tier": payload["tier"]}).eq("id", org_id).execute()
+
         elif purpose == "seats":
             self._increment_org_counter(org_id, "purchased_seat_allowance", int(purchase.get("quantity") or 0))
+
         elif purpose == "ocr_batch":
             self._increment_org_counter(org_id, "ocr_scan_credit_balance", int(purchase.get("quantity") or 0))
+
+        elif purpose == "marketplace_template":
+            listing_id = payload.get("listing_id")
+            if listing_id:
+                listing = self._get_listing(listing_id)
+                # Clone template into buyer org
+                from app.services.marketplace_service import MarketplaceService
+                mp = MarketplaceService(self.client)
+                await mp.import_listing(
+                    listing_id=UUID(str(listing_id)),
+                    consumer_org_id=UUID(str(org_id)),
+                    actor_id=actor_id,
+                )
+                # Record the 70/30 split
+                gross = purchase["amount_minor"]
+                publisher_share = int(Decimal(str(gross)) * PUBLISHER_SHARE_PCT.quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+                platform_share = gross - publisher_share
+                self.client.table("billing_marketplace_splits").insert({
+                    "purchase_id": str(purchase_id),
+                    "listing_id": str(listing_id),
+                    "publisher_org_id": str(listing["publisher_org_id"]),
+                    "buyer_org_id": str(org_id),
+                    "gross_amount_minor": gross,
+                    "platform_share_minor": platform_share,
+                    "publisher_share_minor": publisher_share,
+                    "currency": purchase["currency"],
+                }).execute()
+
         self.client.table("billing_fulfillments").insert(
             {
                 "purchase_id": str(purchase_id),
@@ -168,9 +217,143 @@ class BillingService:
                 "source": source.value,
             }
         ).execute()
-        self.client.table("billing_purchases").update({"status": "succeeded"}).eq("id", str(purchase_id)).execute()
+        self.client.table("billing_purchases").update(
+            {"status": "succeeded", "fulfilled_at": datetime.now(UTC).isoformat()}
+        ).eq("id", str(purchase_id)).execute()
         await self._audit(actor_id, "billing.purchase.fulfilled", "billing_purchase", str(purchase_id), payload)
         return True
+
+    # ------------------------------------------------------------------
+    # Refund (G-11 — replaces 501 stub)
+    # ------------------------------------------------------------------
+
+    async def refund_purchase(
+        self,
+        *,
+        org_id: UUID | None,
+        purchase_id: UUID,
+        actor_id: UUID,
+        reason: str,
+        amount_minor: int | None = None,
+    ) -> dict:
+        from uuid import uuid4 as _uuid4
+        purchase = self._get_purchase(purchase_id)
+        self._assert_org_access(purchase, org_id)
+        if purchase["status"] not in {"succeeded"}:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "billing.refund_not_eligible")
+
+        # Prevent duplicate refunds
+        existing_refund = self.client.table("billing_refunds").select("id,status").eq("purchase_id", str(purchase_id)).execute()
+        if existing_refund.data:
+            raise HTTPException(status.HTTP_409_CONFLICT, "billing.refund_already_exists")
+
+        refund_amount = amount_minor if amount_minor is not None else purchase["amount_minor"]
+        if refund_amount <= 0 or refund_amount > purchase["amount_minor"]:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "billing.refund_amount_invalid")
+
+        is_partial = refund_amount < purchase["amount_minor"]
+        refund_id = _uuid4()
+        idempotency_key = f"refund:{purchase_id}"
+
+        # Insert refund record
+        self.client.table("billing_refunds").insert({
+            "id": str(refund_id),
+            "purchase_id": str(purchase_id),
+            "organization_id": str(purchase["organization_id"]),
+            "requested_by": str(actor_id),
+            "reason": reason,
+            "amount_minor": refund_amount,
+            "currency": purchase["currency"],
+            "status": "requested",
+            "reversal_status": "pending",
+        }).execute()
+
+        # Call PayGateway
+        provider_refund_id: str | None = None
+        try:
+            refund_data = await self.paygateway.refund_payment(
+                payment_id=str(purchase.get("provider_payment_id") or ""),
+                amount_minor=refund_amount,
+                currency=purchase["currency"],
+                idempotency_key=idempotency_key,
+            )
+            provider_refund_id = str(refund_data.get("id", ""))
+            refund_status = "succeeded"
+        except PayGatewayError as exc:
+            self.client.table("billing_refunds").update(
+                {"status": "failed", "updated_at": datetime.now(UTC).isoformat()}
+            ).eq("id", str(refund_id)).execute()
+            raise HTTPException(status_code=exc.status_code, detail=self._message_key(exc.code)) from exc
+
+        # Update purchase status
+        self.client.table("billing_purchases").update(
+            {"status": "refunded", "provider_refund_id": provider_refund_id}
+        ).eq("id", str(purchase_id)).execute()
+
+        # Reverse fulfillment (full refunds only — partial refunds don't reverse)
+        reversal_payload: dict = {}
+        reversal_status = "pending"
+        if not is_partial:
+            reversal_payload, reversal_status = self._reverse_fulfillment(purchase)
+
+        self.client.table("billing_refunds").update({
+            "status": refund_status,
+            "provider_refund_id": provider_refund_id,
+            "reversal_status": reversal_status,
+            "reversal_payload": reversal_payload,
+            "applied_at": datetime.now(UTC).isoformat() if reversal_status == "applied" else None,
+            "updated_at": datetime.now(UTC).isoformat(),
+        }).eq("id", str(refund_id)).execute()
+
+        await self._audit(actor_id, "billing.refund.issued", "billing_refund", str(refund_id), {
+            "purchase_id": str(purchase_id),
+            "amount_minor": refund_amount,
+            "partial": is_partial,
+        })
+        return {
+            "refund_id": refund_id,
+            "purchase_id": purchase_id,
+            "status": "succeeded",
+            "reversal_status": reversal_status,
+            "amount_minor": refund_amount,
+            "currency": purchase["currency"],
+            "message_key": "billing.refund.succeeded",
+        }
+
+    def _reverse_fulfillment(self, purchase: dict) -> tuple[dict, str]:
+        """Reverse the effect of a fulfilled purchase. Returns (reversal_payload, reversal_status)."""
+        purpose = purchase["purpose"]
+        org_id = str(purchase["organization_id"])
+        payload: dict = dict(purchase.get("target") or {})
+        try:
+            if purpose == "subscription_tier":
+                snapshot = purchase.get("previous_effect_snapshot") or {}
+                previous_tier = snapshot.get("previous_tier")
+                if previous_tier and previous_tier in TIER_ORDER:
+                    self.client.table("organizations").update({"subscription_tier": previous_tier}).eq("id", org_id).execute()
+                    payload["reverted_to"] = previous_tier
+            elif purpose == "seats":
+                qty = int(purchase.get("quantity") or 0)
+                if qty > 0:
+                    org = self._get_org(UUID(org_id))
+                    new_val = max(0, int(org.get("purchased_seat_allowance") or 0) - qty)
+                    self.client.table("organizations").update({"purchased_seat_allowance": new_val}).eq("id", org_id).execute()
+                    payload["seats_removed"] = qty
+            elif purpose == "ocr_batch":
+                qty = int(purchase.get("quantity") or 0)
+                if qty > 0:
+                    org = self._get_org(UUID(org_id))
+                    new_val = max(0, int(org.get("ocr_scan_credit_balance") or 0) - qty)
+                    self.client.table("organizations").update({"ocr_scan_credit_balance": new_val}).eq("id", org_id).execute()
+                    payload["credits_removed"] = qty
+            # marketplace_template: template already cloned, no reversal possible
+            return payload, "applied"
+        except Exception:
+            return payload, "failed"
+
+    # ------------------------------------------------------------------
+    # List / Get
+    # ------------------------------------------------------------------
 
     def list_purchases(self, *, org_id: UUID | None, status_value: str | None = None, purpose: str | None = None, limit: int = 50) -> list[dict]:
         query = self.client.table("billing_purchases").select("*")
@@ -187,6 +370,10 @@ class BillingService:
         self._assert_org_access(purchase, org_id)
         return purchase
 
+    # ------------------------------------------------------------------
+    # Amount computation
+    # ------------------------------------------------------------------
+
     def _compute_amount(self, *, org: dict, purpose: BillingPurpose, target: dict, quantity: int | None, currency: str) -> tuple[int, dict, int | None]:
         if purpose == BillingPurpose.SUBSCRIPTION_TIER:
             tier = target.get("tier")
@@ -195,23 +382,42 @@ class BillingService:
                 raise HTTPException(status.HTTP_400_BAD_REQUEST, "billing.invalid_target")
             price = self._get_price("tier", tier, currency)
             return int(price["unit_amount_minor"]), {"tier": tier}, None
+
         if purpose == BillingPurpose.SEATS:
             qty = int(quantity or 0)
             if qty <= 0:
                 raise HTTPException(status.HTTP_400_BAD_REQUEST, "billing.invalid_quantity")
             price = self._get_price("seat", "seat", currency)
             return int(price["unit_amount_minor"]) * qty, {"addon": "seat"}, qty
+
         if purpose == BillingPurpose.OCR_BATCH:
             qty = int(quantity or target.get("forms") or 0)
             if qty <= 0:
                 raise HTTPException(status.HTTP_400_BAD_REQUEST, "billing.invalid_quantity")
             price = self._get_price("ocr_batch", str(target.get("package", "forms")), currency)
             return int(price["unit_amount_minor"]) * qty, {"package": target.get("package", "forms"), "forms": qty}, qty
+
+        if purpose == BillingPurpose.MARKETPLACE_TEMPLATE:
+            listing_id = target.get("listing_id")
+            if not listing_id:
+                raise HTTPException(status.HTTP_400_BAD_REQUEST, "billing.invalid_target")
+            listing = self._get_listing(str(listing_id))
+            if listing.get("price_type") != "premium":
+                raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "billing.listing_not_premium")
+            raw_price = Decimal(str(listing.get("price_amount") or "0"))
+            # Convert to minor units (×100)
+            amount = int((raw_price * 100).to_integral_value(rounding=ROUND_HALF_UP))
+            return amount, {"listing_id": str(listing_id), "listing_name": listing.get("name", "")}, None
+
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "billing.invalid_target")
+
+    # ------------------------------------------------------------------
+    # Options helpers
+    # ------------------------------------------------------------------
 
     def _tier_options(self, *, current_tier: str, currency: str) -> list[dict]:
         current_idx = TIER_ORDER.index(current_tier) if current_tier in TIER_ORDER else 0
-        return [self._option_for_tier(tier, currency) for tier in TIER_ORDER[current_idx + 1 :]]
+        return [self._option_for_tier(tier, currency) for tier in TIER_ORDER[current_idx + 1:]]
 
     def _option_for_tier(self, tier: str, currency: str) -> dict:
         try:
@@ -232,6 +438,64 @@ class BillingService:
                 options.append({"purpose": billing_purpose.value, "unit_amount_minor": None, "currency": currency, "available": False, "unavailable_reason_key": "billing.price_unavailable"})
         return options
 
+    # ------------------------------------------------------------------
+    # Tier limit enforcement (G-1)
+    # ------------------------------------------------------------------
+
+    def get_tier_limits(self, org_id: UUID) -> dict | None:
+        org = self._get_org(org_id)
+        tier = org.get("subscription_tier", "starter")
+        result = self.client.table("tier_limits").select("*").eq("tier", tier).limit(1).execute()
+        return result.data[0] if result.data else None
+
+    def check_user_limit(self, org_id: UUID) -> None:
+        """Raise 402 if org has reached its user capacity (profiles + pending invitations)."""
+        org = self._get_org(org_id)
+        tier = org.get("subscription_tier", "starter")
+        limits_result = self.client.table("tier_limits").select("user_limit").eq("tier", tier).limit(1).execute()
+        if not limits_result.data:
+            return
+        user_limit = int(limits_result.data[0]["user_limit"])
+        if user_limit <= 0:
+            return  # 0 means unlimited in legacy rows; negative treated same
+        seat_allowance = int(org.get("purchased_seat_allowance") or 0)
+        effective_limit = user_limit + seat_allowance
+
+        active_count = self.client.table("profiles").select("id", count="exact").eq("org_id", str(org_id)).eq("is_active", True).execute()
+        pending_count = self.client.table("user_invitations").select("id", count="exact").eq("org_id", str(org_id)).eq("status", "pending").execute()
+        total = (active_count.count or 0) + (pending_count.count or 0)
+
+        if total >= effective_limit:
+            raise HTTPException(
+                status.HTTP_402_PAYMENT_REQUIRED,
+                detail="billing.user_limit_reached",
+            )
+
+    def check_submission_limit(self, org_id: UUID) -> None:
+        """Raise 402 if org has reached its monthly submission cap (Starter tier only)."""
+        org = self._get_org(org_id)
+        tier = org.get("subscription_tier", "starter")
+        limits_result = self.client.table("tier_limits").select("submissions_per_month_limit").eq("tier", tier).limit(1).execute()
+        if not limits_result.data:
+            return
+        cap = limits_result.data[0].get("submissions_per_month_limit")
+        if cap is None or int(cap) < 0:
+            return  # -1 = unlimited
+
+        now = datetime.now(UTC)
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+        count_result = self.client.table("submissions").select("id", count="exact").eq("org_id", str(org_id)).gte("created_at", month_start).execute()
+        used = count_result.count or 0
+        if used >= int(cap):
+            raise HTTPException(
+                status.HTTP_402_PAYMENT_REQUIRED,
+                detail="billing.submission_limit_reached",
+            )
+
+    # ------------------------------------------------------------------
+    # Private helpers
+    # ------------------------------------------------------------------
+
     def _get_price(self, price_type: str, target_key: str, currency: str) -> dict:
         result = self.client.table("billing_prices").select("*").eq("price_type", price_type).eq("target_key", target_key).eq("currency", currency).eq("is_active", True).limit(1).execute()
         if not result.data:
@@ -248,6 +512,12 @@ class BillingService:
         result = self.client.table("billing_purchases").select("*").eq("id", str(purchase_id)).single().execute()
         if not result.data:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "billing.purchase_not_found")
+        return result.data
+
+    def _get_listing(self, listing_id: str) -> dict:
+        result = self.client.table("marketplace_listings").select("*").eq("id", str(listing_id)).eq("status", "active").single().execute()
+        if not result.data:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "billing.listing_not_found")
         return result.data
 
     @staticmethod
