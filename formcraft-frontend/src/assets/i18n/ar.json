@@ -76,7 +76,9 @@
       "pay": "ادفع",
       "secureInput": "يتم إدخال بيانات البطاقة عبر PayGateway فقط.",
       "ready": "جاهز لإنشاء جلسة دفع آمنة.",
-      "tokenReady": "تم إنشاء جلسة الدفع الآمنة."
+      "tokenReady": "تم إنشاء جلسة الدفع الآمنة.",
+      "cardInput": "بيانات البطاقة",
+      "processing": "جارٍ معالجة الدفع..."
     },
     "history": {
       "title": "سجل المشتريات"
@@ -96,7 +98,46 @@
     "provider_rate_limited": "مزود الدفع مشغول. حاول لاحقاً.",
     "provider_error": "حدث خطأ لدى مزود الدفع.",
     "price_unavailable": "السعر غير متاح.",
-    "org_admin_required": "يلزم حساب مسؤول المؤسسة."
+    "org_admin_required": "يلزم حساب مسؤول المؤسسة.",
+    "user_limit_reached": "وصلت مؤسستك إلى الحد الأقصى لعدد المستخدمين. قم بشراء مقاعد إضافية لدعوة المزيد.",
+    "submission_limit_reached": "وصلت مؤسستك إلى الحد الشهري للتقديمات. قم بترقية خطتك للاستمرار.",
+    "refund": {
+      "succeeded": "تم إصدار الاسترداد بنجاح.",
+      "already_exists": "تم إصدار استرداد بالفعل لهذه العملية.",
+      "not_eligible": "هذه العملية غير مؤهلة للاسترداد.",
+      "amount_invalid": "مبلغ الاسترداد يجب أن يكون أكبر من الصفر وألا يتجاوز المبلغ الأصلي."
+    },
+    "listing_not_found": "القائمة غير موجودة أو غير متاحة.",
+    "listing_not_premium": "هذه القائمة ليست قالباً مميزاً.",
+    "refund_not_eligible": "لا يمكن استرداد هذه العملية.",
+    "refund_already_exists": "يوجد استرداد بالفعل لهذه العملية.",
+    "refund_amount_invalid": "مبلغ الاسترداد يجب أن يكون بين 1 والمبلغ الأصلي.",
+    "subscription_status": {
+      "active": "نشط",
+      "past_due": "متأخر السداد — يرجى تحديث طريقة الدفع.",
+      "cancelled": "ملغى"
+    },
+    "subscription_renews_on": "يتجدد بتاريخ",
+    "subscription_ends_on": "ينتهي الاشتراك بتاريخ",
+    "subscription_downgrade_scheduled": "تخفيض الاشتراك إلى {{tier}} مجدول في {{date}}",
+    "subscription_cancel_confirm_title": "إلغاء الاشتراك",
+    "subscription_cancel_confirm_body": "سيبقى اشتراكك نشطاً حتى نهاية فترة الفوترة الحالية. هل أنت متأكد؟",
+    "update_payment_method": "تحديث طريقة الدفع",
+    "interval": {
+      "monthly": "شهري",
+      "annual": "سنوي"
+    },
+    "subscription_already_active": "مؤسستك تمتلك بالفعل اشتراكاً نشطاً.",
+    "subscription_not_found": "لم يُعثر على اشتراك نشط.",
+    "downgrade_requires_schedule": "جدولة التخفيض",
+    "interval_change_not_supported": "تغيير دورة الفوترة يتطلب إلغاء الاشتراك والاشتراك مجدداً.",
+    "upgrade_requires_immediate": "يسري الترقية فوراً مع خصم نسبي.",
+    "no_downgrade_scheduled": "لا يوجد تخفيض مجدول حالياً.",
+    "already_cancelled": "الاشتراك مجدول بالفعل للإلغاء.",
+    "subscription_not_cancelling": "الاشتراك غير مجدول للإلغاء.",
+    "subscription_already_expired": "انتهت فترة الفوترة بالفعل. يرجى الاشتراك مجدداً.",
+    "subscription_not_past_due": "بوابة الدفع متاحة فقط عند تأخر سداد الاشتراك.",
+    "portal_url_error": "تعذر فتح بوابة الدفع. يرجى المحاولة مجدداً."
   },
   "adminExport": {
     "title": "تصدير البيانات",

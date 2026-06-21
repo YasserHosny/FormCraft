@@ -138,6 +138,8 @@ def create_app() -> FastAPI:
     # Feature 058: PayGateway billing
     app.include_router(billing.router, prefix="/api")
     app.include_router(billing.platform_router, prefix="/api")
+    # Feature 059: Recurring subscription billing
+    app.include_router(billing.subscription_router, prefix="/api")
 
     # Global handler for Supabase/PostgREST errors (missing tables/columns
     # from unapplied migrations) — returns a clear 503 instead of 500.

@@ -11,6 +11,16 @@ import {
   BillingPurchaseVerifyResponse,
   BillingPurpose,
   BillingRefundResponse,
+  CancelSubscriptionResponse,
+  CreateSubscriptionRequest,
+  CreateSubscriptionResponse,
+  DowngradeScheduleResponse,
+  PortalUrlResponse,
+  ReactivateSubscriptionResponse,
+  ScheduleDowngradeRequest,
+  SubscriptionResponse,
+  UpgradeSubscriptionRequest,
+  UpgradeSubscriptionResponse,
 } from '../../shared/models/billing.models';
 
 @Injectable({ providedIn: 'root' })
@@ -61,5 +71,40 @@ export class BillingService {
       `${this.platformBaseUrl}/purchases/${purchaseId}/refund`,
       { reason }
     );
+  }
+
+  // F059 — Subscription methods
+  private readonly subsUrl = `${environment.apiBaseUrl}/billing/subscriptions`;
+
+  getCurrentSubscription(): Observable<SubscriptionResponse> {
+    return this.http.get<SubscriptionResponse>(`${this.subsUrl}/current`);
+  }
+
+  createSubscription(req: CreateSubscriptionRequest): Observable<CreateSubscriptionResponse> {
+    return this.http.post<CreateSubscriptionResponse>(this.subsUrl, req);
+  }
+
+  upgradeSubscription(req: UpgradeSubscriptionRequest): Observable<UpgradeSubscriptionResponse> {
+    return this.http.post<UpgradeSubscriptionResponse>(`${this.subsUrl}/upgrade`, req);
+  }
+
+  scheduleDowngrade(req: ScheduleDowngradeRequest): Observable<DowngradeScheduleResponse> {
+    return this.http.post<DowngradeScheduleResponse>(`${this.subsUrl}/downgrade-schedule`, req);
+  }
+
+  cancelDowngradeSchedule(): Observable<DowngradeScheduleResponse> {
+    return this.http.delete<DowngradeScheduleResponse>(`${this.subsUrl}/downgrade-schedule`);
+  }
+
+  cancelSubscription(): Observable<CancelSubscriptionResponse> {
+    return this.http.post<CancelSubscriptionResponse>(`${this.subsUrl}/cancel`, {});
+  }
+
+  reactivateSubscription(): Observable<ReactivateSubscriptionResponse> {
+    return this.http.post<ReactivateSubscriptionResponse>(`${this.subsUrl}/reactivate`, {});
+  }
+
+  getPortalUrl(returnUrl: string): Observable<PortalUrlResponse> {
+    return this.http.post<PortalUrlResponse>(`${this.subsUrl}/portal-url`, { return_url: returnUrl });
   }
 }

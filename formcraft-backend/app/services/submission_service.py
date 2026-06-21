@@ -1,6 +1,6 @@
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -45,6 +45,7 @@ class SubmissionService:
         org_id: UUID,
         branch_id: UUID | None = None,
     ) -> Submission:
+        self._check_submission_limit(org_id)
         template_data = self._validate_template(template_id, template_version)
         elements = self._get_template_elements(template_id, template_version)
         country = template_data.get("country", "SA")
@@ -110,6 +111,22 @@ class SubmissionService:
         )
 
         return submission
+
+    def _check_submission_limit(self, org_id: UUID) -> None:
+        org_result = self.client.table("organizations").select("subscription_tier").eq("id", str(org_id)).single().execute()
+        if not org_result.data:
+            return
+        tier = org_result.data.get("subscription_tier", "starter")
+        limits = self.client.table("tier_limits").select("submissions_per_month_limit").eq("tier", tier).limit(1).execute()
+        if not limits.data:
+            return
+        cap = limits.data[0].get("submissions_per_month_limit")
+        if cap is None or int(cap) < 0:
+            return  # -1 = unlimited
+        month_start = datetime.now(UTC).replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+        count_result = self.client.table("submissions").select("id", count="exact").eq("org_id", str(org_id)).gte("created_at", month_start).execute()
+        if (count_result.count or 0) >= int(cap):
+            raise HTTPException(status.HTTP_402_PAYMENT_REQUIRED, "billing.submission_limit_reached")
 
     def _validate_template(self, template_id: UUID, template_version: int) -> dict:
         try:

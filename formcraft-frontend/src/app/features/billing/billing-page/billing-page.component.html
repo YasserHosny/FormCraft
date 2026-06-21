@@ -6,6 +6,62 @@
 
   <mat-spinner *ngIf="loading" diameter="36"></mat-spinner>
 
+  <!-- Subscription status panel -->
+  <mat-card class="subscription-panel" *ngIf="currentSubscription && currentSubscription.status !== 'cancelled'">
+    <mat-card-content>
+      <!-- Past-due banner -->
+      <div class="past-due-banner" *ngIf="currentSubscription.status === 'past_due'">
+        <mat-icon color="warn">warning</mat-icon>
+        <span>{{ 'billing.subscription_status.past_due' | translate }}</span>
+        <button mat-stroked-button color="warn" (click)="openPaymentPortal()">
+          {{ 'billing.update_payment_method' | translate }}
+        </button>
+      </div>
+
+      <div class="sub-meta">
+        <mat-chip [color]="currentSubscription.status === 'active' ? 'primary' : 'warn'" selected>
+          {{ ('billing.subscription_status.' + currentSubscription.status) | translate }}
+        </mat-chip>
+        <span *ngIf="!currentSubscription.cancel_at_period_end">
+          {{ 'billing.subscription_renews_on' | translate }} {{ renewalDate }}
+          &nbsp;·&nbsp;{{ currentSubscription.next_renewal_amount_minor / 100 | number:'1.2-2' }} {{ currentSubscription.currency }}
+        </span>
+        <span *ngIf="currentSubscription.cancel_at_period_end">
+          {{ 'billing.subscription_ends_on' | translate }} {{ renewalDate }}
+        </span>
+      </div>
+
+      <!-- Scheduled downgrade chip -->
+      <div *ngIf="currentSubscription.scheduled_downgrade_tier">
+        <mat-chip-set>
+          <mat-chip>
+            {{ 'billing.subscription_downgrade_scheduled' | translate:{tier: currentSubscription.scheduled_downgrade_tier, date: downgradeDate} }}
+          </mat-chip>
+          <button mat-icon-button (click)="cancelScheduledDowngrade()" [disabled]="subLoading" [attr.aria-label]="'billing.no_downgrade_scheduled' | translate">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-chip-set>
+      </div>
+
+      <!-- Cancel / reactivate actions -->
+      <div class="sub-actions">
+        <ng-container *ngIf="!currentSubscription.cancel_at_period_end">
+          <button mat-button color="warn" *ngIf="!cancelConfirming" (click)="cancelConfirming = true" [disabled]="subLoading">
+            {{ 'billing.subscription_cancel_confirm_title' | translate }}
+          </button>
+          <ng-container *ngIf="cancelConfirming">
+            <span class="confirm-text">{{ 'billing.subscription_cancel_confirm_body' | translate }}</span>
+            <button mat-raised-button color="warn" (click)="cancelSubscription()" [disabled]="subLoading">{{ 'billing.subscription_cancel_confirm_title' | translate }}</button>
+            <button mat-button (click)="cancelConfirming = false">{{ 'common.cancel' | translate }}</button>
+          </ng-container>
+        </ng-container>
+        <button mat-stroked-button color="primary" *ngIf="currentSubscription.cancel_at_period_end" (click)="reactivateSubscription()" [disabled]="subLoading">
+          {{ 'billing.subscription_status.active' | translate }}
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
   <div class="tier-grid" *ngIf="options">
     <mat-card *ngFor="let tier of options.tiers">
       <mat-card-header>
@@ -18,6 +74,12 @@
       <mat-card-actions>
         <button mat-raised-button color="primary" [disabled]="!tier.available" (click)="buyTier(tier.tier)">
           {{ 'billing.checkout.buy' | translate }}
+        </button>
+        <button mat-button color="accent"
+          *ngIf="currentSubscription && currentSubscription.status !== 'cancelled'"
+          [disabled]="subLoading"
+          (click)="scheduleDowngrade(tier.tier)">
+          {{ 'billing.downgrade_requires_schedule' | translate }}
         </button>
       </mat-card-actions>
     </mat-card>

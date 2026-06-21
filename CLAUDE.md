@@ -1,6 +1,6 @@
 # FormCraft Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-06-02
+Auto-generated from all feature plans. Last updated: 2026-06-20
 
 ## Active Technologies
 - Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Auth), Angular Material, WeasyPrint (PDF export), ng2-charts / Chart.js (frontend charting) (027-analytics-reporting)
@@ -13,6 +13,8 @@ Auto-generated from all feature plans. Last updated: 2026-06-02
 - Supabase PostgreSQL (accessed via existing REST APIs through desk services) (050-new-theme-desk-data)
 - TypeScript / Angular 19 (standalone components) + Angular Material, ngx-translate, RxJS, Angular Reactive Forms, `CustomerService` (existing, `providedIn: 'root'`) (056-spark-add-customer)
 - N/A — uses existing Supabase-backed REST API via `CustomerService` (056-spark-add-customer)
+- Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Pydantic v2, Angular Material, ngx-translate, Supabase, PayGateway client (httpx), Stripe (via PayGateway service) (059-recurring-billing)
+- Supabase PostgreSQL — new `billing_subscriptions` table; extensions to `billing_prices` and `organizations` (059-recurring-billing)
 
 - Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Supabase (PostgreSQL + Storage + Auth), Angular Material (001-customer-feedback)
 
@@ -40,9 +42,9 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.12 (backend), TypeScript / Angular 19 (frontend): Follow standard conventions
 
 ## Recent Changes
+- 059-recurring-billing: Added Python 3.12 (backend), TypeScript / Angular 19 (frontend) + FastAPI, Pydantic v2, Angular Material, ngx-translate, Supabase, PayGateway client (httpx), Stripe (via PayGateway service)
 - 056-spark-add-customer: Added TypeScript / Angular 19 (standalone components) + Angular Material, ngx-translate, RxJS, Angular Reactive Forms, `CustomerService` (existing, `providedIn: 'root'`)
 - 050-new-theme-desk-data: Added TypeScript / Angular 19 (standalone components) + Angular Material, RxJS, ngx-translate, existing desk services (providedIn: 'root')
-- 034-external-form-portal-plan: Added Python 3.12 backend; TypeScript / Angular 19 frontend + FastAPI, Supabase PostgreSQL/Auth/RLS/Storage, Angular Material, ngx-translate, RxJS, Zod, Pydantic, existing validation/condition/tafqeet services, existing PDF renderer, existing notification/email infrastructure, pluggable SMS provider adapter, hCaptcha/reCAPTCHA adapter
 
 
 <!-- MANUAL ADDITIONS START -->

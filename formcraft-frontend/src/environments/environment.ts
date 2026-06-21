@@ -27,4 +27,8 @@ export const environment: Environment = {
     }
     return (window as any).SUPABASE_ANON_KEY || '';
   },
+  get stripePublishableKey() {
+    return (window as any).STRIPE_PUBLISHABLE_KEY ||
+      'pk_test_51Tk4CzDTpg7yoNvm4Rl2SOLk3U5bFwFWDvhrN2gxkHLUwKuZYj0tyxYgdWR6JKwLPi6yeG57P7HnAfIyCgk93qum00MEtf4AN3';
+  },
 };

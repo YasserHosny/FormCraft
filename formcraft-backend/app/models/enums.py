@@ -70,6 +70,7 @@ class NotificationType(StrEnum):
     TEMPLATE_FEEDBACK_RESOLVED = "template_feedback_resolved"
     DRAFT_EXPIRING = "draft_expiring"
     SYSTEM_ANNOUNCEMENT = "system_announcement"
+    SUBSCRIPTION_PAYMENT_FAILED = "subscription_payment_failed"
 
 
 class EmailStatus(StrEnum):

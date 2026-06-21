@@ -1,16 +1,38 @@
 <h2 mat-dialog-title>{{ 'billing.checkout.title' | translate }}</h2>
 <mat-dialog-content>
-  <p>{{ 'billing.checkout.secureInput' | translate }}</p>
-  <div class="provider-mount" aria-live="polite">
-    <mat-spinner *ngIf="loading" diameter="28"></mat-spinner>
-    <span *ngIf="!loading && !result">{{ 'billing.checkout.ready' | translate }}</span>
-    <span *ngIf="result?.checkout">{{ 'billing.checkout.tokenReady' | translate }}</span>
+  <p class="secure-label">{{ 'billing.checkout.secureInput' | translate }}</p>
+
+  <!-- Billing interval toggle — shown only for new subscriptions -->
+  <div class="interval-toggle" *ngIf="isSubscribeMode">
+    <mat-button-toggle-group [(ngModel)]="billingInterval" aria-label="{{ 'billing.interval.monthly' | translate }}">
+      <mat-button-toggle value="monthly">{{ 'billing.interval.monthly' | translate }}</mat-button-toggle>
+      <mat-button-toggle value="annual">{{ 'billing.interval.annual' | translate }}</mat-button-toggle>
+    </mat-button-toggle-group>
   </div>
-  <p class="error" *ngIf="errorKey">{{ errorKey | translate }}</p>
+
+  <!-- Upgrade confirmation — no card entry needed -->
+  <div *ngIf="isUpgradeMode">
+    <p>{{ 'billing.upgrade_requires_immediate' | translate }}</p>
+  </div>
+
+  <!-- Card entry for new subscriptions -->
+  <div class="card-mount-wrapper" *ngIf="!isUpgradeMode">
+    <div #cardMount class="card-mount" [class.loading]="!cardReady" [attr.aria-label]="'billing.checkout.cardInput' | translate"></div>
+    <div class="card-loading-overlay" *ngIf="!cardReady">
+      <mat-spinner diameter="24"></mat-spinner>
+    </div>
+  </div>
+
+  <div class="progress-row" *ngIf="loading">
+    <mat-spinner diameter="20"></mat-spinner>
+    <span>{{ 'billing.checkout.processing' | translate }}</span>
+  </div>
+
+  <p class="error" role="alert" *ngIf="errorKey">{{ errorKey | translate }}</p>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-  <button mat-button (click)="close()">{{ 'common.cancel' | translate }}</button>
-  <button mat-raised-button color="primary" [disabled]="loading" (click)="start()">
+  <button mat-button [disabled]="loading" (click)="close()">{{ 'common.cancel' | translate }}</button>
+  <button mat-raised-button color="primary" [disabled]="loading || (!isUpgradeMode && !cardReady)" (click)="pay()">
     {{ 'billing.checkout.pay' | translate }}
   </button>
 </mat-dialog-actions>

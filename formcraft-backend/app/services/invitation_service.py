@@ -26,6 +26,7 @@ class InvitationService:
         self, org_id: UUID, data: dict, invited_by: UUID
     ) -> dict:
         email = data["email"].lower().strip()
+        self._check_user_limit(org_id)
 
         # Check for an existing active user with this email in the org
         existing_profiles = (
@@ -248,6 +249,29 @@ class InvitationService:
             "department_id": invitation.get("department_id"),
             "branch_id": invitation.get("branch_id"),
         }
+
+    # ------------------------------------------------------------------
+    # TIER LIMIT ENFORCEMENT (G-1)
+    # ------------------------------------------------------------------
+
+    def _check_user_limit(self, org_id: UUID) -> None:
+        org_result = self.client.table("organizations").select("subscription_tier,purchased_seat_allowance").eq("id", str(org_id)).single().execute()
+        if not org_result.data:
+            return
+        org = org_result.data
+        tier = org.get("subscription_tier", "starter")
+        limits = self.client.table("tier_limits").select("user_limit").eq("tier", tier).limit(1).execute()
+        if not limits.data:
+            return
+        user_limit = int(limits.data[0]["user_limit"])
+        if user_limit <= 0:
+            return  # legacy row with 0 = unlimited
+        effective_limit = user_limit + int(org.get("purchased_seat_allowance") or 0)
+        active = self.client.table("profiles").select("id", count="exact").eq("org_id", str(org_id)).eq("is_active", True).execute()
+        pending = self.client.table("user_invitations").select("id", count="exact").eq("org_id", str(org_id)).eq("status", "pending").execute()
+        total = (active.count or 0) + (pending.count or 0)
+        if total >= effective_limit:
+            raise HTTPException(status.HTTP_402_PAYMENT_REQUIRED, "billing.user_limit_reached")
 
     # ------------------------------------------------------------------
     # EXPIRE STALE

@@ -1,6 +1,11 @@
-.billing-page {
+:host {
   display: block;
+  width: 100%;
+}
+
+.billing-page {
   padding: 24px;
+  box-sizing: border-box;
 }
 
 .billing-page header {

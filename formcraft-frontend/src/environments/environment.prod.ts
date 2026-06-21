@@ -20,4 +20,11 @@ export const environment: Environment = {
     }
     return (window as any).SUPABASE_ANON_KEY || '';
   },
+  get stripePublishableKey() {
+    const runtimeConfig = (window as any).FC_RUNTIME_CONFIG;
+    if (runtimeConfig?.stripe?.publishableKey) {
+      return runtimeConfig.stripe.publishableKey;
+    }
+    return (window as any).STRIPE_PUBLISHABLE_KEY || '';
+  },
 };

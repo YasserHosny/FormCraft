@@ -1,13 +1,54 @@
-.provider-mount {
-  align-items: center;
-  border: 1px dashed rgba(0, 0, 0, 0.24);
+.secure-label {
+  font-size: 13px;
+  color: var(--fc-text-2);
+  margin-bottom: 12px;
+}
+
+.card-mount-wrapper {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.card-mount {
+  border: 1px solid var(--fc-border, rgba(0, 0, 0, 0.24));
   border-radius: 6px;
+  padding: 12px 14px;
+  min-height: 42px;
+  background: var(--fc-input-bg, var(--fc-surface, #fff));
+  transition: border-color 0.15s ease;
+
+  &:focus-within {
+    border-color: var(--fc-primary, #3f51b5);
+    outline: none;
+  }
+
+  &.loading {
+    min-height: 42px;
+  }
+}
+
+.card-loading-overlay {
+  position: absolute;
+  inset: 0;
   display: flex;
+  align-items: center;
   justify-content: center;
-  min-height: 96px;
-  padding: 16px;
+  background: var(--fc-surface, #fff);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--fc-text-2);
 }
 
 .error {
   color: #b00020;
+  font-size: 13px;
+  margin-top: 6px;
 }

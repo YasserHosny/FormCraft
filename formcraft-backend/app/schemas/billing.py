@@ -146,6 +146,7 @@ class PayGatewayWebhookResponse(BaseModel):
 
 class RefundCreateRequest(BaseModel):
     reason: str = Field(min_length=1, max_length=1000)
+    amount_minor: int | None = Field(default=None, ge=1, description="Omit for full refund; pass a value < purchase amount for partial refund")
 
 
 class RefundResponse(BaseModel):
@@ -156,3 +157,111 @@ class RefundResponse(BaseModel):
     amount_minor: int = Field(ge=0)
     currency: str
     message_key: str
+
+
+# ---------------------------------------------------------------------------
+# F059 — Recurring subscription billing schemas
+# ---------------------------------------------------------------------------
+
+
+class SubscriptionStatus(StrEnum):
+    ACTIVE = "active"
+    PAST_DUE = "past_due"
+    CANCELLED = "cancelled"
+
+
+class BillingIntervalEnum(StrEnum):
+    MONTHLY = "monthly"
+    ANNUAL = "annual"
+
+
+class SubscriptionResponse(BaseModel):
+    id: UUID
+    org_id: UUID
+    tier: str
+    billing_interval: BillingIntervalEnum
+    status: SubscriptionStatus
+    current_period_start: datetime
+    current_period_end: datetime
+    next_renewal_amount_minor: int = Field(ge=0)
+    currency: str
+    scheduled_downgrade_tier: str | None = None
+    cancel_at_period_end: bool = False
+    failed_payment_count: int = Field(ge=0, default=0)
+    provider_subscription_id: str | None = None
+
+
+class CreateSubscriptionRequest(BaseModel):
+    tier: str
+    billing_interval: BillingIntervalEnum
+    return_url: str
+
+
+class CreateSubscriptionResponse(BaseModel):
+    subscription_id: str
+    status: str
+    checkout: CheckoutToken | None = None
+
+
+class UpgradeSubscriptionRequest(BaseModel):
+    tier: str
+
+
+class UpgradeSubscriptionResponse(BaseModel):
+    subscription_id: str
+    previous_tier: str
+    new_tier: str
+    proration_amount_minor: int = Field(ge=0)
+    currency: str
+    status: SubscriptionStatus
+
+
+class DowngradeScheduleRequest(BaseModel):
+    tier: str
+
+
+class DowngradeScheduleResponse(BaseModel):
+    subscription_id: str
+    current_tier: str
+    scheduled_downgrade_tier: str | None
+    effective_date: datetime | None = None
+
+
+class CancelSubscriptionResponse(BaseModel):
+    subscription_id: str
+    tier: str
+    cancel_at_period_end: bool
+    period_end: datetime
+
+
+class ReactivateSubscriptionResponse(BaseModel):
+    subscription_id: str
+    tier: str
+    cancel_at_period_end: bool
+    next_renewal_date: datetime
+
+
+class PortalUrlRequest(BaseModel):
+    return_url: str
+
+
+class PortalUrlResponse(BaseModel):
+    portal_url: str
+    expires_at: datetime
+
+
+class SubscriptionWebhookRequest(BaseModel):
+    event_id: str
+    event_type: str
+    subscription_id: str
+    invoice_id: str | None = None
+    amount_paid_minor: int | None = None
+    currency: str | None = None
+    period_start: datetime | None = None
+    period_end: datetime | None = None
+    metadata: dict = Field(default_factory=dict)
+
+
+class SubscriptionWebhookResponse(BaseModel):
+    received: bool
+    event_type: str

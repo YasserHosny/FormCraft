@@ -52,27 +52,72 @@ class PayGatewayClient:
         idempotency_key: str,
         return_url: str | None,
     ) -> PayGatewayCheckout:
-        payload = {
-            "purchase_reference": purchase_id,
-            "amount_minor": amount_minor,
+        payload: dict[str, Any] = {
+            "amount": amount_minor,
             "currency": currency,
-            "return_url": return_url,
+            "metadata": {"purchase_reference": purchase_id},
         }
-        data = await self._request("POST", "/payments", json=payload, idempotency_key=idempotency_key)
+        if return_url:
+            payload["description"] = f"FormCraft purchase {purchase_id}"
+        data = await self._request("POST", "/api/v1/payments", json=payload, idempotency_key=idempotency_key)
+        pg_status = str(data.get("status", "created"))
         return PayGatewayCheckout(
-            payment_id=str(data["payment_id"]),
-            client_token=str(data["client_token"]),
-            requires_action=bool(data.get("requires_action", False)),
+            payment_id=str(data["id"]),
+            client_token=str(data.get("client_secret") or ""),
+            requires_action=pg_status in {"requires_action", "requires_authentication"},
             expires_at=self._parse_datetime(data.get("expires_at")),
-            status=str(data.get("status", "created")),
+            status=pg_status,
         )
 
     async def get_payment_status(self, payment_id: str) -> dict[str, Any]:
-        return await self._request("GET", f"/payments/{payment_id}")
+        return await self._request("GET", f"/api/v1/payments/{payment_id}")
 
     async def refund_payment(self, *, payment_id: str, amount_minor: int, currency: str, idempotency_key: str) -> dict[str, Any]:
-        payload = {"amount_minor": amount_minor, "currency": currency}
-        return await self._request("POST", f"/payments/{payment_id}/refunds", json=payload, idempotency_key=idempotency_key)
+        payload = {"amount": amount_minor}
+        return await self._request("POST", f"/api/v1/payments/{payment_id}/refund", json=payload, idempotency_key=idempotency_key)
+
+    # ------------------------------------------------------------------
+    # F059 — Subscription + Customer methods
+    # ------------------------------------------------------------------
+
+    async def create_customer(self, *, email: str, name: str) -> dict[str, Any]:
+        """Create a Stripe Customer. Returns {"id": "cus_...", "email": "..."}."""
+        return await self._request("POST", "/api/v1/customers", json={"email": email, "name": name})
+
+    async def create_subscription(
+        self,
+        *,
+        customer_id: str,
+        price_id: str,
+        metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {"customer_id": customer_id, "price_id": price_id, "metadata": metadata or {}}
+        return await self._request("POST", "/api/v1/subscriptions", json=payload)
+
+    async def get_subscription(self, subscription_id: str) -> dict[str, Any]:
+        return await self._request("GET", f"/api/v1/subscriptions/{subscription_id}")
+
+    async def upgrade_subscription(self, *, subscription_id: str, new_price_id: str) -> dict[str, Any]:
+        return await self._request(
+            "POST",
+            f"/api/v1/subscriptions/{subscription_id}/upgrade",
+            json={"new_price_id": new_price_id},
+        )
+
+    async def cancel_subscription(self, subscription_id: str) -> dict[str, Any]:
+        return await self._request("POST", f"/api/v1/subscriptions/{subscription_id}/cancel")
+
+    async def reactivate_subscription(self, subscription_id: str) -> dict[str, Any]:
+        return await self._request("POST", f"/api/v1/subscriptions/{subscription_id}/reactivate")
+
+    async def get_portal_url(self, *, customer_id: str, return_url: str) -> dict[str, Any]:
+        return await self._request(
+            "POST",
+            f"/api/v1/customers/{customer_id}/portal",
+            json={"return_url": return_url},
+        )
+
+    # ------------------------------------------------------------------
 
     def verify_webhook_signature(self, *, body: bytes, signature: str | None) -> bool:
         if not self.webhook_secret or not signature:

@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.api.deps import get_current_user, require_role
 from app.core.audit import AuditLogger
-from app.core.supabase import get_supabase_client
+from app.core.supabase import get_auth_client, get_supabase_client
 from app.models.enums import Role
 from app.models.user import UserProfile
 from pydantic import BaseModel
@@ -43,7 +43,9 @@ async def login(body: LoginRequest, request: Request):
     audit = AuditLogger(client)
 
     try:
-        response = client.auth.sign_in_with_password(
+        # Use a fresh anon client so sign_in_with_password does not mutate the
+        # service-role singleton's PostgREST auth headers.
+        response = get_auth_client().auth.sign_in_with_password(
             {"email": body.email, "password": body.password}
         )
     except Exception:
@@ -282,9 +284,8 @@ async def register(
 @router.post("/refresh", response_model=LoginResponse)
 async def refresh(body: RefreshRequest):
     """Refresh an expired access token."""
-    client = get_supabase_client()
     try:
-        response = client.auth.refresh_session(body.refresh_token)
+        response = get_auth_client().auth.refresh_session(body.refresh_token)
         return LoginResponse(
             access_token=response.session.access_token,
             refresh_token=response.session.refresh_token,
@@ -317,6 +318,6 @@ async def logout(
         ip_address=request.client.host if request.client else None,
     )
     try:
-        client.auth.sign_out()
+        get_auth_client().auth.sign_out()
     except Exception:
         pass  # Best-effort logout
