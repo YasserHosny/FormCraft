@@ -84,13 +84,10 @@ class TestPDFRendererFilled:
         assert "overflow: hidden" not in html
 
     def test_faqat_la_ghair_suffix(self):
-        import arabic_reshaper
-        from bidi.algorithm import get_display
         el = _element(source_key="amount", currency_code="SAR", language="ar", suffix="faqat_la_ghair")
         html = renderer.render(el, {"amount": "7350.00"})
-        # The renderer applies arabic_reshaper + bidi, so check for reshaped form
-        reshaped = get_display(arabic_reshaper.reshape("فقط لا غير"))
-        assert reshaped in html
+        # WeasyPrint handles bidi natively; renderer emits plain Arabic text
+        assert "فقط لا غير" in html
 
     def test_whole_number_no_subunit(self):
         el = _element(source_key="amount", currency_code="SAR", language="ar")

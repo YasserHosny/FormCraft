@@ -104,8 +104,8 @@ class ElementHTMLRenderer(ABC):
         fmt = element.get("formatting", {})
         policy = fmt.get("overflow")
         if not policy:
-            # Default per edge-case #4
-            policy = "shrink-to-fit" if element.get("type") == "tafqeet" else "clip"
+            # Default: tafqeet overflows visibly (Q2 clarification); all others clip.
+            policy = "visible" if element.get("type") == "tafqeet" else "clip"
 
         if policy == "visible":
             style = style.replace("overflow: hidden;", "overflow: visible;")

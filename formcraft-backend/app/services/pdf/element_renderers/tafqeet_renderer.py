@@ -69,8 +69,16 @@ class TafqeetRenderer(ElementHTMLRenderer):
             )
             return self._blank(element)
 
+        language = fmt.get("outputLanguage", "ar")
         lines = result.split("\n")
-        html = self._apply_line_insets(lines, element, line_direction="rtl", line_text_align="right")
+
+        if language == "both" and len(lines) >= 2:
+            # First line: Arabic (RTL), second line: English (LTR)
+            ar_line = self._apply_line_insets([lines[0]], element, line_direction="rtl", line_text_align="right")
+            en_line = self._apply_line_insets([lines[1]], element, line_direction="ltr", line_text_align="left")
+            html = ar_line + en_line
+        else:
+            html = self._apply_line_insets(lines, element, line_direction="rtl", line_text_align="right")
 
         style = self._base_style(element)
         return self._apply_overflow_policy(element, html, style, text_content=result)

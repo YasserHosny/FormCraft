@@ -18,6 +18,10 @@ class TestPlatformService:
         client.table.return_value.select.return_value.eq.return_value.execute.return_value = mocker.MagicMock(
             data=[], count=0
         )
+        # Rate limit chain: .eq("user_id").eq("action").gte("created_at").execute()
+        client.table.return_value.select.return_value.eq.return_value.eq.return_value.gte.return_value.execute.return_value = mocker.MagicMock(
+            count=0
+        )
         return client
 
     @pytest.fixture

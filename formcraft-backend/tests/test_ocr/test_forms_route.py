@@ -99,6 +99,11 @@ class TestImportForm:
             mock_route_get.return_value = mock_client
             _mock_profile_query(mock_client, admin_profile)
 
+            # Mock storage to return a real string URL
+            mock_client.storage.from_.return_value.get_public_url.return_value = (
+                "https://storage.example.com/form-backgrounds/image.jpg"
+            )
+
             # Mock OCR client
             mock_ocr = MagicMock()
             mock_ocr.analyze_layout.return_value = sample_ocr_response

@@ -18,6 +18,7 @@ def _make_client(recipient_data=None):
     chain.eq.return_value = chain
     chain.single.return_value = chain
     chain.execute.return_value = make_supabase_response(recipient_data or {})
+    table.select.return_value = chain
     table.update.return_value = chain
     client.table.return_value = table
     return client

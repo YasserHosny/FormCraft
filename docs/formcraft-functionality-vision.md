@@ -1,9 +1,9 @@
 # FormCraft — Complete Platform Functionality & Business Value
 
 > A user-centric view of every function, its business value, and the closed-cycle flows that connect them.
-> Date: 2026-05-16 | Last validated: 2026-06-01
+> Date: 2026-05-16 | Last validated: 2026-06-05
 
-Validated against `formcraft-specs/specs/001-auth-users` through `formcraft-specs/specs/053-form-filler-cross-theme`. Specs 041–053 have been reviewed and new functions are documented below; items that are specified but not yet implementation-verified are noted.
+Validated against `formcraft-specs/specs/001-auth-users` through `formcraft-specs/specs/057-overlay-control-font-insets`. Specs 041–057 have been reviewed and new functions are documented below; items that are specified but not yet implementation-verified are noted. The four most recent specs are 054-analytics-real-data (new-theme analytics on real data, 5-min TTL cache), 055-spark3-missing-pages (Export/Portal/Integration admin pages), 056-spark-add-customer (Spark Add Customer two-column form), and 057-overlay-control-font-insets (per-control PDF font + generic per-line insets + overflow/fit policy).
 
 ---
 
@@ -646,6 +646,38 @@ Business value:
     - Multiple printer profiles: each teller window can have different calibration
     - Saves stationery cost: accurate first print = no wasted pre-printed forms
     - mm-precision: same accuracy guarantee as full print mode
+```
+
+#### F-OVERLAY-FIT: Per-Control Font & Generic Line Insets (spec 057 — specified)
+
+```
+Problem this solves:
+    On real pre-printed stationery (e.g., Al Baraka cheques) overlay output overlapped,
+    used an inadequate font, and the amount-in-words (tafqeet) area is NOT a clean
+    rectangle — pre-printed labels intrude into opposite corners across its 2 writing
+    lines, so no single box can cover the area without hiding a label.
+
+    Root causes traced in the PDF renderer:
+    -> base.py hardcodes font-family + 10pt size for every element (no override)
+    -> tafqeet_renderer.py forces overflow:visible unconditionally, so long text
+       spills onto neighbouring pre-printed content (the reported overlap)
+
+User flow (Designer, Design Studio properties panel):
+    -> Selects an overlay control on a page that has a background scan
+    -> Font section: choose font-family + size + weight per control so entered data
+       visually matches the pre-printed label beside it (later: AI-suggested)
+    -> Line Insets section (GENERIC — any control, not only tafqeet):
+        - set number of lines
+        - per-line left-inset and right-inset (mm) so the first line starts after a
+          corner label and the last line stops before the opposite corner label
+    -> Overflow/Fit policy: shrink-to-fit (default for tafqeet, prevents overlap) | clip
+
+Business value:
+    - Fixes the #1 overlay print defect: data no longer collides with pre-printed text
+    - Tafqeet legal amount-in-words renders correctly inside its staggered Z-shaped area
+    - Per-control font makes printed data indistinguishable from the pre-printed form
+    - No DB migration: all settings ride inside the existing element.formatting JSONB
+    - Generic insets reusable for any irregular writing area, not a tafqeet special case
 ```
 
 #### F-DRAFT: Save & Resume
@@ -1536,7 +1568,7 @@ Business value:
 | No-code integration | Non-technical admins configure connectors via UI, no code deployments |
 | Reliability | Exponential backoff + delivery logs ensure no silent failures |
 
-#### F-UI-REDESIGN: Dual-Theme UI Shell *(specs 041, 050, 051, 052–053)*
+#### F-UI-REDESIGN: Dual-Theme UI Shell *(specs 041, 050, 051, 052–056)*
 
 ```
 User flow:
@@ -1574,6 +1606,14 @@ Business value:
     - Theme parity: both themes call the same API endpoints = consistent data, consistent bugs fixed once
     - Real data validation: new theme was rebuilt to use real APIs (no mock data divergence)
     - Incremental migration path: organization switches theme per user, not all-at-once
+
+    Recent new-theme additions (specs 054–056):
+    -> 054-analytics-real-data: /ui/admin/analytics now renders real KPIs and charts from
+       live aggregation queries (no mocks), with a 5-minute TTL cache to keep dashboards fast
+    -> 055-spark3-missing-pages: the remaining Spark3 admin pages — Export, Portal, and
+       Integration — fill the gaps so the new-theme admin console reaches classic parity
+    -> 056-spark-add-customer: Spark "Add Customer" two-column form with reactive validation
+       and inline 409 (duplicate) error handling, backed by the existing CustomerService
 ```
 
 ---

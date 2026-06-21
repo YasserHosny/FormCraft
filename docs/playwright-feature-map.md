@@ -1,7 +1,7 @@
 # FormCraft — Playwright Screenshot Feature Map
 
 > Every navigable page/route with its features, organized for automated Playwright screenshot capture.
-> Generated: 2026-06-01 (updated for specs 041–053)
+> Generated: 2026-06-05 (updated for specs 041–057)
 
 ---
 
@@ -121,6 +121,9 @@
   - Debug grid overlay (Ctrl+G)
   - Overlay print mode toggle (full/overlay/both)
   - Stationery scan upload (background image for overlay positioning)
+  - Per-control font panel (family, size, weight override per element) — spec 057
+  - Generic line-inset panel (number of lines, per-line left/right inset in mm) — spec 057
+  - Overflow/fit policy selector (shrink-to-fit | clip) — spec 057
   - PDF preview button
   - Submit for review action
   - Publish action (admin only)
@@ -801,7 +804,7 @@
 
 ---
 
-## 11. UI REDESIGN — New Theme *(specs 041, 050, 051, 052–053)*
+## 11. UI REDESIGN — New Theme *(specs 041, 050, 051, 052–056)*
 
 > All new-theme routes use **real API data** — no mocks. Spec 050 replaced all hardcoded placeholders with live backend calls.
 
@@ -842,13 +845,36 @@
 - **Route**: `/ui/desk/customers`
 - **Features**: Same as `/desk/customers` with new-theme shell
 
-### 11.7 Admin Analytics (New Theme)
+### 11.7 Admin Analytics (New Theme) *(spec 054)*
 - **Route**: `/ui/admin/analytics`
-- **Features**: Same analytics with new-theme shell
+- **Features**:
+  - Real KPIs and charts from live aggregation queries (no mock data) — spec 054
+  - 5-minute TTL cache on aggregation results (fast dashboards, bounded staleness)
+  - Same date-range / department / branch filters as classic analytics
 
 ### 11.8 Custom Validators Admin (New Theme)
 - **Route**: `/ui/admin/validators`
 - **Features**: Same as `/admin/validators` with new-theme shell
+
+### 11.9 Admin Export (New Theme) *(spec 055)*
+- **Route**: `/ui/admin/export`
+- **Features**: Spark3 Export admin page — data export configuration and history
+
+### 11.10 Admin Portal (New Theme) *(spec 055)*
+- **Route**: `/ui/admin/portal`
+- **Features**: Spark3 external-form Portal admin page — portal configuration
+
+### 11.11 Admin Integrations (New Theme) *(spec 055)*
+- **Route**: `/ui/admin/integrations`
+- **Features**: Spark3 Integrations admin page — connector/integration management
+
+### 11.12 Add Customer (New Theme) *(spec 056)*
+- **Route**: `/ui/desk/customers/new`
+- **Features**:
+  - Two-column reactive form (Spark theme)
+  - Field-level validation messages
+  - Inline 409 (duplicate customer) error handling — no full-page error
+  - Backed by existing `CustomerService`
 
 ---
 
@@ -900,6 +926,6 @@
 | Feedback | 2 |
 | Marketplace | 4 |
 | Digital Signatures | 5 |
-| UI Redesign | 7 |
+| UI Redesign | 11 |
 | Shared Components | 4 |
-| **Total** | **83** |
+| **Total** | **87** |

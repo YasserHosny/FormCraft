@@ -62,8 +62,8 @@ class PayGatewayClient:
         data = await self._request("POST", "/api/v1/payments", json=payload, idempotency_key=idempotency_key)
         pg_status = str(data.get("status", "created"))
         return PayGatewayCheckout(
-            payment_id=str(data["id"]),
-            client_token=str(data.get("client_secret") or ""),
+            payment_id=str(data["payment_id"]),
+            client_token=str(data.get("client_token") or ""),
             requires_action=pg_status in {"requires_action", "requires_authentication"},
             expires_at=self._parse_datetime(data.get("expires_at")),
             status=pg_status,

@@ -6,13 +6,27 @@ from unittest.mock import MagicMock
 from uuid import UUID
 
 import pytest
+from fastapi.testclient import TestClient
 from jose import jwt
 
-# Set test environment variables before importing app modules
+# Set test environment variables before importing app modules.
+# SUPABASE_ANON_KEY and SUPABASE_SERVICE_KEY must be valid JWTs so that
+# supabase-py's create_client() can initialize without raising InvalidAPIKeyError.
+_JWT_SECRET = "test-jwt-secret-at-least-32-chars-long"
+_TEST_SERVICE_KEY = (
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    ".eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UtZGVtbyIsImlhdCI6MTc0OTUwNDAwMCwiZXhwIjo5OTk5OTk5OTk5fQ"
+    ".ONxn5w7IEXd8t0lT6ioqn8da4Bm0FNkSDQgp7ON_Bbw"
+)
+_TEST_ANON_KEY = (
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    ".eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlLWRlbW8iLCJpYXQiOjE3NDk1MDQwMDAsImV4cCI6OTk5OTk5OTk5OX0"
+    ".-dMSb4FUaI6uCnt3qfymzO0mkSsdJFiXDhp92bO3AcA"
+)
 os.environ.setdefault("SUPABASE_URL", "https://test.supabase.co")
-os.environ.setdefault("SUPABASE_ANON_KEY", "test-anon-key")
-os.environ.setdefault("SUPABASE_SERVICE_KEY", "test-service-key")
-os.environ.setdefault("SUPABASE_JWT_SECRET", "test-jwt-secret-at-least-32-chars-long")
+os.environ.setdefault("SUPABASE_ANON_KEY", _TEST_ANON_KEY)
+os.environ.setdefault("SUPABASE_SERVICE_KEY", _TEST_SERVICE_KEY)
+os.environ.setdefault("SUPABASE_JWT_SECRET", _JWT_SECRET)
 
 from app.core.config import settings
 
@@ -126,6 +140,29 @@ def deactivated_profile(viewer_user_id) -> dict:
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "created_by": None,
     }
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _reset_supabase_singleton():
+    """Reset the Supabase client singleton so it re-initializes with test keys."""
+    import app.core.supabase as _supa
+    _supa._client = None
+    yield
+    _supa._client = None
+
+
+@pytest.fixture
+def client():
+    """TestClient for FastAPI app (used by integration tests that need 'client' fixture)."""
+    from app.main import app
+    return TestClient(app)
+
+
+@pytest.fixture
+def test_client():
+    """TestClient for FastAPI app (used by integration tests that need 'test_client' fixture)."""
+    from app.main import app
+    return TestClient(app)
 
 
 @pytest.fixture

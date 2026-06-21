@@ -17,16 +17,18 @@ def service(mock_client):
 
 
 class TestCreateJob:
-    def test_create_job_duplicate_active(self, service, mock_client):
+    @pytest.mark.asyncio
+    async def test_create_job_duplicate_active(self, service, mock_client):
         policy_id = uuid4()
         data = RetentionJobCreate(policy_id=policy_id)
         mock_client.table.return_value.select.return_value.eq.return_value.in_.return_value.execute.return_value.data = [
             {"id": str(uuid4())}
         ]
         with pytest.raises(ValueError, match="RETENTION_JOB_ACTIVE"):
-            service.create_job(uuid4(), data)
+            await service.create_job(uuid4(), data)
 
-    def test_create_job_success(self, service, mock_client):
+    @pytest.mark.asyncio
+    async def test_create_job_success(self, service, mock_client):
         policy_id = uuid4()
         data = RetentionJobCreate(policy_id=policy_id)
         mock_client.table.return_value.select.return_value.eq.return_value.in_.return_value.execute.return_value.data = []
@@ -35,17 +37,22 @@ class TestCreateJob:
                 "id": str(uuid4()),
                 "policy_id": str(policy_id),
                 "status": "pending",
+                "started_at": None,
+                "completed_at": None,
                 "batch_size": 1000,
+                "checkpoint_cursor": None,
                 "evaluated_count": 0,
                 "actioned_count": 0,
                 "error_count": 0,
                 "error_log": [],
                 "skipped_records": [],
+                "manifest_id": None,
+                "resumed_from_job_id": None,
                 "created_at": "2026-01-01T00:00:00+00:00",
                 "updated_at": "2026-01-01T00:00:00+00:00",
             }
         ]
-        result = service.create_job(uuid4(), data)
+        result = await service.create_job(uuid4(), data)
         assert result.status == "pending"
 
 

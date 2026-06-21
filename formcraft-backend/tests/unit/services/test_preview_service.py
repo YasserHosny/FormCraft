@@ -16,14 +16,16 @@ def service(mock_client):
 
 
 class TestGeneratePreview:
-    def test_policy_not_found(self, service, mock_client):
+    @pytest.mark.asyncio
+    async def test_policy_not_found(self, service, mock_client):
         org_id = uuid4()
         policy_id = uuid4()
         mock_client.table.return_value.select.return_value.eq.return_value.eq.return_value.single.return_value.execute.return_value.data = None
         with pytest.raises(ValueError, match="Policy not found"):
-            service.generate_preview(org_id, policy_id)
+            await service.generate_preview(org_id, policy_id)
 
-    def test_preview_success(self, service, mock_client):
+    @pytest.mark.asyncio
+    async def test_preview_success(self, service, mock_client):
         org_id = uuid4()
         policy_id = uuid4()
         mock_client.table.return_value.select.return_value.eq.return_value.eq.return_value.single.return_value.execute.return_value.data = {
@@ -37,6 +39,7 @@ class TestGeneratePreview:
         }
         mock_client.table.return_value.select.return_value.eq.return_value.lt.return_value.limit.return_value.execute.return_value.count = 150
         mock_client.table.return_value.select.return_value.eq.return_value.execute.return_value.count = 3
-        result = service.generate_preview(org_id, policy_id)
+        mock_client.table.return_value.select.return_value.eq.return_value.eq.return_value.execute.return_value.count = 3
+        result = await service.generate_preview(org_id, policy_id)
         assert result.affected_count == 150
         assert result.blocked_records == 3

@@ -24,14 +24,25 @@ def _mock_sign_in_response(user_id="11111111-1111-1111-1111-111111111111"):
     return mock
 
 
+def _profile_data(user_id="11111111-1111-1111-1111-111111111111"):
+    return [{"id": user_id, "is_active": True, "org_id": "44444444-4444-4444-4444-444444444444", "role": "admin", "display_name": "Admin"}]
+
+
 class TestLoginEndpoint:
     def test_login_success(self, client):
+        mock_auth_client = MagicMock()
+        mock_auth_client.auth.sign_in_with_password.return_value = _mock_sign_in_response()
+
         mock_client = MagicMock()
-        mock_client.auth.sign_in_with_password.return_value = _mock_sign_in_response()
-        # Mock audit logger write
+        profile_resp = MagicMock()
+        profile_resp.data = _profile_data()
+        mock_client.table.return_value.select.return_value.eq.return_value.execute.return_value = profile_resp
         mock_client.table.return_value.insert.return_value.execute.return_value = MagicMock()
 
-        with patch("app.api.routes.auth.get_supabase_client", return_value=mock_client):
+        with (
+            patch("app.api.routes.auth.get_supabase_client", return_value=mock_client),
+            patch("app.api.routes.auth.get_auth_client", return_value=mock_auth_client),
+        ):
             response = client.post(
                 "/api/auth/login",
                 json={"email": "admin@test.com", "password": "password123"},
@@ -44,11 +55,16 @@ class TestLoginEndpoint:
         assert body["expires_in"] == 3600
 
     def test_login_invalid_credentials(self, client):
+        mock_auth_client = MagicMock()
+        mock_auth_client.auth.sign_in_with_password.side_effect = Exception("Invalid login")
+
         mock_client = MagicMock()
-        mock_client.auth.sign_in_with_password.side_effect = Exception("Invalid login")
         mock_client.table.return_value.insert.return_value.execute.return_value = MagicMock()
 
-        with patch("app.api.routes.auth.get_supabase_client", return_value=mock_client):
+        with (
+            patch("app.api.routes.auth.get_supabase_client", return_value=mock_client),
+            patch("app.api.routes.auth.get_auth_client", return_value=mock_auth_client),
+        ):
             response = client.post(
                 "/api/auth/login",
                 json={"email": "bad@test.com", "password": "wrong"},
@@ -66,14 +82,19 @@ class TestLoginEndpoint:
 
 class TestRefreshEndpoint:
     def test_refresh_success(self, client):
-        mock_client = MagicMock()
+        mock_auth_client = MagicMock()
         mock_response = MagicMock()
         mock_response.session.access_token = "new-access-token"
         mock_response.session.refresh_token = "new-refresh-token"
         mock_response.session.expires_in = 3600
-        mock_client.auth.refresh_session.return_value = mock_response
+        mock_auth_client.auth.refresh_session.return_value = mock_response
 
-        with patch("app.api.routes.auth.get_supabase_client", return_value=mock_client):
+        mock_client = MagicMock()
+
+        with (
+            patch("app.api.routes.auth.get_supabase_client", return_value=mock_client),
+            patch("app.api.routes.auth.get_auth_client", return_value=mock_auth_client),
+        ):
             response = client.post(
                 "/api/auth/refresh",
                 json={"refresh_token": "old-refresh-token"},
@@ -82,10 +103,15 @@ class TestRefreshEndpoint:
         assert response.json()["access_token"] == "new-access-token"
 
     def test_refresh_invalid_token(self, client):
-        mock_client = MagicMock()
-        mock_client.auth.refresh_session.side_effect = Exception("Invalid token")
+        mock_auth_client = MagicMock()
+        mock_auth_client.auth.refresh_session.side_effect = Exception("Invalid token")
 
-        with patch("app.api.routes.auth.get_supabase_client", return_value=mock_client):
+        mock_client = MagicMock()
+
+        with (
+            patch("app.api.routes.auth.get_supabase_client", return_value=mock_client),
+            patch("app.api.routes.auth.get_auth_client", return_value=mock_auth_client),
+        ):
             response = client.post(
                 "/api/auth/refresh",
                 json={"refresh_token": "bad-token"},

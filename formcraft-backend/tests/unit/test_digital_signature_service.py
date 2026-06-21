@@ -50,7 +50,7 @@ class TestDigitalSignatureService:
     @pytest.mark.asyncio
     async def test_create_workflow_success(self):
         client = _client_with_data({
-            "signature_workflows": _workflow(),
+            "signature_workflows": [_workflow()],
         })
         service = DigitalSignatureService(client)
         result = await service.create_workflow(ORG_ID, ACTOR_ID, {
@@ -82,7 +82,7 @@ class TestDigitalSignatureService:
         wf = _workflow()
         client = _client_with_data({
             "signature_workflows": wf,
-            "signature_requests": {"id": str(REQUEST_ID)},
+            "signature_requests": [{"id": str(REQUEST_ID)}],
         })
         service = DigitalSignatureService(client)
         signers = [{"signer_type": "internal", "profile_id": str(uuid4()), "name": f"Signer {i}"} for i in range(11)]

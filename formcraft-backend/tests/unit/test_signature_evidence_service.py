@@ -44,6 +44,7 @@ class TestSignatureEvidenceService:
         client = MagicMock()
         table = MagicMock()
         chain = MagicMock()
+        chain.eq.return_value = chain
         chain.single.return_value = chain
         chain.execute.return_value = make_supabase_response(None)
         table.select.return_value = chain
