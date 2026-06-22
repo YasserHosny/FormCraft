@@ -1,12 +1,12 @@
 <section class="billing-page">
-  <header>
+  <header class="billing-header">
     <h1>{{ 'billing.title' | translate }}</h1>
     <p>{{ 'billing.subtitle' | translate }}</p>
   </header>
 
-  <mat-spinner *ngIf="loading" diameter="36"></mat-spinner>
+  <mat-spinner *ngIf="loading" diameter="36" class="page-spinner"></mat-spinner>
 
-  <!-- Subscription status panel -->
+  <!-- Active subscription status panel -->
   <mat-card class="subscription-panel" *ngIf="currentSubscription && currentSubscription.status !== 'cancelled'">
     <mat-card-content>
       <!-- Past-due banner -->
@@ -22,22 +22,28 @@
         <mat-chip [color]="currentSubscription.status === 'active' ? 'primary' : 'warn'" selected>
           {{ ('billing.subscription_status.' + currentSubscription.status) | translate }}
         </mat-chip>
-        <span *ngIf="!currentSubscription.cancel_at_period_end">
+        <span class="sub-tier-label">
+          {{ ('billing.tiers.' + currentSubscription.tier) | translate }}
+          &nbsp;·&nbsp;
+          {{ ('billing.interval.' + currentSubscription.billing_interval) | translate }}
+        </span>
+        <span *ngIf="!currentSubscription.cancel_at_period_end" class="sub-renewal">
           {{ 'billing.subscription_renews_on' | translate }} {{ renewalDate }}
           &nbsp;·&nbsp;{{ currentSubscription.next_renewal_amount_minor / 100 | number:'1.2-2' }} {{ currentSubscription.currency }}
         </span>
-        <span *ngIf="currentSubscription.cancel_at_period_end">
+        <span *ngIf="currentSubscription.cancel_at_period_end" class="sub-renewal">
           {{ 'billing.subscription_ends_on' | translate }} {{ renewalDate }}
         </span>
       </div>
 
       <!-- Scheduled downgrade chip -->
-      <div *ngIf="currentSubscription.scheduled_downgrade_tier">
+      <div class="scheduled-downgrade" *ngIf="currentSubscription.scheduled_downgrade_tier">
         <mat-chip-set>
           <mat-chip>
             {{ 'billing.subscription_downgrade_scheduled' | translate:{tier: currentSubscription.scheduled_downgrade_tier, date: downgradeDate} }}
           </mat-chip>
-          <button mat-icon-button (click)="cancelScheduledDowngrade()" [disabled]="subLoading" [attr.aria-label]="'billing.no_downgrade_scheduled' | translate">
+          <button mat-icon-button (click)="cancelScheduledDowngrade()" [disabled]="subLoading"
+            [attr.aria-label]="'billing.no_downgrade_scheduled' | translate">
             <mat-icon>close</mat-icon>
           </button>
         </mat-chip-set>
@@ -51,36 +57,115 @@
           </button>
           <ng-container *ngIf="cancelConfirming">
             <span class="confirm-text">{{ 'billing.subscription_cancel_confirm_body' | translate }}</span>
-            <button mat-raised-button color="warn" (click)="cancelSubscription()" [disabled]="subLoading">{{ 'billing.subscription_cancel_confirm_title' | translate }}</button>
+            <button mat-raised-button color="warn" (click)="cancelSubscription()" [disabled]="subLoading">
+              {{ 'billing.subscription_cancel_confirm_title' | translate }}
+            </button>
             <button mat-button (click)="cancelConfirming = false">{{ 'common.cancel' | translate }}</button>
           </ng-container>
         </ng-container>
-        <button mat-stroked-button color="primary" *ngIf="currentSubscription.cancel_at_period_end" (click)="reactivateSubscription()" [disabled]="subLoading">
+        <button mat-stroked-button color="primary" *ngIf="currentSubscription.cancel_at_period_end"
+          (click)="reactivateSubscription()" [disabled]="subLoading">
           {{ 'billing.subscription_status.active' | translate }}
         </button>
       </div>
     </mat-card-content>
   </mat-card>
 
-  <div class="tier-grid" *ngIf="options">
-    <mat-card *ngFor="let tier of options.tiers">
+  <!-- Billing interval toggle -->
+  <div class="interval-toggle" *ngIf="!loading">
+    <span [class.active]="billingInterval === 'monthly'" (click)="billingInterval = 'monthly'">
+      {{ 'billing.interval.monthly' | translate }}
+    </span>
+    <mat-slide-toggle
+      [checked]="billingInterval === 'annual'"
+      (change)="billingInterval = $event.checked ? 'annual' : 'monthly'">
+    </mat-slide-toggle>
+    <span [class.active]="billingInterval === 'annual'" (click)="billingInterval = 'annual'">
+      {{ 'billing.interval.annual' | translate }}
+      <span class="annual-badge">{{ 'billing.annual_discount' | translate }}</span>
+    </span>
+  </div>
+
+  <!-- Pricing tiers grid -->
+  <div class="tier-grid" *ngIf="options && !loading">
+    <mat-card
+      *ngFor="let tier of options.tiers"
+      class="tier-card"
+      [class.tier-current]="tier.is_current"
+      [class.tier-popular]="tier.tier === 'professional'">
+
+      <!-- Popular badge -->
+      <div class="popular-badge" *ngIf="tier.tier === 'professional'">
+        {{ 'billing.popular' | translate }}
+      </div>
+
+      <!-- Current plan badge -->
+      <div class="current-plan-badge" *ngIf="tier.is_current">
+        {{ 'billing.current_plan' | translate }}
+      </div>
+
       <mat-card-header>
         <mat-card-title>{{ ('billing.tiers.' + tier.tier) | translate }}</mat-card-title>
+        <mat-card-subtitle>{{ ('billing.tier_subtitle.' + tier.tier) | translate }}</mat-card-subtitle>
       </mat-card-header>
+
       <mat-card-content>
-        <p *ngIf="tier.available">{{ tier.amount_minor | number }} {{ tier.currency }}</p>
-        <p *ngIf="!tier.available">{{ (tier.unavailable_reason_key || 'billing.priceUnavailable') | translate }}</p>
+        <!-- Price display -->
+        <div class="tier-price">
+          <ng-container *ngIf="!isCustomPricing(tier)">
+            <ng-container *ngIf="tier.available && tier.amount_minor !== null; else priceUnavailable">
+              <span class="price-amount">{{ tier.amount_minor / 100 | number:'1.0-0' }}</span>
+              <span class="price-currency">{{ tier.currency }}</span>
+              <span class="price-period">/ {{ 'billing.interval.' + billingInterval | translate }}</span>
+            </ng-container>
+            <ng-template #priceUnavailable>
+              <span class="price-unavailable">{{ 'billing.priceUnavailable' | translate }}</span>
+            </ng-template>
+          </ng-container>
+          <ng-container *ngIf="isCustomPricing(tier)">
+            <span class="price-custom">{{ 'billing.custom_pricing' | translate }}</span>
+          </ng-container>
+        </div>
+
+        <!-- Feature list -->
+        <ul class="tier-features">
+          <li *ngFor="let feature of tierFeatures[tier.tier]">
+            <mat-icon class="feature-icon">check_circle</mat-icon>
+            <span>{{ feature | translate }}</span>
+          </li>
+        </ul>
       </mat-card-content>
+
       <mat-card-actions>
-        <button mat-raised-button color="primary" [disabled]="!tier.available" (click)="buyTier(tier.tier)">
-          {{ 'billing.checkout.buy' | translate }}
+        <!-- Current plan -->
+        <button mat-stroked-button disabled *ngIf="tier.is_current">
+          {{ 'billing.current_plan' | translate }}
         </button>
-        <button mat-button color="accent"
-          *ngIf="currentSubscription && currentSubscription.status !== 'cancelled'"
-          [disabled]="subLoading"
-          (click)="scheduleDowngrade(tier.tier)">
-          {{ 'billing.downgrade_requires_schedule' | translate }}
-        </button>
+
+        <!-- Custom pricing (Enterprise / Platform) -->
+        <ng-container *ngIf="!tier.is_current && isCustomPricing(tier)">
+          <a mat-raised-button color="primary" href="mailto:sales@formcraft.io">
+            {{ 'billing.contact_sales' | translate }}
+          </a>
+        </ng-container>
+
+        <!-- Upgrade -->
+        <ng-container *ngIf="!tier.is_current && isUpgrade(tier) && !isCustomPricing(tier)">
+          <button mat-raised-button color="primary"
+            [disabled]="!tier.available || subLoading"
+            (click)="buyOrUpgrade(tier)">
+            {{ 'billing.upgrade_to' | translate:{ tier: ('billing.tiers.' + tier.tier | translate) } }}
+          </button>
+        </ng-container>
+
+        <!-- Downgrade -->
+        <ng-container *ngIf="!tier.is_current && isDowngrade(tier)">
+          <button mat-stroked-button color="accent"
+            [disabled]="subLoading || !currentSubscription || currentSubscription.status === 'cancelled'"
+            (click)="scheduleDowngrade(tier.tier)">
+            {{ 'billing.downgrade_to' | translate:{ tier: ('billing.tiers.' + tier.tier | translate) } }}
+          </button>
+        </ng-container>
       </mat-card-actions>
     </mat-card>
   </div>

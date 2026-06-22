@@ -4,7 +4,7 @@
 
   <!-- Billing interval toggle — shown only for new subscriptions -->
   <div class="interval-toggle" *ngIf="isSubscribeMode">
-    <mat-button-toggle-group [(ngModel)]="billingInterval" aria-label="{{ 'billing.interval.monthly' | translate }}">
+    <mat-button-toggle-group [(ngModel)]="billingInterval">
       <mat-button-toggle value="monthly">{{ 'billing.interval.monthly' | translate }}</mat-button-toggle>
       <mat-button-toggle value="annual">{{ 'billing.interval.annual' | translate }}</mat-button-toggle>
     </mat-button-toggle-group>

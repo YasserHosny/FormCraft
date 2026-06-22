@@ -7,6 +7,7 @@ export interface BillingTierOption {
   currency: string;
   available: boolean;
   unavailable_reason_key?: string | null;
+  is_current: boolean;
 }
 
 export interface BillingAddonOption {

@@ -59,6 +59,7 @@ class TierOption(BaseModel):
     currency: str
     available: bool = True
     unavailable_reason_key: str | None = None
+    is_current: bool = False
 
 
 class AddonOption(BaseModel):

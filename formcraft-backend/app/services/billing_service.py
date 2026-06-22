@@ -417,14 +417,19 @@ class BillingService:
 
     def _tier_options(self, *, current_tier: str, currency: str) -> list[dict]:
         current_idx = TIER_ORDER.index(current_tier) if current_tier in TIER_ORDER else 0
-        return [self._option_for_tier(tier, currency) for tier in TIER_ORDER[current_idx + 1:]]
+        result = []
+        for i, tier in enumerate(TIER_ORDER):
+            option = self._option_for_tier(tier, currency)
+            option["is_current"] = (i == current_idx)
+            result.append(option)
+        return result
 
     def _option_for_tier(self, tier: str, currency: str) -> dict:
         try:
             price = self._get_price("tier", tier, currency)
-            return {"tier": tier, "amount_minor": int(price["unit_amount_minor"]), "currency": currency, "available": True, "unavailable_reason_key": None}
+            return {"tier": tier, "amount_minor": int(price["unit_amount_minor"]), "currency": currency, "available": True, "unavailable_reason_key": None, "is_current": False}
         except HTTPException:
-            return {"tier": tier, "amount_minor": None, "currency": currency, "available": False, "unavailable_reason_key": "billing.price_unavailable"}
+            return {"tier": tier, "amount_minor": None, "currency": currency, "available": False, "unavailable_reason_key": "billing.price_unavailable", "is_current": False}
 
     def _addon_options(self, *, currency: str, purpose: BillingPurpose | None, listing_id: UUID | None) -> list[dict]:
         options = []
